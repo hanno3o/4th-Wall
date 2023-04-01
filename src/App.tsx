@@ -18,11 +18,9 @@ const GlobalStyle = createGlobalStyle`
 
   #root {
     min-height: 100vh;
-    padding: 100px 50px 115px;
     position: relative;
 
     @media screen and (max-width: 768px) {
-      padding: 102px 0 208px;
     }
   }
 `;
