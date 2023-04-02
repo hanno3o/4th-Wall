@@ -101,7 +101,7 @@ function Home() {
   };
 
   return (
-    <Wrapper className="">
+    <Wrapper>
       <SearchBar type="text" placeholder="請輸入想要查找的戲劇名稱" />
       <FilterSection>
         <FilterNavBar>
@@ -136,7 +136,6 @@ function Home() {
         <Drama>那年夏天的我們</Drama>
         <Drama>二十五，二十一</Drama>
       </DramasSection>
-      <div className="bg-[url('https://upload.wikimedia.org/wikipedia/zh/thumb/3/3e/Hometown_Cha-Cha-Cha.jpg/250px-Hometown_Cha-Cha-Cha.jpg')"></div>
     </Wrapper>
   );
 }
