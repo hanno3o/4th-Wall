@@ -57,6 +57,7 @@ const DramasSection = styled.div`
 `;
 
 const Drama = styled.div`
+  cursor: pointer;
   background: #535353;
   width: 14rem;
   height: 300px;
@@ -67,6 +68,19 @@ const Drama = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+`;
+
+const DramaCard = styled.div`
+  width: 500px;
+  transform: translate(-50%, -50%);
+  background: #000;
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  border-radius: 10px;
+  opacity: 0.8;
+  padding: 20px;
 `;
 
 function Home() {
@@ -135,6 +149,34 @@ function Home() {
         <Drama>想見你</Drama>
         <Drama>那年夏天的我們</Drama>
         <Drama>二十五，二十一</Drama>
+        <DramaCard>
+          <img className="w-14 h-20 bg-blue-400 mb-8" alt=""></img>
+          <div>黑暗榮耀</div>
+          <div>The Glory</div>
+          <div>2022</div>
+          <div>韓國 | 2022 | 復仇 </div>
+          <div>4.7/5</div>
+          <div>已有 106 人留下評價</div>
+          <button>加入片單</button>
+          <div>編劇</div>
+          <div>金銀淑</div>
+          <div>導演</div>
+          <div>安吉鎬</div>
+          <div>演員</div>
+          <div>宋慧喬 李到晛</div>
+          <div>劇情大綱</div>
+          <div>
+            夢想成為建築師的文同珢在高中因被朴涎鎮、全宰寯等人霸凌而主動退學。數年後朴涎鎮當上氣象主播，還與上流人士河度領風光結婚生子，但就在孩子上小學，蟄伏多年的文同珢現身該校擔任孩子的班導師，並在朱如炡及姜賢南的協助下，開始對當年的霸凌者朴涎鎮等人進行徹底報復。
+          </div>
+          <div>集數熱度</div>
+          <div>原聲帶</div>
+          <div>留下你對 黑暗榮耀的評論！</div>
+          <div>☆☆☆☆☆</div>
+          <div>ffuri ★★★☆☆ 3/27</div>
+          <div>hanny ★★★★☆ 3/29</div>
+          <div>wendy ★★★★☆ 4/1</div>
+          <div>joy1215 ★★★★☆ 4/2</div>
+        </DramaCard>
       </DramasSection>
     </Wrapper>
   );
