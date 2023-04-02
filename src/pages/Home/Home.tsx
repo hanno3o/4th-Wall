@@ -1,4 +1,7 @@
 import styled from 'styled-components';
+import { db } from '../../firebase.config';
+import { collection, getDocs } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -66,6 +69,8 @@ const Drama = styled.div`
   font-size: 16px;
   color: white;
   display: flex;
+  flex-direction: column;
+  gap: 10px;
   justify-content: center;
   align-items: center;
 `;
@@ -113,6 +118,33 @@ function Home() {
       },
     ],
   };
+  interface Drama {
+    id: string;
+    title?: string;
+    year?: number;
+    rating?: number;
+    image?: string;
+    eng?: string;
+    genre?: string;
+    type?: string;
+    story?: string;
+    director?: string;
+    screenwriter?: string;
+  }
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [dramas, setDramas] = useState<Drama[]>([]);
+
+  const dramasCollectionRef = collection(db, 'dramas');
+  useEffect(() => {
+    const getDramas = async () => {
+      const data = await getDocs(dramasCollectionRef);
+      setDramas(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      setIsLoading(true);
+    };
+
+    getDramas();
+  }, []);
 
   return (
     <Wrapper>
@@ -142,40 +174,51 @@ function Home() {
         </Filter>
       </FilterSection>
       <DramasSection>
-        <Drama>黑暗榮耀</Drama>
-        <Drama>偶然發現的一天</Drama>
-        <Drama>海岸村恰恰恰</Drama>
-        <Drama>孤單又燦爛的神：鬼怪</Drama>
-        <Drama>想見你</Drama>
-        <Drama>那年夏天的我們</Drama>
-        <Drama>二十五，二十一</Drama>
+        {isLoading &&
+          dramas.map((drama) => {
+            return (
+              <Drama>
+                <div>{drama.title}</div>
+                <div>{drama.year}</div>
+                <div>{drama.rating}/5</div>
+              </Drama>
+            );
+          })}
         <DramaCard>
-          <img className="w-14 h-20 bg-blue-400 mb-8" alt=""></img>
-          <div>黑暗榮耀</div>
-          <div>The Glory</div>
-          <div>2022</div>
-          <div>韓國 | 2022 | 復仇 </div>
-          <div>4.7/5</div>
-          <div>已有 106 人留下評價</div>
-          <button>加入片單</button>
-          <div>編劇</div>
-          <div>金銀淑</div>
-          <div>導演</div>
-          <div>安吉鎬</div>
-          <div>演員</div>
-          <div>宋慧喬 李到晛</div>
-          <div>劇情大綱</div>
-          <div>
-            夢想成為建築師的文同珢在高中因被朴涎鎮、全宰寯等人霸凌而主動退學。數年後朴涎鎮當上氣象主播，還與上流人士河度領風光結婚生子，但就在孩子上小學，蟄伏多年的文同珢現身該校擔任孩子的班導師，並在朱如炡及姜賢南的協助下，開始對當年的霸凌者朴涎鎮等人進行徹底報復。
-          </div>
-          <div>集數熱度</div>
-          <div>原聲帶</div>
-          <div>留下你對 黑暗榮耀的評論！</div>
-          <div>☆☆☆☆☆</div>
-          <div>ffuri ★★★☆☆ 3/27</div>
-          <div>hanny ★★★★☆ 3/29</div>
-          <div>wendy ★★★★☆ 4/1</div>
-          <div>joy1215 ★★★★☆ 4/2</div>
+          {isLoading && (
+            <>
+              <img
+                className="w-24 h-36 mb-8"
+                src={dramas[0].image}
+                alt=""
+              ></img>
+              <div>{dramas[0].title}</div>
+              <div>{dramas[0].eng}</div>
+              <div>{dramas[0].year}</div>
+              <div>
+                {dramas[0].type} | {dramas[0].year} | {dramas[0].genre}
+              </div>
+              <div>{dramas[0].rating}/5</div>
+              <div>已有 106 人留下評價</div>
+              <button>加入片單</button>
+              <div>編劇</div>
+              <div>{dramas[0].screenwriter}</div>
+              <div>導演</div>
+              <div>{dramas[0].director}</div>
+              <div>演員</div>
+              <div>金宣虎 申敏兒</div>
+              <div>劇情大綱</div>
+              <div>{dramas[0].story}</div>
+              <div>集數熱度</div>
+              <div>原聲帶</div>
+              <div>留下你對 {dramas[0].title} 的評論！</div>
+              <div>☆☆☆☆☆</div>
+              <div>ffuri ★★★☆☆ 3/27</div>
+              <div>hanny ★★★★☆ 3/29</div>
+              <div>wendy ★★★★☆ 4/1</div>
+              <div>joy1215 ★★★★☆ 4/2</div>
+            </>
+          )}
         </DramaCard>
       </DramasSection>
     </Wrapper>
