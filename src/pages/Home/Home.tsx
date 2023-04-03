@@ -24,6 +24,7 @@ const FilterSection = styled.div`
 `;
 
 const FilterNavBar = styled.div`
+  cursor: pointer;
   display: flex;
   gap: 30px;
   font-weight: 500;
@@ -37,6 +38,7 @@ const Filter = styled.div`
 
 const Options = styled.div`
   display: flex;
+  align-items: center;
 `;
 
 const Label = styled.label`
@@ -45,9 +47,13 @@ const Label = styled.label`
 `;
 
 const Option = styled.div`
+  cursor: pointer;
   display: flex;
   margin-right: 8px;
   font-weight: 200;
+  border: solid 1px #bbb;
+  border-radius: 5px;
+  padding: 6px;
 `;
 
 const DramasSection = styled.div`
@@ -61,18 +67,20 @@ const DramasSection = styled.div`
 
 const Drama = styled.div`
   cursor: pointer;
-  background: #535353;
-  width: 14rem;
-  height: 300px;
+  width: 15.8em;
+  height: 320px;
   flex-shrink: 0;
   border-radius: 5px;
   font-size: 16px;
   color: white;
+  font-weight: 700;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 20px;
+  background-size: cover;
 `;
 
 const DramaCard = styled.div`
@@ -86,11 +94,12 @@ const DramaCard = styled.div`
   border-radius: 10px;
   opacity: 0.8;
   padding: 20px;
+  display: none;
 `;
 
 function Home() {
   const filterData = {
-    type: ['所有影集', '台劇', '韓劇', '日劇', '動畫', '美劇', '陸劇'],
+    type: ['所有影集', '台劇', '韓劇', '日劇', '美劇', '陸劇'],
     filters: [
       {
         title: '類型',
@@ -103,6 +112,9 @@ function Home() {
           '復仇',
           '職場',
           '音樂',
+          '穿越',
+          '律政',
+          '校園',
         ],
       },
       {
@@ -154,7 +166,7 @@ function Home() {
             return <div>{type}</div>;
           })}
         </FilterNavBar>
-        <hr className="my-6" />
+        <hr className="my-4" />
         <Filter>
           {filterData.filters.map((filter) => {
             return (
@@ -176,10 +188,16 @@ function Home() {
         {isLoading &&
           dramas.map((drama) => {
             return (
-              <Drama>
+              <Drama
+                style={{
+                  backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
+                }}
+              >
                 <div>{drama.title}</div>
                 <div>{drama.year}</div>
                 <div>{drama.rating}/5</div>
+                <div>{drama.genre}</div>
+                <div>{drama.type}</div>
               </Drama>
             );
           })}
