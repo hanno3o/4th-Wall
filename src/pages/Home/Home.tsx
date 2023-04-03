@@ -147,6 +147,10 @@ function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [dramas, setDramas] = useState<Drama[]>([]);
   const dramasCollectionRef = collection(db, 'dramas');
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState<string | null>(
+    '所有影集'
+  );
+
   useEffect(() => {
     const getDramas = async () => {
       const data = await getDocs(dramasCollectionRef);
@@ -157,13 +161,22 @@ function Home() {
     getDramas();
   }, []);
 
+  function handleTypeFilter(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    setSelectedTypeFilter(e.currentTarget.textContent);
+  }
+
+  const filteredDramas =
+    selectedTypeFilter !== '所有影集'
+      ? dramas.filter((drama) => drama.type === selectedTypeFilter)
+      : dramas;
+
   return (
     <Wrapper>
       <SearchBar type="text" placeholder="請輸入想要查找的戲劇名稱" />
       <FilterSection>
         <FilterNavBar>
           {filterData.type.map((type) => {
-            return <div>{type}</div>;
+            return <div onClick={handleTypeFilter}>{type}</div>;
           })}
         </FilterNavBar>
         <hr className="my-4" />
@@ -186,7 +199,7 @@ function Home() {
       </FilterSection>
       <DramasSection>
         {isLoading &&
-          dramas.map((drama) => {
+          filteredDramas.map((drama) => {
             return (
               <Drama
                 style={{
