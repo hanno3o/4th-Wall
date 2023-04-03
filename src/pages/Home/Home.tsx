@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { db } from '../../firebase.config';
+import { db } from '../../config/firebase.config';
 import { collection, getDocs } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 
@@ -134,7 +134,6 @@ function Home() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [dramas, setDramas] = useState<Drama[]>([]);
-
   const dramasCollectionRef = collection(db, 'dramas');
   useEffect(() => {
     const getDramas = async () => {
