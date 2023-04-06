@@ -4,11 +4,12 @@ import { collection, getDocs } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 75%;
   padding: 50px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin: 0 auto;
 `;
 
 const SearchBar = styled.input`
@@ -19,14 +20,14 @@ const SearchBar = styled.input`
   padding: 10px;
 `;
 
-const FilterSection = styled.div`
+const FilterPanel = styled.div`
   margin-top: 30px;
 `;
 
 const FilterNavBar = styled.div`
   cursor: pointer;
   display: flex;
-  gap: 30px;
+  gap: 4px;
   font-weight: 500;
 `;
 
@@ -36,9 +37,15 @@ const Filter = styled.div`
   gap: 20px;
 `;
 
-const Options = styled.div`
-  display: flex;
-  align-items: center;
+const TypeFilter = styled.div<TypeFilterProps>`
+  font-weight: 500;
+  padding: 0 10px 8px;
+  ${(props) =>
+    props.selectedTypeFilter &&
+    props.selectedTypeFilter.includes(props.children as string) &&
+    `
+    border-bottom: #3f3a3a 4px solid;
+    `}
 `;
 
 const Label = styled.label`
@@ -46,7 +53,12 @@ const Label = styled.label`
   font-weight: 500;
 `;
 
-const Option = styled.div`
+const Options = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const Option = styled.div<FilterOptionsProps>`
   cursor: pointer;
   display: flex;
   margin-right: 8px;
@@ -54,6 +66,37 @@ const Option = styled.div`
   border: solid 1px #bbb;
   border-radius: 5px;
   padding: 6px;
+  ${(props) =>
+    props.order &&
+    props.order.includes(props.children as string) &&
+    `
+    font-weight: 500;
+    border: #3f3a3a;
+    solid 1px; color: #fff;
+    background-color: #3f3a3a;
+    `}
+
+  ${(props) =>
+    props.genre &&
+    props.genre.length > 0 &&
+    props.genre.includes(props.children as string) &&
+    `
+    font-weight: 500;
+    border: #3f3a3a solid 1px;
+    color: #fff;
+    background-color: #3f3a3a;
+    `}
+
+  ${(props) =>
+    props.year &&
+    props.year.length > 0 &&
+    props.year.includes(props.children as number) &&
+    `
+    font-weight: 500;
+    border: #3f3a3a solid 1px;
+    color: #fff;
+    background-color: #3f3a3a;
+    `}
 `;
 
 const DramasSection = styled.div`
@@ -97,6 +140,15 @@ const DramaCard = styled.div`
   display: none;
 `;
 
+interface TypeFilterProps {
+  selectedTypeFilter?: string | null;
+}
+interface FilterOptionsProps {
+  genre?: string[];
+  year?: number[];
+  order?: string;
+}
+
 function Home() {
   const filterData = {
     type: ['所有影集', '台劇', '韓劇', '日劇', '美劇', '陸劇'],
@@ -119,7 +171,7 @@ function Home() {
       },
       {
         title: '排序',
-        filter: ['新上架', '評價最高', '最熱門', '由新到舊', '由舊到新'],
+        filter: ['新上架', '評價最高', '由新到舊', '由舊到新'],
       },
       {
         title: '年份',
@@ -147,6 +199,9 @@ function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [dramas, setDramas] = useState<Drama[]>([]);
   const dramasCollectionRef = collection(db, 'dramas');
+  const [genre, setGenre] = useState<string[]>([]);
+  const [order, setOrder] = useState('');
+  const [year, setYear] = useState<number[]>([]);
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string | null>(
     '所有影集'
   );
@@ -165,30 +220,111 @@ function Home() {
     setSelectedTypeFilter(e.currentTarget.textContent);
   }
 
-  const filteredDramas =
+  function handleFilters(
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    title: string
+  ) {
+    const selectedValue = e.currentTarget.textContent;
+    if (title === '類型') {
+      if (genre.includes(selectedValue ? selectedValue : '')) {
+        const newGenre = genre.filter((value) => value !== selectedValue);
+        setGenre(newGenre);
+      } else {
+        setGenre((prevGenres) => [
+          ...prevGenres,
+          selectedValue ? selectedValue : '',
+        ]);
+      }
+    } else if (title === '排序') {
+      if (order === selectedValue) {
+        setOrder('');
+      } else {
+        setOrder(selectedValue ? selectedValue : '');
+      }
+    } else if (title === '年份') {
+      if (year.includes(selectedValue ? Number(selectedValue) : NaN)) {
+        const newYear = year.filter((value) => value !== Number(selectedValue));
+        setYear(newYear);
+      } else {
+        setYear((prevYears) => [
+          ...prevYears,
+          selectedValue ? Number(selectedValue) : NaN,
+        ]);
+      }
+    }
+  }
+
+  const filteredByTypeDramas =
     selectedTypeFilter !== '所有影集'
       ? dramas.filter((drama) => drama.type === selectedTypeFilter)
       : dramas;
 
+  const filteredByMultiFiltersDramas = filteredByTypeDramas
+    .filter((drama) => {
+      const newest = order === '新上架' ? drama.year === 2023 : true;
+      const yearFilter =
+        year.length > 0
+          ? year.some((year) =>
+              drama.year?.toString()?.includes(year.toString())
+            )
+          : true;
+      const genreFilter =
+        genre.length > 0
+          ? genre.some((genre) => drama.genre?.includes(genre))
+          : true;
+      return yearFilter && genreFilter && newest;
+    })
+    .sort((a, b) => {
+      if (a.year && b.year) {
+        if (order === '由新到舊') {
+          return b.year - a.year;
+        } else if (order === '由舊到新') {
+          return a.year - b.year;
+        }
+      }
+      if (a.rating && b.rating && order === '評價最高') {
+        return b.rating - a.rating;
+      }
+      return 0;
+    });
+
+  console.log(`類型：${genre} 排序：${order} 年份：${year}`);
+
   return (
     <Wrapper>
       <SearchBar type="text" placeholder="請輸入想要查找的戲劇名稱" />
-      <FilterSection>
+      <FilterPanel>
         <FilterNavBar>
-          {filterData.type.map((type) => {
-            return <div onClick={handleTypeFilter}>{type}</div>;
+          {filterData.type.map((type, index) => {
+            return (
+              <TypeFilter
+                key={index}
+                selectedTypeFilter={selectedTypeFilter}
+                onClick={handleTypeFilter}
+              >
+                {type}
+              </TypeFilter>
+            );
           })}
         </FilterNavBar>
-        <hr className="my-4" />
+        <hr className="mb-6" />
         <Filter>
-          {filterData.filters.map((filter) => {
+          {filterData.filters.map((filter, index) => {
             return (
-              <Options>
+              <Options key={index}>
                 <Label>{filter.title}</Label>
-                {filter.filter.map((item) => {
+                {filter.filter.map((item, index) => {
                   return (
                     <>
-                      <Option>{item}</Option>
+                      <Option
+                        key={index}
+                        year={year}
+                        genre={genre}
+                        order={order}
+                        onClick={(e) => handleFilters(e, filter.title)}
+                      >
+                        {item}
+                      </Option>
                     </>
                   );
                 })}
@@ -196,12 +332,13 @@ function Home() {
             );
           })}
         </Filter>
-      </FilterSection>
+      </FilterPanel>
       <DramasSection>
         {isLoading &&
-          filteredDramas.map((drama) => {
+          filteredByMultiFiltersDramas.map((drama, index) => {
             return (
               <Drama
+                key={index}
                 style={{
                   backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
                 }}
