@@ -199,6 +199,12 @@ const HandleListButton = styled.button`
   right: 40px;
 `;
 
+const CloseButton = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-weight: 900;
+`;
 interface TypeFilterProps {
   selectedTypeFilter?: string | null;
 }
@@ -415,7 +421,7 @@ function Home() {
               </Drama>
             );
           })}
-        <DramaCard>
+        <DramaCard style={{ display: dramaCard ? 'block' : 'none' }}>
           {isLoading && (
             <div style={{ display: 'flex' }}>
               <div style={{ width: '300px' }}>
@@ -494,6 +500,9 @@ function Home() {
                       <DramaCardDescription>金宣虎 申敏兒</DramaCardDescription>
                     </div>
                     <HandleListButton>＋加入片單</HandleListButton>
+                    <CloseButton onClick={() => setDramaCard(undefined)}>
+                      ✕
+                    </CloseButton>
                   </DramaCardMainInfo>
                 </div>
                 <DramaCardDescriptionWrapper>
