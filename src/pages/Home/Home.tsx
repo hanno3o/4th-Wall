@@ -265,6 +265,7 @@ function Home() {
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string | null>(
     '所有影集'
   );
+  const [dramaCard, setDramaCard] = useState<Drama>();
 
   useEffect(() => {
     const getDramas = async () => {
@@ -314,6 +315,10 @@ function Home() {
     }
   }
 
+  function handleDramaCard(drama: Drama) {
+    setDramaCard(drama);
+  }
+
   const filteredByTypeDramas =
     selectedTypeFilter !== '所有影集'
       ? dramas.filter((drama) => drama.type === selectedTypeFilter)
@@ -347,8 +352,6 @@ function Home() {
       }
       return 0;
     });
-
-  console.log(`類型：${genre} 排序：${order} 年份：${year}`);
 
   return (
     <Wrapper>
@@ -398,6 +401,7 @@ function Home() {
           filteredByMultiFiltersDramas.map((drama, index) => {
             return (
               <Drama
+                onClick={() => handleDramaCard(drama)}
                 key={index}
                 style={{
                   backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
@@ -422,7 +426,7 @@ function Home() {
                   <div style={{ marginTop: '10px' }}>☆☆☆☆☆</div>
                   <input
                     type="text"
-                    placeholder={`留下你對 ${dramas[3].title} 的評論！`}
+                    placeholder={`留下你對 ${dramaCard?.title} 的評論！`}
                     style={{
                       width: '260px',
                       marginTop: '10px',
@@ -458,16 +462,16 @@ function Home() {
                     style={{
                       objectFit: 'cover',
                     }}
-                    src={dramas[3].image}
+                    src={dramaCard?.image}
                     alt=""
                   ></img>
                   <DramaCardMainInfo>
-                    <DramaCardTitle>{dramas[3].title}</DramaCardTitle>
-                    <DramaCardSubTitle>{dramas[3].eng}</DramaCardSubTitle>
+                    <DramaCardTitle>{dramaCard?.title}</DramaCardTitle>
+                    <DramaCardSubTitle>{dramaCard?.eng}</DramaCardSubTitle>
                     <DramaCardType>
-                      {dramas[3].type} | {dramas[3].year} | {dramas[3].genre}
+                      {dramaCard?.type} | {dramaCard?.year} | {dramaCard?.genre}
                     </DramaCardType>
-                    <DramaCardRating>{dramas[3].rating}/5</DramaCardRating>
+                    <DramaCardRating>{dramaCard?.rating}/5</DramaCardRating>
                     <DramaCardDescription>
                       已有 106 人留下評價
                     </DramaCardDescription>
@@ -476,13 +480,13 @@ function Home() {
                         編劇
                       </DramaCardDescriptionTitle>
                       <DramaCardDescription>
-                        {dramas[3].screenwriter}
+                        {dramaCard?.screenwriter}
                       </DramaCardDescription>
                       <DramaCardDescriptionTitle>
                         導演
                       </DramaCardDescriptionTitle>
                       <DramaCardDescription>
-                        {dramas[3].director}
+                        {dramaCard?.director}
                       </DramaCardDescription>
                       <DramaCardDescriptionTitle>
                         演員
@@ -498,12 +502,12 @@ function Home() {
                       劇情大綱
                     </DramaCardDescriptionTitle>
                     <DramaCardDescription style={{ paddingRight: '22px' }}>
-                      {dramas[3].story}
+                      {dramaCard?.story}
                     </DramaCardDescription>
                     <DramaCardDescriptionTitle>
                       集數熱度
                     </DramaCardDescriptionTitle>
-                    <DramaCardDescription>平均熱度：16/集</DramaCardDescription>
+                    <DramaCardDescription>平均熱度：17/集</DramaCardDescription>
                     <img
                       style={{ width: '290px' }}
                       src="https://book.gosu.bar/uploads/images/gallery/2019-12/qWqeJ5ZcX2DYL2rQ-%E5%9F%BA%E7%A4%8E%E6%8A%98%E7%B7%9A%E5%9C%96.png"
@@ -519,7 +523,7 @@ function Home() {
                     </DramaCardDescriptionTitle>
                     <iframe
                       style={{ borderRadius: '12px', marginTop: '4px' }}
-                      src="https://open.spotify.com/embed/album/085VlHiMLkKtDJNn42q29J?utm_source=generator"
+                      src={dramaCard?.spotify}
                       width="100%"
                       height="352"
                       frameBorder="0"
