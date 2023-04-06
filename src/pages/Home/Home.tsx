@@ -127,17 +127,76 @@ const Drama = styled.div`
 `;
 
 const DramaCard = styled.div`
-  width: 500px;
+  width: 1000px;
   transform: translate(-50%, -50%);
-  background: #000;
+  background: #2a2a2a;
   color: #fff;
-  position: absolute;
-  left: 50%;
-  top: 45%;
+  position: fixed;
+  left: 50vw;
+  top: 50vh;
   border-radius: 10px;
-  opacity: 0.8;
-  padding: 20px;
-  display: none;
+  opacity: 0.9;
+  padding: 60px 40px;
+  display: block;
+`;
+
+const DramaCardMainInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const DramaCardTitle = styled.div`
+  font-size: 26px;
+  font-weight: 900;
+`;
+
+const DramaCardSubTitle = styled.div`
+  font-size: 16px;
+  color: #afafaf;
+  font-weight: 500;
+`;
+
+const DramaCardType = styled.div`
+  font-size: 14px;
+  color: #fff;
+  margin-top: 2px;
+  font-weight: 900;
+`;
+
+const DramaCardRating = styled.div`
+  font-size: 18px;
+  color: #fff;
+  font-weight: 900;
+`;
+
+const DramaCardDescriptionWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const DramaCardDescriptionTitle = styled.div`
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 22px;
+`;
+
+const DramaCardDescription = styled.div`
+  font-size: 12px;
+  font-weight: 400;
+  margin-bottom: 8px;
+  line-height: 18px;
+`;
+
+const HandleListButton = styled.button`
+  font-size: 16px;
+  color: #fff;
+  border: solid 1px #fff;
+  padding: 5px;
+  font-weight: 700;
+  position: absolute;
+  top: 60px;
+  right: 40px;
 `;
 
 interface TypeFilterProps {
@@ -194,6 +253,7 @@ function Home() {
     story?: string;
     director?: string;
     screenwriter?: string;
+    spotify?: string;
   }
 
   const [isLoading, setIsLoading] = useState(false);
@@ -353,38 +413,124 @@ function Home() {
           })}
         <DramaCard>
           {isLoading && (
-            <>
-              <img
-                className="w-24 h-36 mb-8"
-                src={dramas[0].image}
-                alt=""
-              ></img>
-              <div>{dramas[0].title}</div>
-              <div>{dramas[0].eng}</div>
-              <div>{dramas[0].year}</div>
-              <div>
-                {dramas[0].type} | {dramas[0].year} | {dramas[0].genre}
+            <div style={{ display: 'flex' }}>
+              <div style={{ width: '300px' }}>
+                <div style={{ fontSize: '20px', fontWeight: '700' }}>
+                  評論區
+                </div>
+                <div>
+                  <div style={{ marginTop: '10px' }}>☆☆☆☆☆</div>
+                  <input
+                    type="text"
+                    placeholder={`留下你對 ${dramas[3].title} 的評論！`}
+                    style={{
+                      width: '260px',
+                      marginTop: '10px',
+                      fontSize: '12px',
+                      color: '#000',
+                      padding: '10px',
+                    }}
+                  />
+                </div>
+                <div
+                  style={{
+                    marginTop: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                  }}
+                >
+                  <div>ffuri ★★★☆☆ 3/27</div>
+                  <div>hanny ★★★★☆ 3/29</div>
+                  <div>wendy ★★★★☆ 4/1</div>
+                  <div>joy1215 ★★★★☆ 4/2</div>
+                </div>
               </div>
-              <div>{dramas[0].rating}/5</div>
-              <div>已有 106 人留下評價</div>
-              <button>加入片單</button>
-              <div>編劇</div>
-              <div>{dramas[0].screenwriter}</div>
-              <div>導演</div>
-              <div>{dramas[0].director}</div>
-              <div>演員</div>
-              <div>金宣虎 申敏兒</div>
-              <div>劇情大綱</div>
-              <div>{dramas[0].story}</div>
-              <div>集數熱度</div>
-              <div>原聲帶</div>
-              <div>留下你對 {dramas[0].title} 的評論！</div>
-              <div>☆☆☆☆☆</div>
-              <div>ffuri ★★★☆☆ 3/27</div>
-              <div>hanny ★★★★☆ 3/29</div>
-              <div>wendy ★★★★☆ 4/1</div>
-              <div>joy1215 ★★★★☆ 4/2</div>
-            </>
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '20px',
+                  }}
+                >
+                  <img
+                    className="w-48 h-70 mb-8"
+                    style={{
+                      objectFit: 'cover',
+                    }}
+                    src={dramas[3].image}
+                    alt=""
+                  ></img>
+                  <DramaCardMainInfo>
+                    <DramaCardTitle>{dramas[3].title}</DramaCardTitle>
+                    <DramaCardSubTitle>{dramas[3].eng}</DramaCardSubTitle>
+                    <DramaCardType>
+                      {dramas[3].type} | {dramas[3].year} | {dramas[3].genre}
+                    </DramaCardType>
+                    <DramaCardRating>{dramas[3].rating}/5</DramaCardRating>
+                    <DramaCardDescription>
+                      已有 106 人留下評價
+                    </DramaCardDescription>
+                    <div>
+                      <DramaCardDescriptionTitle>
+                        編劇
+                      </DramaCardDescriptionTitle>
+                      <DramaCardDescription>
+                        {dramas[3].screenwriter}
+                      </DramaCardDescription>
+                      <DramaCardDescriptionTitle>
+                        導演
+                      </DramaCardDescriptionTitle>
+                      <DramaCardDescription>
+                        {dramas[3].director}
+                      </DramaCardDescription>
+                      <DramaCardDescriptionTitle>
+                        演員
+                      </DramaCardDescriptionTitle>
+                      <DramaCardDescription>金宣虎 申敏兒</DramaCardDescription>
+                    </div>
+                    <HandleListButton>＋加入片單</HandleListButton>
+                  </DramaCardMainInfo>
+                </div>
+                <DramaCardDescriptionWrapper>
+                  <div style={{ width: '315px' }}>
+                    <DramaCardDescriptionTitle>
+                      劇情大綱
+                    </DramaCardDescriptionTitle>
+                    <DramaCardDescription style={{ paddingRight: '22px' }}>
+                      {dramas[3].story}
+                    </DramaCardDescription>
+                    <DramaCardDescriptionTitle>
+                      集數熱度
+                    </DramaCardDescriptionTitle>
+                    <DramaCardDescription>平均熱度：16/集</DramaCardDescription>
+                    <img
+                      style={{ width: '290px' }}
+                      src="https://book.gosu.bar/uploads/images/gallery/2019-12/qWqeJ5ZcX2DYL2rQ-%E5%9F%BA%E7%A4%8E%E6%8A%98%E7%B7%9A%E5%9C%96.png"
+                      alt=""
+                    />
+                    <div style={{ fontSize: '10px', marginTop: '10px' }}>
+                      （計算方式：論壇中相對集數之文章總和除以總集數）
+                    </div>
+                  </div>
+                  <div>
+                    <DramaCardDescriptionTitle>
+                      原聲帶
+                    </DramaCardDescriptionTitle>
+                    <iframe
+                      style={{ borderRadius: '12px', marginTop: '4px' }}
+                      src="https://open.spotify.com/embed/album/085VlHiMLkKtDJNn42q29J?utm_source=generator"
+                      width="100%"
+                      height="352"
+                      frameBorder="0"
+                      allowFullScreen
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                    />
+                  </div>
+                </DramaCardDescriptionWrapper>
+              </div>
+            </div>
           )}
         </DramaCard>
       </DramasSection>
