@@ -248,7 +248,7 @@ function Home() {
     ],
   };
   interface Drama {
-    id: string;
+    id?: string | undefined;
     title?: string;
     year?: number;
     rating?: number;
@@ -261,10 +261,15 @@ function Home() {
     screenwriter?: string;
     spotify?: string;
   }
+  
+  interface Cast {
+    name?: string;
+  }
 
+  const dramasCollectionRef = collection(db, 'dramas');
   const [isLoading, setIsLoading] = useState(false);
   const [dramas, setDramas] = useState<Drama[]>([]);
-  const dramasCollectionRef = collection(db, 'dramas');
+  const [cast, setCast] = useState<Cast[]>([]);
   const [genre, setGenre] = useState<string[]>([]);
   const [order, setOrder] = useState('');
   const [year, setYear] = useState<number[]>([]);
@@ -282,6 +287,22 @@ function Home() {
 
     getDramas();
   }, []);
+
+  useEffect(() => {
+    const getCasts = async () => {
+      const dramaId = dramaCard?.id;
+      if (dramaId) {
+        const castsCollectionRef = collection(db, 'dramas', dramaId, 'cast');
+        const castSnapshot = await getDocs(castsCollectionRef);
+        const castArr:any = []
+        castSnapshot.forEach((doc) => {
+          castArr.push(doc.data())
+        });
+        setCast(castArr)
+      }
+    };
+    getCasts();
+  }, [dramaCard]);
 
   function handleTypeFilter(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     setSelectedTypeFilter(e.currentTarget.textContent);
@@ -497,7 +518,7 @@ function Home() {
                       <DramaCardDescriptionTitle>
                         演員
                       </DramaCardDescriptionTitle>
-                      <DramaCardDescription>金宣虎 申敏兒</DramaCardDescription>
+                      <DramaCardDescription>{cast.map((cast)=> ` ${cast.name}`)}</DramaCardDescription>
                     </div>
                     <HandleListButton>＋加入片單</HandleListButton>
                     <CloseButton onClick={() => setDramaCard(undefined)}>
