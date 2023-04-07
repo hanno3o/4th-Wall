@@ -127,19 +127,84 @@ const Drama = styled.div`
 `;
 
 const DramaCard = styled.div`
-  width: 500px;
+  width: 1000px;
   transform: translate(-50%, -50%);
-  background: #000;
+  background: #2a2a2a;
   color: #fff;
-  position: absolute;
-  left: 50%;
-  top: 45%;
+  position: fixed;
+  left: 50vw;
+  top: 50vh;
   border-radius: 10px;
-  opacity: 0.8;
-  padding: 20px;
-  display: none;
+  opacity: 0.9;
+  padding: 60px 40px;
+  display: block;
 `;
 
+const DramaCardMainInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const DramaCardTitle = styled.div`
+  font-size: 26px;
+  font-weight: 900;
+`;
+
+const DramaCardSubTitle = styled.div`
+  font-size: 16px;
+  color: #afafaf;
+  font-weight: 500;
+`;
+
+const DramaCardType = styled.div`
+  font-size: 14px;
+  color: #fff;
+  margin-top: 2px;
+  font-weight: 900;
+`;
+
+const DramaCardRating = styled.div`
+  font-size: 18px;
+  color: #fff;
+  font-weight: 900;
+`;
+
+const DramaCardDescriptionWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const DramaCardDescriptionTitle = styled.div`
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 22px;
+`;
+
+const DramaCardDescription = styled.div`
+  font-size: 12px;
+  font-weight: 400;
+  margin-bottom: 8px;
+  line-height: 18px;
+`;
+
+const HandleListButton = styled.button`
+  font-size: 16px;
+  color: #fff;
+  border: solid 1px #fff;
+  padding: 5px;
+  font-weight: 700;
+  position: absolute;
+  top: 60px;
+  right: 40px;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-weight: 900;
+`;
 interface TypeFilterProps {
   selectedTypeFilter?: string | null;
 }
@@ -183,7 +248,7 @@ function Home() {
     ],
   };
   interface Drama {
-    id: string;
+    id?: string | undefined;
     title?: string;
     year?: number;
     rating?: number;
@@ -194,17 +259,24 @@ function Home() {
     story?: string;
     director?: string;
     screenwriter?: string;
+    spotify?: string;
+  }
+  
+  interface Cast {
+    name?: string;
   }
 
+  const dramasCollectionRef = collection(db, 'dramas');
   const [isLoading, setIsLoading] = useState(false);
   const [dramas, setDramas] = useState<Drama[]>([]);
-  const dramasCollectionRef = collection(db, 'dramas');
+  const [cast, setCast] = useState<Cast[]>([]);
   const [genre, setGenre] = useState<string[]>([]);
   const [order, setOrder] = useState('');
   const [year, setYear] = useState<number[]>([]);
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string | null>(
     '所有影集'
   );
+  const [dramaCard, setDramaCard] = useState<Drama>();
 
   useEffect(() => {
     const getDramas = async () => {
@@ -215,6 +287,22 @@ function Home() {
 
     getDramas();
   }, []);
+
+  useEffect(() => {
+    const getCasts = async () => {
+      const dramaId = dramaCard?.id;
+      if (dramaId) {
+        const castsCollectionRef = collection(db, 'dramas', dramaId, 'cast');
+        const castSnapshot = await getDocs(castsCollectionRef);
+        const castArr:any = []
+        castSnapshot.forEach((doc) => {
+          castArr.push(doc.data())
+        });
+        setCast(castArr)
+      }
+    };
+    getCasts();
+  }, [dramaCard]);
 
   function handleTypeFilter(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     setSelectedTypeFilter(e.currentTarget.textContent);
@@ -254,6 +342,10 @@ function Home() {
     }
   }
 
+  function handleDramaCard(drama: Drama) {
+    setDramaCard(drama);
+  }
+
   const filteredByTypeDramas =
     selectedTypeFilter !== '所有影集'
       ? dramas.filter((drama) => drama.type === selectedTypeFilter)
@@ -287,8 +379,6 @@ function Home() {
       }
       return 0;
     });
-
-  console.log(`類型：${genre} 排序：${order} 年份：${year}`);
 
   return (
     <Wrapper>
@@ -338,6 +428,7 @@ function Home() {
           filteredByMultiFiltersDramas.map((drama, index) => {
             return (
               <Drama
+                onClick={() => handleDramaCard(drama)}
                 key={index}
                 style={{
                   backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
@@ -351,40 +442,129 @@ function Home() {
               </Drama>
             );
           })}
-        <DramaCard>
+        <DramaCard style={{ display: dramaCard ? 'block' : 'none' }}>
           {isLoading && (
-            <>
-              <img
-                className="w-24 h-36 mb-8"
-                src={dramas[0].image}
-                alt=""
-              ></img>
-              <div>{dramas[0].title}</div>
-              <div>{dramas[0].eng}</div>
-              <div>{dramas[0].year}</div>
-              <div>
-                {dramas[0].type} | {dramas[0].year} | {dramas[0].genre}
+            <div style={{ display: 'flex' }}>
+              <div style={{ width: '300px' }}>
+                <div style={{ fontSize: '20px', fontWeight: '700' }}>
+                  評論區
+                </div>
+                <div>
+                  <div style={{ marginTop: '10px' }}>☆☆☆☆☆</div>
+                  <input
+                    type="text"
+                    placeholder={`留下你對 ${dramaCard?.title} 的評論！`}
+                    style={{
+                      width: '260px',
+                      marginTop: '10px',
+                      fontSize: '12px',
+                      color: '#000',
+                      padding: '10px',
+                    }}
+                  />
+                </div>
+                <div
+                  style={{
+                    marginTop: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                  }}
+                >
+                  <div>ffuri ★★★☆☆ 3/27</div>
+                  <div>hanny ★★★★☆ 3/29</div>
+                  <div>wendy ★★★★☆ 4/1</div>
+                  <div>joy1215 ★★★★☆ 4/2</div>
+                </div>
               </div>
-              <div>{dramas[0].rating}/5</div>
-              <div>已有 106 人留下評價</div>
-              <button>加入片單</button>
-              <div>編劇</div>
-              <div>{dramas[0].screenwriter}</div>
-              <div>導演</div>
-              <div>{dramas[0].director}</div>
-              <div>演員</div>
-              <div>金宣虎 申敏兒</div>
-              <div>劇情大綱</div>
-              <div>{dramas[0].story}</div>
-              <div>集數熱度</div>
-              <div>原聲帶</div>
-              <div>留下你對 {dramas[0].title} 的評論！</div>
-              <div>☆☆☆☆☆</div>
-              <div>ffuri ★★★☆☆ 3/27</div>
-              <div>hanny ★★★★☆ 3/29</div>
-              <div>wendy ★★★★☆ 4/1</div>
-              <div>joy1215 ★★★★☆ 4/2</div>
-            </>
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '20px',
+                  }}
+                >
+                  <img
+                    className="w-48 h-70 mb-8"
+                    style={{
+                      objectFit: 'cover',
+                    }}
+                    src={dramaCard?.image}
+                    alt=""
+                  ></img>
+                  <DramaCardMainInfo>
+                    <DramaCardTitle>{dramaCard?.title}</DramaCardTitle>
+                    <DramaCardSubTitle>{dramaCard?.eng}</DramaCardSubTitle>
+                    <DramaCardType>
+                      {dramaCard?.type} | {dramaCard?.year} | {dramaCard?.genre}
+                    </DramaCardType>
+                    <DramaCardRating>{dramaCard?.rating}/5</DramaCardRating>
+                    <DramaCardDescription>
+                      已有 106 人留下評價
+                    </DramaCardDescription>
+                    <div>
+                      <DramaCardDescriptionTitle>
+                        編劇
+                      </DramaCardDescriptionTitle>
+                      <DramaCardDescription>
+                        {dramaCard?.screenwriter}
+                      </DramaCardDescription>
+                      <DramaCardDescriptionTitle>
+                        導演
+                      </DramaCardDescriptionTitle>
+                      <DramaCardDescription>
+                        {dramaCard?.director}
+                      </DramaCardDescription>
+                      <DramaCardDescriptionTitle>
+                        演員
+                      </DramaCardDescriptionTitle>
+                      <DramaCardDescription>{cast.map((cast)=> ` ${cast.name}`)}</DramaCardDescription>
+                    </div>
+                    <HandleListButton>＋加入片單</HandleListButton>
+                    <CloseButton onClick={() => setDramaCard(undefined)}>
+                      ✕
+                    </CloseButton>
+                  </DramaCardMainInfo>
+                </div>
+                <DramaCardDescriptionWrapper>
+                  <div style={{ width: '315px' }}>
+                    <DramaCardDescriptionTitle>
+                      劇情大綱
+                    </DramaCardDescriptionTitle>
+                    <DramaCardDescription style={{ paddingRight: '22px' }}>
+                      {dramaCard?.story}
+                    </DramaCardDescription>
+                    <DramaCardDescriptionTitle>
+                      集數熱度
+                    </DramaCardDescriptionTitle>
+                    <DramaCardDescription>平均熱度：17/集</DramaCardDescription>
+                    <img
+                      style={{ width: '290px' }}
+                      src="https://book.gosu.bar/uploads/images/gallery/2019-12/qWqeJ5ZcX2DYL2rQ-%E5%9F%BA%E7%A4%8E%E6%8A%98%E7%B7%9A%E5%9C%96.png"
+                      alt=""
+                    />
+                    <div style={{ fontSize: '10px', marginTop: '10px' }}>
+                      （計算方式：論壇中相對集數之文章總和除以總集數）
+                    </div>
+                  </div>
+                  <div>
+                    <DramaCardDescriptionTitle>
+                      原聲帶
+                    </DramaCardDescriptionTitle>
+                    <iframe
+                      style={{ borderRadius: '12px', marginTop: '4px' }}
+                      src={dramaCard?.spotify}
+                      width="100%"
+                      height="352"
+                      frameBorder="0"
+                      allowFullScreen
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                    />
+                  </div>
+                </DramaCardDescriptionWrapper>
+              </div>
+            </div>
           )}
         </DramaCard>
       </DramasSection>
