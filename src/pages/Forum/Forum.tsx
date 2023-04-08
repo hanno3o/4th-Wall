@@ -1,5 +1,8 @@
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { db } from '../../config/firebase.config';
+import { collection, getDocs } from 'firebase/firestore';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -74,10 +77,45 @@ const Btn = styled(Link)`
   right: 30px;
 `;
 
+interface Article {
+  drama?: string;
+  title?: string;
+  author?: string;
+  episodes?: string;
+  content?: string;
+  type?: string;
+  date?: number | string | Date;
+  commentsNum?: number | string;
+}
+
 function Forum() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const articlesCollectionRef = collection(
+    db,
+    'forum',
+    'KoreanDrama',
+    'articles'
+  );
+
   const BoardData = {
     type: ['台劇版', '韓劇版', '動畫版', '美劇版'],
   };
+
+  useEffect(() => {
+    const getArticles = async () => {
+      const articleSnapShot = await getDocs(articlesCollectionRef);
+      setArticles(
+        articleSnapShot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        })) as Article[]
+      );
+      setIsLoading(true);
+    };
+
+    getArticles();
+  }, []);
 
   return (
     <Wrapper>
@@ -91,36 +129,21 @@ function Forum() {
       <hr className="my-4" />
       <Btn to="/post">Post</Btn>
       <Articles>
-        <Article to="/article">
-          <div>28</div>
-          <Title>[閒聊] 黑暗榮耀的女主角手法好像某個人</Title>
-          <div>ffuri</div>
-          <div>3/26</div>
-        </Article>
-        <Article to="/article">
-          <div>72</div>
-          <Title>[徵文] 2016 明星韓劇-孤單又燦爛的神 鬼怪</Title>
-          <div>fifi</div>
-          <div>3/25</div>
-        </Article>
-        <Article to="/article">
-          <div>72</div>
-          <Title>[心得] 重看2521才是正確打開這部韓劇的方式</Title>
-          <div>tftt</div>
-          <div>3/24</div>
-        </Article>
-        <Article to="/article">
-          <div>89</div>
-          <Title>[新聞] 李到晛鬆口談《黑暗榮耀》第三季去向！</Title>
-          <div>jinnit</div>
-          <div>3/24</div>
-        </Article>
-        <Article to="/article">
-          <div>💥</div>
-          <Title>[LIVE] Law School/法學院 EP08</Title>
-          <div>kkuri</div>
-          <div>3/22</div>
-        </Article>
+        {isLoading &&
+          articles.map((article, index) => {
+            return (
+              <Article to="/article" key={index}>
+                <div>{article.commentsNum}</div>
+                <Title>
+                  [{article.type}] {article.title}
+                </Title>
+                <div>{article.author}</div>
+                <div>
+                  {article.date && new Date(article.date).toLocaleString()}
+                </div>
+              </Article>
+            );
+          })}
         <Pagination>◀ 1 2 3 4 ▶</Pagination>
       </Articles>
     </Wrapper>
