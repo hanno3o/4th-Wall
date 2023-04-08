@@ -54,6 +54,7 @@ const Article = styled(Link)`
 const Title = styled.div`
   text-align: left;
   font-weight: 700;
+  width: 360px;
 `;
 
 const Pagination = styled.div`
@@ -137,7 +138,9 @@ function Forum() {
                 <Title>
                   [{article.type}] {article.title}
                 </Title>
-                <div>{article.author}</div>
+                <div style={{ textAlign: 'left', width: '50px' }}>
+                  {article.author}
+                </div>
                 <div>
                   {article.date && new Date(article.date).toLocaleString()}
                 </div>

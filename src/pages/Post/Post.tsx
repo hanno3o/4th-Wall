@@ -34,21 +34,6 @@ const Input = styled.input`
   margin-bottom: 10px;
 `;
 
-const Btn = styled(Link)`
-  background-color: #000;
-  color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 50px;
-  width: 50px;
-  font-size: 12px;
-  border-radius: 50%;
-  position: absolute;
-  bottom: 100px;
-  right: 30px;
-`;
-
 function Post() {
   const [episode, setEpisode] = useState('');
   const [drama, setDrama] = useState('');
