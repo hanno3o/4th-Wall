@@ -85,7 +85,7 @@ interface Article {
   episodes?: string;
   content?: string;
   type?: string;
-  date?: number | string | Date;
+  date?: Date;
   commentsNum?: number | string;
 }
 
@@ -131,22 +131,30 @@ function Forum() {
       <Btn to="/post">Post</Btn>
       <Articles>
         {isLoading &&
-          articles.map((article, index) => {
-            return (
-              <Article to="/article" key={index}>
-                <div>{article.commentsNum}</div>
-                <Title>
-                  [{article.type}] {article.title}
-                </Title>
-                <div style={{ textAlign: 'left', width: '50px' }}>
-                  {article.author}
-                </div>
-                <div>
-                  {article.date && new Date(article.date).toLocaleString()}
-                </div>
-              </Article>
-            );
-          })}
+          articles
+            .sort((a, b) => {
+              if (a.date && b.date) {
+                return new Date(b.date).getTime() - new Date(a.date).getTime();
+              } else {
+                return 0;
+              }
+            })
+            .map((article, index) => {
+              return (
+                <Article to="/article" key={index}>
+                  <div>{article.commentsNum}</div>
+                  <Title>
+                    [{article.type}] {article.title}
+                  </Title>
+                  <div style={{ textAlign: 'left', width: '50px' }}>
+                    {article.author}
+                  </div>
+                  <div>
+                    {article.date && new Date(article.date).toLocaleString()}
+                  </div>
+                </Article>
+              );
+            })}
         <Pagination>◀ 1 2 3 4 ▶</Pagination>
       </Articles>
     </Wrapper>
