@@ -70,9 +70,11 @@ function Post() {
           <option>LIVE</option>
           <option>新聞</option>
           <option>閒聊</option>
+          <option>問題</option>
         </Select>
       </SelectsWrapper>
-      <Input placeholder="標題"></Input>
+      <Input placeholder="今天想要討論哪一部劇呢？"></Input>
+      <Input placeholder="輸入文章標題"></Input>
       <MarkdownEditor />
       <Btn to="/forum">Publish</Btn>
     </Wrapper>

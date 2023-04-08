@@ -261,7 +261,7 @@ function Home() {
     screenwriter?: string;
     spotify?: string;
   }
-  
+
   interface Cast {
     name?: string;
   }
@@ -294,11 +294,11 @@ function Home() {
       if (dramaId) {
         const castsCollectionRef = collection(db, 'dramas', dramaId, 'cast');
         const castSnapshot = await getDocs(castsCollectionRef);
-        const castArr:any = []
+        const castArr: any = [];
         castSnapshot.forEach((doc) => {
-          castArr.push(doc.data())
+          castArr.push(doc.data());
         });
-        setCast(castArr)
+        setCast(castArr);
       }
     };
     getCasts();
@@ -518,7 +518,9 @@ function Home() {
                       <DramaCardDescriptionTitle>
                         演員
                       </DramaCardDescriptionTitle>
-                      <DramaCardDescription>{cast.map((cast)=> ` ${cast.name}`)}</DramaCardDescription>
+                      <DramaCardDescription>
+                        {cast.map((cast) => ` ${cast.name}`)}
+                      </DramaCardDescription>
                     </div>
                     <HandleListButton>＋加入片單</HandleListButton>
                     <CloseButton onClick={() => setDramaCard(undefined)}>
