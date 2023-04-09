@@ -1,3 +1,3 @@
-import Article from './Article';
+import IArticle from './Article';
 
-export default Article;
+export default IArticle;

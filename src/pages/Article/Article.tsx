@@ -31,7 +31,7 @@ const Info = styled.div`
   gap: 30px;
 `;
 
-interface Article {
+interface IArticle {
   drama?: string;
   title?: string;
   author?: string;
@@ -44,7 +44,7 @@ interface Article {
 function Article() {
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
-  const [article, setArticle] = useState<Article>();
+  const [article, setArticle] = useState<IArticle>();
   const articleRef = id
     ? doc(db, 'forum', 'KoreanDrama', 'articles', id)
     : undefined;
@@ -53,13 +53,13 @@ function Article() {
     async function getArticle() {
       if (articleRef) {
         const articleSnapshot = await getDoc(articleRef);
-        setArticle(articleSnapshot.data() as Article);
+        setArticle(articleSnapshot.data() as IArticle);
         setIsLoading(false);
       }
     }
     getArticle();
-  }, [id, articleRef]);
-  console.log(article);
+  }, [id]);
+  
   return (
     <Wrapper>
       {isLoading && <p>loading...</p>}

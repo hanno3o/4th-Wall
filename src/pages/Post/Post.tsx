@@ -96,7 +96,7 @@ function Post() {
           await addDoc(collection(db, 'forum', 'KoreanDrama', 'articles'), {
             author: 'jennifer881030',
             type: type,
-            epiosode: episode,
+            episode: episode,
             drama: drama,
             title: title,
             content: content,

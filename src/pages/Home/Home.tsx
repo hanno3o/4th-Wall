@@ -247,7 +247,7 @@ function Home() {
       },
     ],
   };
-  interface Drama {
+  interface IDrama {
     id?: string | undefined;
     title?: string;
     year?: number;
@@ -260,23 +260,23 @@ function Home() {
     director?: string;
     screenwriter?: string;
     spotify?: string;
+    episodes?: number;
   }
-
-  interface Cast {
+  interface ICast {
     name?: string;
   }
 
   const dramasCollectionRef = collection(db, 'dramas');
   const [isLoading, setIsLoading] = useState(false);
-  const [dramas, setDramas] = useState<Drama[]>([]);
-  const [cast, setCast] = useState<Cast[]>([]);
+  const [dramas, setDramas] = useState<IDrama[]>([]);
+  const [cast, setCast] = useState<ICast[]>([]);
   const [genre, setGenre] = useState<string[]>([]);
   const [order, setOrder] = useState('');
   const [year, setYear] = useState<number[]>([]);
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string | null>(
     '所有影集'
   );
-  const [dramaCard, setDramaCard] = useState<Drama>();
+  const [dramaCard, setDramaCard] = useState<IDrama>();
 
   useEffect(() => {
     const getDramas = async () => {
@@ -286,7 +286,7 @@ function Home() {
     };
 
     getDramas();
-  }, []);
+  }, [dramasCollectionRef]);
 
   useEffect(() => {
     const getCasts = async () => {
@@ -342,7 +342,7 @@ function Home() {
     }
   }
 
-  function handleDramaCard(drama: Drama) {
+  function handleDramaCard(drama: IDrama) {
     setDramaCard(drama);
   }
 
@@ -536,6 +536,10 @@ function Home() {
                     <DramaCardDescription style={{ paddingRight: '22px' }}>
                       {dramaCard?.story}
                     </DramaCardDescription>
+                    <DramaCardDescriptionTitle>集數</DramaCardDescriptionTitle>
+                    <DramaCardDescription>
+                      共 {dramaCard?.episodes} 集
+                    </DramaCardDescription>
                     <DramaCardDescriptionTitle>
                       集數熱度
                     </DramaCardDescriptionTitle>
@@ -554,11 +558,11 @@ function Home() {
                       原聲帶
                     </DramaCardDescriptionTitle>
                     <iframe
+                      title="Spotify"
                       style={{ borderRadius: '12px', marginTop: '4px' }}
                       src={dramaCard?.spotify}
                       width="100%"
                       height="352"
-                      frameBorder="0"
                       allowFullScreen
                       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                       loading="lazy"

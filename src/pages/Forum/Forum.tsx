@@ -43,7 +43,7 @@ const Articles = styled.div`
 `;
 
 const Article = styled(Link)`
-  background-color: #b8b8b8;
+  background-color: #dfdfdf;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -78,7 +78,7 @@ const Btn = styled(Link)`
   right: 30px;
 `;
 
-interface Articles {
+interface IArticles {
   id?: string;
   drama?: string;
   title?: string;
@@ -92,7 +92,7 @@ interface Articles {
 
 function Forum() {
   const [isLoading, setIsLoading] = useState(false);
-  const [articles, setArticles] = useState<Articles[]>([]);
+  const [articles, setArticles] = useState<IArticles[]>([]);
   const articlesCollectionRef = collection(
     db,
     'forum',
@@ -111,13 +111,13 @@ function Forum() {
         articleSnapShot.docs.map((doc) => ({
           ...doc.data(),
           id: doc.id,
-        })) as Articles[]
+        })) as IArticles[]
       );
       setIsLoading(true);
     };
 
     getArticles();
-  }, []);
+  }, [articlesCollectionRef]);
 
   return (
     <Wrapper>
