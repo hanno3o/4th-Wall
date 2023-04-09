@@ -5,11 +5,11 @@ import { db } from '../../config/firebase.config';
 import { collection, getDocs } from 'firebase/firestore';
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 75%;
   padding: 50px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  margin: 0 auto;
 `;
 
 const WelcomeMessage = styled.div`
@@ -28,11 +28,24 @@ const SearchBar = styled.input`
 `;
 
 const Boards = styled.div`
+  cursor: pointer;
   display: flex;
-  margin-top: 40px;
-  gap: 30px;
+  margin-top: 30px;
   font-weight: 500;
   align-items: center;
+  gap: 8px;
+`;
+
+const Board = styled.div<ISelectedBoardProps>`
+  font-weight: 500;
+  height: 30px;
+  padding: 0 8px 8px;
+  ${(props) =>
+    props.selectedBoard &&
+    props.selectedBoard.includes(props.children as string) &&
+    `
+    border-bottom: #3f3a3a 4px solid;
+    `}
 `;
 
 const Articles = styled.div`
@@ -92,9 +105,13 @@ interface IArticles {
   commentsNum?: number | string;
 }
 
+interface ISelectedBoardProps {
+  selectedBoard?: string | null;
+}
+
 function Forum() {
-  const BoardData = {
-    type: ['台劇版', '韓劇版', '動畫版', '美劇版'],
+  const BoardsData = {
+    boards: ['台劇版', '韓劇版', '日劇版', '美劇版', '陸劇版'],
   };
   const articlesCollectionRef = collection(
     db,
@@ -104,6 +121,7 @@ function Forum() {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [articles, setArticles] = useState<IArticles[]>([]);
+  const [selectedBoard, setSelectedBoard] = useState<string | null>('台劇版');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 10;
   const totalPages = Math.ceil(articles.length / PAGE_SIZE);
@@ -121,6 +139,12 @@ function Forum() {
     setCurrentPage(pageNumber);
   };
 
+  const handleSwitchBoards = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    setSelectedBoard(e.currentTarget.textContent);
+  };
+
   useEffect(() => {
     const getArticles = async () => {
       const articleSnapShot = await getDocs(articlesCollectionRef);
@@ -132,20 +156,27 @@ function Forum() {
       );
       setIsLoading(true);
     };
-
     getArticles();
-  }, [articlesCollectionRef]);
+  }, []);
 
   return (
     <Wrapper>
       <WelcomeMessage>歡迎來到 4th forum 一起討論戲劇！</WelcomeMessage>
       <SearchBar type="text" placeholder="請輸入想要查找的文章標題" />
       <Boards>
-        {BoardData.type.map((type) => {
-          return <div>{type}</div>;
+        {BoardsData.boards.map((board, index) => {
+          return (
+            <Board
+              key={index}
+              onClick={handleSwitchBoards}
+              selectedBoard={selectedBoard}
+            >
+              {board}
+            </Board>
+          );
         })}
       </Boards>
-      <hr className="my-4" />
+      <hr className="mb-3" />
       <Btn to="/post">Post</Btn>
       <Articles>
         {isLoading &&
