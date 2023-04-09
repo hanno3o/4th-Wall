@@ -78,7 +78,8 @@ const Btn = styled(Link)`
   right: 30px;
 `;
 
-interface Article {
+interface Articles {
+  id?: string;
   drama?: string;
   title?: string;
   author?: string;
@@ -91,7 +92,7 @@ interface Article {
 
 function Forum() {
   const [isLoading, setIsLoading] = useState(false);
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<Articles[]>([]);
   const articlesCollectionRef = collection(
     db,
     'forum',
@@ -110,7 +111,7 @@ function Forum() {
         articleSnapShot.docs.map((doc) => ({
           ...doc.data(),
           id: doc.id,
-        })) as Article[]
+        })) as Articles[]
       );
       setIsLoading(true);
     };
@@ -139,9 +140,9 @@ function Forum() {
                 return 0;
               }
             })
-            .map((article, index) => {
+            .map((article) => {
               return (
-                <Article to="/article" key={index}>
+                <Article to={`/article/${article.id}`} key={article.id}>
                   <div>{article.commentsNum}</div>
                   <Title>
                     [{article.type}] {article.title}
