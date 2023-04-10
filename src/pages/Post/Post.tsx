@@ -1,6 +1,10 @@
 import styled from 'styled-components';
-import MarkdownEditor from '../../components/Markdown';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { db } from '../../config/firebase.config';
+import { collection, addDoc } from 'firebase/firestore';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -30,26 +34,20 @@ const Input = styled.input`
   margin-bottom: 10px;
 `;
 
-const Btn = styled(Link)`
-  background-color: #000;
-  color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 50px;
-  width: 50px;
-  font-size: 12px;
-  border-radius: 50%;
-  position: absolute;
-  bottom: 100px;
-  right: 30px;
-`;
-
 function Post() {
+  const [episode, setEpisode] = useState('');
+  const [drama, setDrama] = useState('');
+  const [type, setType] = useState('');
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+
   return (
     <Wrapper>
       <SelectsWrapper>
-        <Select name="episodes">
+        <Select
+          name="episodes"
+          onChange={(e) => setEpisode(e.currentTarget.value)}
+        >
           <option value="none" selected disabled hidden>
             請選擇全集或特定集數
           </option>
@@ -62,7 +60,7 @@ function Post() {
           <option>6</option>
           <option>7</option>
         </Select>
-        <Select name="type">
+        <Select name="type" onChange={(e) => setType(e.currentTarget.value)}>
           <option value="none" selected disabled hidden>
             發文類別
           </option>
@@ -70,11 +68,45 @@ function Post() {
           <option>LIVE</option>
           <option>新聞</option>
           <option>閒聊</option>
+          <option>問題</option>
         </Select>
       </SelectsWrapper>
-      <Input placeholder="標題"></Input>
-      <MarkdownEditor />
-      <Btn to="/forum">Publish</Btn>
+      <Input
+        placeholder="今天想要討論哪一部劇呢？"
+        onChange={(e) => setDrama(e.currentTarget.value)}
+      ></Input>
+      <Input
+        placeholder="輸入文章標題"
+        onChange={(e) => setTitle(e.currentTarget.value)}
+      ></Input>
+      <ReactQuill theme="snow" value={content} onChange={setContent} />
+      <Link
+        style={{
+          color: '#fff',
+          fontWeight: '900',
+          backgroundColor: '#000',
+          width: '100px',
+          padding: '10px',
+          margin: '0 auto',
+          marginTop: '20px',
+          textAlign: 'center',
+        }}
+        to="/forum"
+        onClick={async () => {
+          await addDoc(collection(db, 'forum', 'KoreanDrama', 'articles'), {
+            author: 'jennifer881030',
+            type: type,
+            episode: episode,
+            drama: drama,
+            title: title,
+            content: content,
+            date: Date.now(),
+            commentsNum: '🔥',
+          });
+        }}
+      >
+        發文
+      </Link>
     </Wrapper>
   );
 }
