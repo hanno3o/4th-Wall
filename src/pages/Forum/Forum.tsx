@@ -143,6 +143,17 @@ function Forum() {
   };
 
   useEffect(() => {
+    if (boardName === 'TaiwanDrama') {
+      setSelectedBoard('台劇版');
+    } else if (boardName === 'KoreanDrama') {
+      setSelectedBoard('韓劇版');
+    } else if (boardName === 'JapaneseDrama') {
+      setSelectedBoard('日劇版');
+    } else if (boardName === 'AmericanDrama') {
+      setSelectedBoard('美劇版');
+    } else if (boardName === 'ChinaDrama') {
+      setSelectedBoard('陸劇版');
+    }
     setBoard(boardName ? boardName : 'TaiwanDrama');
     const articlesCollectionRef = collection(db, 'forum', board, 'articles');
     const getArticles = async () => {
