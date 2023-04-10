@@ -42,11 +42,11 @@ interface IArticle {
 }
 
 function Article() {
-  const { id } = useParams();
+  const { boardName, id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
-  const articleRef = id
-    ? doc(db, 'forum', 'KoreanDrama', 'articles', id)
+  const articleRef = id && boardName
+    ? doc(db, 'forum', boardName, 'articles', id)
     : undefined;
 
   useEffect(() => {
@@ -58,7 +58,7 @@ function Article() {
       }
     }
     getArticle();
-  }, [id]);
+  }, []);
   
   return (
     <Wrapper>

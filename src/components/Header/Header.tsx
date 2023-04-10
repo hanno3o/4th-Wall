@@ -10,7 +10,7 @@ function Header() {
         4ᴛʜ ᴡᴀʟʟ¨̮
       </Link>
       <div className="p-2 flex gap-4">
-        <Link to="/forum">Forum</Link>
+        <Link to="/forum/TaiwanDrama">Forum</Link>
         <Link to="/profile">profile</Link>
         <button onClick={() => signOut(auth)}>logout</button>
       </div>

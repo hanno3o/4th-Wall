@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { db } from '../../config/firebase.config';
 import { collection, getDocs } from 'firebase/firestore';
 
@@ -36,7 +36,7 @@ const Boards = styled.div`
   gap: 8px;
 `;
 
-const Board = styled.div<ISelectedBoardProps>`
+const Board = styled(Link)<ISelectedBoardProps>`
   font-weight: 500;
   height: 30px;
   padding: 0 8px 8px;
@@ -106,22 +106,25 @@ interface IArticles {
 }
 
 interface ISelectedBoardProps {
-  selectedBoard?: string | null;
+  selectedBoard?: string | undefined;
+  boardName?: string | undefined;
 }
 
 function Forum() {
+  const { boardName } = useParams();
   const BoardsData = {
-    boards: ['台劇版', '韓劇版', '日劇版', '美劇版', '陸劇版'],
+    boards: [
+      { Chinese: '台劇版', English: 'TaiwanDrama' },
+      { Chinese: '韓劇版', English: 'KoreanDrama' },
+      { Chinese: '日劇版', English: 'JapaneseDrama' },
+      { Chinese: '美劇版', English: 'AmericanDrama' },
+      { Chinese: '陸劇版', English: 'ChinaDrama' },
+    ],
   };
-  const articlesCollectionRef = collection(
-    db,
-    'forum',
-    'KoreanDrama',
-    'articles'
-  );
   const [isLoading, setIsLoading] = useState(false);
   const [articles, setArticles] = useState<IArticles[]>([]);
-  const [selectedBoard, setSelectedBoard] = useState<string | null>('台劇版');
+  const [selectedBoard, setSelectedBoard] = useState<string | undefined>('');
+  const [board, setBoard] = useState<string>('TaiwanDrama');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 10;
   const totalPages = Math.ceil(articles.length / PAGE_SIZE);
@@ -139,13 +142,9 @@ function Forum() {
     setCurrentPage(pageNumber);
   };
 
-  const handleSwitchBoards = (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => {
-    setSelectedBoard(e.currentTarget.textContent);
-  };
-
   useEffect(() => {
+    setBoard(boardName ? boardName : 'TaiwanDrama');
+    const articlesCollectionRef = collection(db, 'forum', board, 'articles');
     const getArticles = async () => {
       const articleSnapShot = await getDocs(articlesCollectionRef);
       setArticles(
@@ -156,8 +155,9 @@ function Forum() {
       );
       setIsLoading(true);
     };
+
     getArticles();
-  }, []);
+  }, [board]);
 
   return (
     <Wrapper>
@@ -168,10 +168,14 @@ function Forum() {
           return (
             <Board
               key={index}
-              onClick={handleSwitchBoards}
+              to={`/forum/${board.English}`}
+              onClick={() => {
+                setSelectedBoard(board.Chinese);
+                setBoard(board.English);
+              }}
               selectedBoard={selectedBoard}
             >
-              {board}
+              {board.Chinese}
             </Board>
           );
         })}
@@ -182,7 +186,10 @@ function Forum() {
         {isLoading &&
           currentPageArticles.map((article) => {
             return (
-              <Article to={`/article/${article.id}`} key={article.id}>
+              <Article
+                to={`/forum/${boardName}/article/${article.id}`}
+                key={article.id}
+              >
                 <div>{article.commentsNum}</div>
                 <Title>
                   [{article.type}] {article.title}

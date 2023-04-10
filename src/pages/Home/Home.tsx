@@ -286,7 +286,7 @@ function Home() {
     };
 
     getDramas();
-  }, [dramasCollectionRef]);
+  }, []);
 
   useEffect(() => {
     const getCasts = async () => {
