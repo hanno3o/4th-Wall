@@ -4,7 +4,6 @@ import './index.css';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import firebaseConfig from './config/firebase.config';
-import AuthRoute from './components/AuthRoute';
 // import { Provider } from 'react-redux';
 // import { store } from './app/store';
 
@@ -26,14 +25,7 @@ root.render(
     <Routes>
       {/* <Provider store={store}> */}
       <Route path="/" element={<App />}>
-        <Route
-          index
-          element={
-            <AuthRoute>
-              <Home />
-            </AuthRoute>
-          }
-        />
+        <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
         <Route path="forum/:boardName" element={<Forum />} />
         <Route path="forum/:boardName/article/:id" element={<Article />} />
