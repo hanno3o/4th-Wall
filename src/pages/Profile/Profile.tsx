@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { useAppSelector } from '../../redux/hooks';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -97,6 +98,8 @@ const Drama = styled.div`
 `;
 
 function Profile() {
+  const userName = useAppSelector((state) => state.auth.userName);
+  const avatar = useAppSelector((state) => state.auth.avatar);
   const recordData = [
     { title: '使用天數', data: 526 },
     { title: '已收藏的劇', data: 16 },
@@ -109,9 +112,9 @@ function Profile() {
   return (
     <Wrapper>
       <UserProfile>
-        <UserImage></UserImage>
+        {avatar && <UserImage src={avatar} alt="" />}
         <UserInfo>
-          <UserName>hanno3o</UserName>
+          <UserName>{userName}</UserName>
           <Records>
             {recordData.map((record) => {
               return (
