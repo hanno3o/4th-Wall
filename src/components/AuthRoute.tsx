@@ -3,14 +3,11 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebase.config';
 import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '../redux/hooks';
+import { setUserInfo } from '../redux/reducers/authSlice';
 
 export interface AuthRouteProps {
   children?: React.ReactNode;
-}
-interface IUserInfo {
-  email?: string | null;
-  username?: string | null;
-  avatar?: string | null;
 }
 
 const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
@@ -18,7 +15,7 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
   const auth = getAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [userInfo, setUserInfo] = useState<IUserInfo>();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const AuthCheck = onAuthStateChanged(auth, async (user) => {
@@ -26,17 +23,20 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
         const userRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userRef);
         if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setUserInfo(userData);
+          const userData = userDoc.data() as {
+            avatar: string | null;
+            email: string | null;
+            userName: string | null;
+          };
+          dispatch(setUserInfo(userData));
         } else {
           const userData = {
             email: user.email,
-            username: user.displayName,
+            userName: user.displayName,
             avatar: user.photoURL,
           };
-
           await setDoc(userRef, userData);
-          setUserInfo(userData);
+          dispatch(setUserInfo(userData));
         }
         setIsLoading(false);
       } else {

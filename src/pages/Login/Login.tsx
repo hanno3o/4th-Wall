@@ -95,16 +95,17 @@ function Login() {
   const [authing, setAuthing] = useState(false);
   const signInWithGoogle = async () => {
     setAuthing(true);
+    signInWithPopup(auth, new GoogleAuthProvider())
+      .then((res) => {
+        console.log(res.user.uid);
+        navigate('/');
+      })
+      .catch((err) => {
+        console.log(err);
+        setAuthing(false);
+      });
   };
-  signInWithPopup(auth, new GoogleAuthProvider())
-    .then((res) => {
-      console.log(res.user.uid);
-      navigate('/');
-    })
-    .catch((err) => {
-      console.log(err);
-      setAuthing(false);
-    });
+
   return (
     <Wrapper>
       <LoginWrap>
