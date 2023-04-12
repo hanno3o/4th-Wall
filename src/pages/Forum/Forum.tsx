@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Link, useParams } from 'react-router-dom';
 import { db } from '../../config/firebase.config';
 import { collection, getDocs } from 'firebase/firestore';
+import { useAppSelector } from '../../redux/hooks';
 
 const Wrapper = styled.div`
   width: 75%;
@@ -125,6 +126,7 @@ function Forum() {
   const [articles, setArticles] = useState<IArticles[]>([]);
   const [selectedBoard, setSelectedBoard] = useState<string | undefined>('');
   const [board, setBoard] = useState<string>('TaiwanDrama');
+  const userName = useAppSelector((state) => state.auth.userName);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 10;
   const totalPages = Math.ceil(articles.length / PAGE_SIZE);
@@ -192,7 +194,13 @@ function Forum() {
         })}
       </Boards>
       <hr className="mb-3" />
-      <Btn to="/post">Post</Btn>
+      {userName ? (
+        <Btn to="/post">Post</Btn>
+      ) : (
+        <Btn to="" onClick={() => alert('要先登入才能發布文章喔！')}>
+          Post
+        </Btn>
+      )}
       <Articles>
         {isLoading &&
           currentPageArticles.map((article) => {

@@ -7,26 +7,39 @@ function Header() {
   const auth = getAuth();
   const userName = useAppSelector((state) => state.auth.userName);
   const dispatch = useAppDispatch();
-
+  console.log(userName);
   return (
     <header className="bg-black text-white flex justify-between items-center h-20 px-10">
       <Link to="/home" className="font-bold">
         4ᴛʜ ᴡᴀʟʟ¨̮
       </Link>
       <div className="p-2 flex gap-4">
-        {userName && <div>Hello, {userName}</div>}
+        {userName && (
+          <>
+            <div>Hello, {userName}!</div>
+            <Link to="/profile">profile</Link>
+          </>
+        )}
         <Link to="/forum/TaiwanDrama">Forum</Link>
-        <Link to="/profile">profile</Link>
-        <button
-          onClick={() => {
-            signOut(auth);
-            dispatch(
-              setUserInfo({ avatar: null, email: null, userName: null,  registrationDate: null})
-            );
-          }}
-        >
-          logout
-        </button>
+        {userName ? (
+          <button
+            onClick={() => {
+              signOut(auth);
+              dispatch(
+                setUserInfo({
+                  avatar: null,
+                  email: null,
+                  userName: null,
+                  registrationDate: null,
+                })
+              );
+            }}
+          >
+            logout
+          </button>
+        ) : (
+          <Link to="/login">login</Link>
+        )}
       </div>
     </header>
   );
