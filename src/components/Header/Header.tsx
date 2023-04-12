@@ -21,7 +21,7 @@ function Header() {
           onClick={() => {
             signOut(auth);
             dispatch(
-              setUserInfo({ avatar: null, email: null, userName: null })
+              setUserInfo({ avatar: null, email: null, userName: null,  registrationDate: null})
             );
           }}
         >

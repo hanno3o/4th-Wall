@@ -6,6 +6,7 @@ export interface authState {
   email: string | null;
   userName: string | null;
   avatar: string | null;
+  registrationDate: number | null;
 }
 
 const initialState: authState = {
@@ -13,6 +14,7 @@ const initialState: authState = {
   email: '',
   userName: '',
   avatar: '',
+  registrationDate: NaN,
 };
 
 export const authSlice = createSlice({
@@ -25,11 +27,13 @@ export const authSlice = createSlice({
         avatar: string | null;
         email: string | null;
         userName: string | null;
+        registrationDate: number | null;
       }>
     ) => {
       state.email = action.payload.email;
       state.avatar = action.payload.avatar;
       state.userName = action.payload.userName;
+      state.registrationDate = action.payload.registrationDate;
     },
   },
 });
