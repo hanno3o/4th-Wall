@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { db } from '../../config/firebase.config';
 import { doc, getDoc } from 'firebase/firestore';
+import { useAppSelector } from '../../redux/hooks';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -42,12 +43,13 @@ interface IArticle {
 }
 
 function Article() {
+  const userName = useAppSelector((state) => state.auth.userName);
+  const avatar = useAppSelector((state) => state.auth.avatar);
   const { boardName, id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
-  const articleRef = id && boardName
-    ? doc(db, 'forum', boardName, 'articles', id)
-    : undefined;
+  const articleRef =
+    id && boardName ? doc(db, 'forum', boardName, 'articles', id) : undefined;
 
   useEffect(() => {
     async function getArticle() {
@@ -59,7 +61,7 @@ function Article() {
     }
     getArticle();
   }, []);
-  
+
   return (
     <Wrapper>
       {isLoading && <p>loading...</p>}
@@ -95,6 +97,43 @@ function Article() {
             <div className="flex justify-between w-full">
               <div>jpeg: 結果演員跟編劇想法不太一樣，這也是很妙XD</div>
               <div>03/28 00:34</div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '10px 0',
+                marginTop: '10px',
+              }}
+            >
+              {avatar && (
+                <img
+                  src={avatar}
+                  alt=""
+                  style={{ borderRadius: '50%', width: '40px', height: '40px' }}
+                />
+              )}
+              <input
+                type="text"
+                placeholder={
+                  userName
+                    ? '留言.......'
+                    : '要先登入才能使用論壇的討論功能喔！'
+                }
+                style={{
+                  cursor: 'text',
+                  height: '40px',
+                  width: '100%',
+                  fontSize: '16px',
+                  color: '#2a2a2a',
+                  padding: '8px',
+                  border: '#898989 solid 1px',
+                  borderRadius: '5px',
+                }}
+                disabled={!userName}
+              />
             </div>
           </div>
         </>

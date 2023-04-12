@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { useAppSelector } from '../../redux/hooks';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -97,8 +98,17 @@ const Drama = styled.div`
 `;
 
 function Profile() {
+  const userName = useAppSelector((state) => state.auth.userName);
+  const avatar = useAppSelector((state) => state.auth.avatar);
+  const registrationDate = useAppSelector(
+    (state) => state.auth.registrationDate
+  );
+  const today = new Date();
+  const timeDiff = registrationDate ? today.getTime() - registrationDate : 0;
+  const daysSinceRegistration = Math.floor(timeDiff / (1000 * 3600 * 24));
+
   const recordData = [
-    { title: '使用天數', data: 526 },
+    { title: '使用天數', data: daysSinceRegistration },
     { title: '已收藏的劇', data: 16 },
     { title: '發文數', data: 36 },
   ];
@@ -109,9 +119,9 @@ function Profile() {
   return (
     <Wrapper>
       <UserProfile>
-        <UserImage></UserImage>
+        {avatar && <UserImage src={avatar} alt="" />}
         <UserInfo>
-          <UserName>hanno3o</UserName>
+          <UserName>{userName}</UserName>
           <Records>
             {recordData.map((record) => {
               return (

@@ -4,9 +4,8 @@ import './index.css';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import firebaseConfig from './config/firebase.config';
-import AuthRoute from './components/AuthRoute';
-// import { Provider } from 'react-redux';
-// import { store } from './app/store';
+import { Provider } from 'react-redux';
+import { store } from './redux/store';
 
 import App from './App';
 import Login from './pages/Login';
@@ -22,26 +21,19 @@ const container = document.getElementById('root')!;
 const root = createRoot(container);
 
 root.render(
-  <BrowserRouter>
-    <Routes>
-      {/* <Provider store={store}> */}
-      <Route path="/" element={<App />}>
-        <Route
-          index
-          element={
-            <AuthRoute>
-              <Home />
-            </AuthRoute>
-          }
-        />
-        <Route path="login" element={<Login />} />
-        <Route path="forum/:boardName" element={<Forum />} />
-        <Route path="forum/:boardName/article/:id" element={<Article />} />
-        <Route path="post" element={<Post />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-      {/* </Provider> */}
-    </Routes>
-  </BrowserRouter>
+  <Provider store={store}>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />}>
+          <Route index element={<Home />} />
+          <Route path="login" element={<Login />} />
+          <Route path="forum/:boardName" element={<Forum />} />
+          <Route path="forum/:boardName/article/:id" element={<Article />} />
+          <Route path="post" element={<Post />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  </Provider>
 );

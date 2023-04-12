@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { createGlobalStyle } from 'styled-components';
 import { Reset } from 'styled-reset';
-
+import AuthRoute from './components/AuthRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -30,9 +30,11 @@ function App() {
     <>
       <Reset />
       <GlobalStyle />
-      <Header />
-      <Outlet />
-      <Footer />
+      <AuthRoute>
+        <Header />
+        <Outlet />
+        <Footer />
+      </AuthRoute>
     </>
   );
 }

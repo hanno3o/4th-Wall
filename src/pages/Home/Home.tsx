@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { db } from '../../config/firebase.config';
 import { collection, getDocs } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
+import { useAppSelector } from '../../redux/hooks';
 
 const Wrapper = styled.div`
   width: 75%;
@@ -124,6 +125,7 @@ const Drama = styled.div`
   align-items: flex-start;
   padding: 20px;
   background-size: cover;
+  position: relative;
 `;
 
 const DramaCard = styled.div`
@@ -197,6 +199,11 @@ const HandleListButton = styled.button`
   position: absolute;
   top: 60px;
   right: 40px;
+
+  &:hover {
+    background-color: #fff;
+    color: #2a2a2a;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -277,6 +284,7 @@ function Home() {
     '所有影集'
   );
   const [dramaCard, setDramaCard] = useState<IDrama>();
+  const userName = useAppSelector((state) => state.auth.userName);
 
   useEffect(() => {
     const getDramas = async () => {
@@ -453,14 +461,20 @@ function Home() {
                   <div style={{ marginTop: '10px' }}>☆☆☆☆☆</div>
                   <input
                     type="text"
-                    placeholder={`留下你對 ${dramaCard?.title} 的評論！`}
+                    placeholder={
+                      userName
+                        ? `留下你對 ${dramaCard?.title} 的評論！`
+                        : '要先登入才能使用評論功能喔！'
+                    }
                     style={{
+                      cursor: 'text',
                       width: '260px',
                       marginTop: '10px',
                       fontSize: '12px',
                       color: '#000',
                       padding: '10px',
                     }}
+                    disabled={!userName}
                   />
                 </div>
                 <div
@@ -522,7 +536,15 @@ function Home() {
                         {cast.map((cast) => ` ${cast.name}`)}
                       </DramaCardDescription>
                     </div>
-                    <HandleListButton>＋加入片單</HandleListButton>
+                    <HandleListButton
+                      onClick={() => {
+                        userName
+                          ? alert('已加入片單！')
+                          : alert('要先登入才能加入喜愛的戲劇到自己的片單喔！');
+                      }}
+                    >
+                      ＋加入片單
+                    </HandleListButton>
                     <CloseButton onClick={() => setDramaCard(undefined)}>
                       ✕
                     </CloseButton>
