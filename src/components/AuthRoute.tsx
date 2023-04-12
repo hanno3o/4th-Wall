@@ -24,6 +24,7 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
         const userDoc = await getDoc(userRef);
         if (userDoc.exists()) {
           const userData = userDoc.data() as {
+            id: string | null;
             avatar: string | null;
             email: string | null;
             userName: string | null;
@@ -32,6 +33,7 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
           dispatch(setUserInfo(userData));
         } else {
           const userData = {
+            id: user.uid,
             email: user.email,
             userName: user.displayName,
             avatar: user.photoURL,

@@ -3,6 +3,7 @@ import { RootState } from '../store';
 
 export interface authState {
   status: 'idle' | 'loading' | 'failed';
+  id: string | null;
   email: string | null;
   userName: string | null;
   avatar: string | null;
@@ -11,6 +12,7 @@ export interface authState {
 
 const initialState: authState = {
   status: 'idle',
+  id: '',
   email: '',
   userName: '',
   avatar: '',
@@ -24,12 +26,14 @@ export const authSlice = createSlice({
     setUserInfo: (
       state,
       action: PayloadAction<{
+        id: string | null;
         avatar: string | null;
         email: string | null;
         userName: string | null;
         registrationDate: number | null;
       }>
     ) => {
+      state.id = action.payload.id;
       state.email = action.payload.email;
       state.avatar = action.payload.avatar;
       state.userName = action.payload.userName;

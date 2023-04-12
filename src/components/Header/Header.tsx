@@ -7,7 +7,6 @@ function Header() {
   const auth = getAuth();
   const userName = useAppSelector((state) => state.auth.userName);
   const dispatch = useAppDispatch();
-  console.log(userName);
   return (
     <header className="bg-black text-white flex justify-between items-center h-20 px-10">
       <Link to="/home" className="font-bold">
@@ -27,6 +26,7 @@ function Header() {
               signOut(auth);
               dispatch(
                 setUserInfo({
+                  id: null,
                   avatar: null,
                   email: null,
                   userName: null,

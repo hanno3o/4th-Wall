@@ -112,7 +112,12 @@ function Article() {
                 <img
                   src={avatar}
                   alt=""
-                  style={{ borderRadius: '50%', width: '40px', height: '40px' }}
+                  style={{
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    objectFit: 'cover',
+                  }}
                 />
               )}
               <input

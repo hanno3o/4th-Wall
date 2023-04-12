@@ -1,5 +1,8 @@
 import styled from 'styled-components';
 import { useAppSelector } from '../../redux/hooks';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../../config/firebase.config';
+import { doc, updateDoc } from 'firebase/firestore';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -11,9 +14,11 @@ const Wrapper = styled.div`
 
 const UserProfile = styled.div`
   display: flex;
+  position: relative;
 `;
 
 const UserImage = styled.img`
+  object-fit: cover;
   background-color: #eee;
   width: 200px;
   height: 200px;
@@ -98,6 +103,7 @@ const Drama = styled.div`
 `;
 
 function Profile() {
+  const id = useAppSelector((state) => state.auth.id);
   const userName = useAppSelector((state) => state.auth.userName);
   const avatar = useAppSelector((state) => state.auth.avatar);
   const registrationDate = useAppSelector(
@@ -116,10 +122,45 @@ function Profile() {
     type: ['所有影集', '台劇', '韓劇', '動畫', '美劇'],
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const imageUrl = await uploadImage(file);
+    if (id) {
+      const userRef = doc(db, 'users', id);
+      await updateDoc(userRef, { avatar: imageUrl });
+    }
+  };
+
+  const uploadImage = async (file: any): Promise<string> => {
+    const storageRef = ref(storage, 'images/' + file.name);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+  };
+
   return (
     <Wrapper>
       <UserProfile>
         {avatar && <UserImage src={avatar} alt="" />}
+        <label
+          htmlFor="upload-file"
+          style={{
+            position: 'absolute',
+            bottom: '10px',
+            left: '150px',
+            fontSize: '32px',
+            cursor: 'pointer',
+          }}
+        >
+          ⬆️
+        </label>
+        <input
+          id="upload-file"
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={handleImageUpload}
+        />
         <UserInfo>
           <UserName>{userName}</UserName>
           <Records>
