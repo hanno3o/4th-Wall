@@ -1,8 +1,9 @@
 import styled from 'styled-components';
-import { useAppSelector } from '../../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../config/firebase.config';
 import { doc, updateDoc } from 'firebase/firestore';
+import { updateAvatar } from '../../redux/reducers/authSlice';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -106,13 +107,13 @@ function Profile() {
   const id = useAppSelector((state) => state.auth.id);
   const userName = useAppSelector((state) => state.auth.userName);
   const avatar = useAppSelector((state) => state.auth.avatar);
+  const dispatch = useAppDispatch();
   const registrationDate = useAppSelector(
     (state) => state.auth.registrationDate
   );
   const today = new Date();
   const timeDiff = registrationDate ? today.getTime() - registrationDate : 0;
   const daysSinceRegistration = Math.floor(timeDiff / (1000 * 3600 * 24));
-
   const recordData = [
     { title: '使用天數', data: daysSinceRegistration },
     { title: '已收藏的劇', data: 16 },
@@ -128,6 +129,7 @@ function Profile() {
     if (id) {
       const userRef = doc(db, 'users', id);
       await updateDoc(userRef, { avatar: imageUrl });
+      dispatch(updateAvatar(imageUrl));
     }
   };
 
