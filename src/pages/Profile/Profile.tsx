@@ -3,7 +3,8 @@ import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../config/firebase.config';
 import { doc, updateDoc } from 'firebase/firestore';
-import { updateAvatar } from '../../redux/reducers/authSlice';
+import { updateAvatar, updateUserName } from '../../redux/reducers/authSlice';
+import { useState } from 'react';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -33,9 +34,14 @@ const UserInfo = styled.div`
   padding: 40px;
 `;
 
-const UserName = styled.h2`
+const UserName = styled.input`
+  padding: 6px;
+  border: solid 1px transparent;
+  border-radius: 6px;
+  width: min-content;
   font-size: 42px;
   margin-bottom: 30px;
+  width: 240px;
 `;
 
 const Records = styled.div`
@@ -122,6 +128,8 @@ function Profile() {
   const filterData = {
     type: ['所有影集', '台劇', '韓劇', '動畫', '美劇'],
   };
+  const [editing, setEditing] = useState(false);
+  const [updatedUserName, setUpdatedUserName] = useState(userName);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -140,6 +148,23 @@ function Profile() {
     return downloadURL;
   };
 
+  const handleEditUserName = () => {
+    setEditing(true);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUpdatedUserName(e.target.value);
+  };
+
+  const handleSaveUserName = async () => {
+    setEditing(false);
+    if (id && updatedUserName) {
+      const userRef = doc(db, 'users', id);
+      await updateDoc(userRef, { userName: updatedUserName });
+      dispatch(updateUserName(updatedUserName));
+    }
+  };
+
   return (
     <Wrapper>
       <UserProfile>
@@ -148,7 +173,7 @@ function Profile() {
           htmlFor="upload-file"
           style={{
             position: 'absolute',
-            bottom: '10px',
+            bottom: '36px',
             left: '150px',
             fontSize: '32px',
             cursor: 'pointer',
@@ -164,7 +189,36 @@ function Profile() {
           onChange={handleImageUpload}
         />
         <UserInfo>
-          <UserName>{userName}</UserName>
+          {userName && (
+            <div style={{ display: 'flex' }}>
+              {editing ? (
+                <UserName
+                  style={{ border: '#a1a1a1 solid 1px' }}
+                  type="text"
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveUserName();
+                    }
+                  }}
+                />
+              ) : (
+                <UserName
+                  style={{ backgroundColor: 'transparent' }}
+                  type="text"
+                  value={userName}
+                  disabled
+                />
+              )}
+              <button
+                style={{ marginBottom: '14px', marginLeft: '10px' }}
+                onClick={editing ? handleSaveUserName : handleEditUserName}
+              >
+                {editing ? 'Save' : '🖋'}
+              </button>
+            </div>
+          )}
+
           <Records>
             {recordData.map((record) => {
               return (
