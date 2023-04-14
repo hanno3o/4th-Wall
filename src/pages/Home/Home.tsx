@@ -1,6 +1,12 @@
 import styled from 'styled-components';
 import { db } from '../../config/firebase.config';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  getDoc,
+  getDocs,
+  doc,
+  updateDoc,
+} from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import {
@@ -271,6 +277,14 @@ function Home() {
   interface ICast {
     name?: string;
   }
+  interface IReview {
+    date?: number;
+    rating?: number;
+    writtenReview?: string;
+    id?: string;
+    avatar?: string;
+    userName?: string;
+  }
 
   const dramasCollectionRef = collection(db, 'dramas');
   const [isLoading, setIsLoading] = useState(false);
@@ -283,11 +297,14 @@ function Home() {
     '所有影集'
   );
   const [dramaCard, setDramaCard] = useState<IDrama>();
+  const [reviews, setReviews] = useState<IReview[]>([]);
+  const [writtenReview, setWrittenReview] = useState<string>('');
   const userName = useAppSelector((state) => state.user.userName);
   const id = useAppSelector((state) => state.user.id);
   const dramaList = useAppSelector((state) => state.user.dramaList);
   const dispatch = useAppDispatch();
   const dramaId = dramaCard?.id;
+
   useEffect(() => {
     const getDramas = async () => {
       const data = await getDocs(dramasCollectionRef);
@@ -299,7 +316,7 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    const getCasts = async () => {
+    const getCastAndReviews = async () => {
       if (dramaId) {
         const castsCollectionRef = collection(db, 'dramas', dramaId, 'cast');
         const castSnapshot = await getDocs(castsCollectionRef);
@@ -308,9 +325,27 @@ function Home() {
           castArr.push(doc.data());
         });
         setCast(castArr);
+        const reviewsRef = collection(db, 'dramas', dramaId, 'reviews');
+        const reviewsSnapshot = await getDocs(reviewsRef);
+        const reviewsArr: any = [];
+        // 這邊 singleDoc 的命名是為了避免取得 userRef 時無法使用 firestore 的 doc 方法（都取 doc 的話會混淆變數）
+        for (const singleDoc of reviewsSnapshot.docs) {
+          const reviewsData = singleDoc.data();
+          const userRef = doc(db, 'users', singleDoc.id);
+          const userDoc = await getDoc(userRef);
+          const userData = userDoc.data();
+          const review = {
+            ...reviewsData,
+            id: singleDoc.id,
+            avatar: userData?.avatar || '',
+            userName: userData?.userName || '',
+          };
+          reviewsArr.push(review);
+        }
+        setReviews(reviewsArr);
       }
     };
-    getCasts();
+    getCastAndReviews();
   }, [dramaCard]);
 
   function handleTypeFilter(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -406,6 +441,19 @@ function Home() {
     return () => {};
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setWrittenReview(e.target.value);
+  };
+  // console.log(writtenReview);
+
+  // const handleSaveUserName = async () => {
+  //   setEditing(false);
+  //   if (id && updatedUserName) {
+  //     const userRef = doc(db, 'users', id);
+  //     await updateDoc(userRef, { userName: updatedUserName });
+  //     dispatch(updateUserName(updatedUserName));
+  //   }
+  // }
   return (
     <Wrapper>
       <SearchBar type="text" placeholder="請輸入想要查找的戲劇名稱" />
@@ -498,7 +546,7 @@ function Home() {
                     alt=""
                   />
                   <div style={{ width: '100%' }}>
-                    <div style={{fontSize: '26px' }}>☆☆☆☆☆</div>
+                    <div style={{ fontSize: '26px' }}>☆☆☆☆☆</div>
                     <input
                       type="text"
                       placeholder={
@@ -516,6 +564,7 @@ function Home() {
                         borderRadius: '5px',
                       }}
                       disabled={!userName}
+                      onChange={handleInputChange}
                     />
                     <button
                       style={{
@@ -539,84 +588,84 @@ function Home() {
                   }}
                 >
                   <div
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: '900',
-                    marginBottom: '10px',
-                  }}
-                >
-                  其他評論
-                </div>
-                  <div
                     style={{
-                      display: 'flex',
-                      padding: '10px 0',
-                      fontSize: '12px',
+                      fontSize: '14px',
+                      fontWeight: '900',
+                      marginBottom: '10px',
                     }}
                   >
-                    <img
-                      style={{
-                        borderRadius: '50%',
-                        width: '42px',
-                        height: '42px',
-                        marginRight: '10px',
-                      }}
-                      src="https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2F%E5%A4%9A%E5%A4%9A.png?alt=media&token=bdf4c641-7366-4dea-a979-1a087d27cac5"
-                      alt=""
-                    />
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: '8px',
-                        flexDirection: 'column',
-                      }}
-                    >
-                      <div style={{ fontSize: '16px', fontWeight: '900' }}>
-                        Jill
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <div>★★★☆☆</div>
-                        <div>3 days ago</div>
-                      </div>
-                      <div style={{ fontWeight: '900' }}>真的很好看！</div>
-                    </div>
-                  </div>
-                  <hr style={{ margin: '6px 0', borderColor: '#696969' }} />
-                  <div
-                    style={{
-                      display: 'flex',
-                      padding: '10px 0',
-                      fontSize: '12px',
-                    }}
-                  >
-                    <img
-                      style={{
-                        borderRadius: '50%',
-                        width: '42px',
-                        height: '42px',
-                        marginRight: '10px',
-                      }}
-                      src="https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2F%EF%BC%9F.jpeg?alt=media&token=abf12692-eda8-4529-98ad-a2bc6578d330"
-                      alt=""
-                    />
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: '8px',
-                        flexDirection: 'column',
-                      }}
-                    >
-                      <div style={{ fontSize: '16px', fontWeight: '900' }}>
-                        Dodo
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <div>★★★★☆</div>
-                        <div>1 month ago</div>
-                      </div>
-                      <div style={{ fontWeight: '900', lineHeight: '16px' }}>
-                        真的真的真的真的真的真的真的真的真的真的真的真的真的真的很好看！
-                      </div>
-                    </div>
+                    其他評論
+                    {reviews.map((review) => {
+                      return (
+                        <>
+                          <div
+                            style={{
+                              display: 'flex',
+                              padding: '10px 0',
+                              fontSize: '12px',
+                            }}
+                          >
+                            <img
+                              style={{
+                                borderRadius: '50%',
+                                width: '42px',
+                                height: '42px',
+                                marginRight: '10px',
+                              }}
+                              src={review.avatar}
+                              alt=""
+                            />
+                            <div
+                              style={{
+                                display: 'flex',
+                                gap: '8px',
+                                flexDirection: 'column',
+                              }}
+                            >
+                              <div
+                                style={{ fontSize: '16px', fontWeight: '900' }}
+                              >
+                                {review.userName}
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <div>
+                                  {review.rating && (
+                                    <div className="star-rating">
+                                      {Array.from(
+                                        { length: review.rating },
+                                        (_, index) => (
+                                          <span key={index}>★</span>
+                                        )
+                                      )}
+                                      {Array.from(
+                                        { length: 5 - review.rating },
+                                        (_, index) => (
+                                          <span key={review.rating! + index}>
+                                            ☆
+                                          </span>
+                                        )
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                                <div>3 days ago</div>
+                              </div>
+                              <div style={{ fontWeight: '900' }}>
+                                {review.writtenReview}
+                              </div>
+                            </div>
+                          </div>
+                          {reviews.length > 1 && (
+                            <hr
+                              style={{
+                                margin: '6px 0',
+                                borderColor: '#696969',
+                              }}
+                            />
+                          )}
+                        </>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -643,7 +692,7 @@ function Home() {
                     </DramaCardType>
                     <DramaCardRating>{dramaCard?.rating}/5</DramaCardRating>
                     <DramaCardDescription>
-                      已有 106 人留下評價
+                      已有 {reviews.length} 人留下評價
                     </DramaCardDescription>
                     <div>
                       <DramaCardDescriptionTitle>
