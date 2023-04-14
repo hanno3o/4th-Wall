@@ -4,7 +4,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebase.config';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../redux/hooks';
-import { setUserInfo } from '../redux/reducers/authSlice';
+import { setUserInfo } from '../redux/reducers/userSlice';
 
 export interface AuthRouteProps {
   children?: React.ReactNode;
@@ -24,18 +24,22 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
         const userDoc = await getDoc(userRef);
         if (userDoc.exists()) {
           const userData = userDoc.data() as {
+            id: string | null;
             avatar: string | null;
             email: string | null;
             userName: string | null;
             registrationDate: number;
+            dramaList: string[];
           };
           dispatch(setUserInfo(userData));
         } else {
           const userData = {
+            id: user.uid,
             email: user.email,
             userName: user.displayName,
             avatar: user.photoURL,
             registrationDate: Date.now(),
+            dramaList: []
           };
           await setDoc(userRef, userData);
           dispatch(setUserInfo(userData));

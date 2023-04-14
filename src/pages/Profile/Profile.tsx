@@ -1,19 +1,31 @@
 import styled from 'styled-components';
-import { useAppSelector } from '../../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../../config/firebase.config';
+import { doc, updateDoc, collection, getDoc } from 'firebase/firestore';
+import {
+  updateAvatar,
+  updateUserName,
+  removeFromDramaList,
+} from '../../redux/reducers/userSlice';
+import { useState, useEffect } from 'react';
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 80%;
   padding: 50px 100px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin: 0 auto;
 `;
 
 const UserProfile = styled.div`
   display: flex;
+  position: relative;
 `;
 
 const UserImage = styled.img`
+  object-fit: cover;
   background-color: #eee;
   width: 200px;
   height: 200px;
@@ -27,9 +39,14 @@ const UserInfo = styled.div`
   padding: 40px;
 `;
 
-const UserName = styled.h2`
+const UserName = styled.input`
+  padding: 6px;
+  border: solid 1px transparent;
+  border-radius: 6px;
+  width: min-content;
   font-size: 42px;
   margin-bottom: 30px;
+  width: 240px;
 `;
 
 const Records = styled.div`
@@ -85,43 +102,173 @@ const Dramas = styled.div`
 `;
 
 const Drama = styled.div`
-  background: #535353;
-  width: 14rem;
-  height: 300px;
+  cursor: pointer;
+  width: 15.8em;
+  height: 320px;
   flex-shrink: 0;
   border-radius: 5px;
   font-size: 16px;
   color: white;
+  font-weight: 700;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 20px;
+  background-size: cover;
+  position: relative;
+`;
+
+const RemoveFromListButton = styled.button`
+  color: #2a2a2a;
+  background-color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 20px;
+  opacity: 0.5;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 `;
 
 function Profile() {
-  const userName = useAppSelector((state) => state.auth.userName);
-  const avatar = useAppSelector((state) => state.auth.avatar);
+  const id = useAppSelector((state) => state.user.id);
+  const userName = useAppSelector((state) => state.user.userName);
+  const avatar = useAppSelector((state) => state.user.avatar);
+  const dispatch = useAppDispatch();
   const registrationDate = useAppSelector(
-    (state) => state.auth.registrationDate
+    (state) => state.user.registrationDate
   );
   const today = new Date();
   const timeDiff = registrationDate ? today.getTime() - registrationDate : 0;
   const daysSinceRegistration = Math.floor(timeDiff / (1000 * 3600 * 24));
-
-  const recordData = [
-    { title: '使用天數', data: daysSinceRegistration },
-    { title: '已收藏的劇', data: 16 },
-    { title: '發文數', data: 36 },
-  ];
   const filterData = {
     type: ['所有影集', '台劇', '韓劇', '動畫', '美劇'],
+  };
+  const [editing, setEditing] = useState(false);
+  const [updatedUserName, setUpdatedUserName] = useState(userName);
+  const dramaList = useAppSelector((state) => state.user.dramaList);
+  const dramasCollectionRef = collection(db, 'dramas');
+  const [userDramaList, setUserDramaList] = useState<any[]>([]);
+  const recordData = [
+    { title: '使用天數', data: daysSinceRegistration },
+    { title: '已收藏的劇', data: userDramaList.length },
+    { title: '發文數', data: 36 },
+  ];
+  useEffect(() => {
+    const getDramaList = async () => {
+      if (dramaList) {
+        const dramaListRef = await Promise.all(
+          dramaList.map((dramaId) => getDoc(doc(dramasCollectionRef, dramaId)))
+        );
+        const dramaListData = dramaListRef.map((doc) => doc.data());
+        setUserDramaList(dramaListData);
+      }
+    };
+    if (id) {
+      const userRef = doc(db, 'users', id);
+      updateDoc(userRef, { dramaList: dramaList });
+    }
+
+    getDramaList();
+  }, [dramaList]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const imageUrl = await uploadImage(file);
+    if (id) {
+      const userRef = doc(db, 'users', id);
+      await updateDoc(userRef, { avatar: imageUrl });
+      dispatch(updateAvatar(imageUrl));
+    }
+  };
+
+  const uploadImage = async (file: any): Promise<string> => {
+    const storageRef = ref(storage, 'images/' + file.name);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+  };
+
+  const handleEditUserName = () => {
+    setEditing(true);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUpdatedUserName(e.target.value);
+  };
+
+  const handleSaveUserName = async () => {
+    setEditing(false);
+    if (id && updatedUserName) {
+      const userRef = doc(db, 'users', id);
+      await updateDoc(userRef, { userName: updatedUserName });
+      dispatch(updateUserName(updatedUserName));
+    }
+  };
+
+  const handleRemoveFromList = (dramaIdToRemove: string) => {
+    dispatch(removeFromDramaList(dramaIdToRemove));
   };
 
   return (
     <Wrapper>
       <UserProfile>
         {avatar && <UserImage src={avatar} alt="" />}
+        <label
+          htmlFor="upload-file"
+          style={{
+            position: 'absolute',
+            bottom: '36px',
+            left: '150px',
+            fontSize: '32px',
+            cursor: 'pointer',
+          }}
+        >
+          ⬆️
+        </label>
+        <input
+          id="upload-file"
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={handleImageUpload}
+        />
         <UserInfo>
-          <UserName>{userName}</UserName>
+          {userName && (
+            <div style={{ display: 'flex' }}>
+              {editing ? (
+                <UserName
+                  style={{ border: '#a1a1a1 solid 1px' }}
+                  type="text"
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveUserName();
+                    }
+                  }}
+                />
+              ) : (
+                <UserName
+                  style={{ backgroundColor: 'transparent' }}
+                  type="text"
+                  value={userName}
+                  disabled
+                />
+              )}
+              <button
+                style={{ marginBottom: '14px', marginLeft: '10px' }}
+                onClick={editing ? handleSaveUserName : handleEditUserName}
+              >
+                {editing ? 'Save' : '🖋'}
+              </button>
+            </div>
+          )}
+
           <Records>
             {recordData.map((record) => {
               return (
@@ -145,13 +292,25 @@ function Profile() {
         </ListNavBar>
         <hr className="my-4" />
         <Dramas>
-          <Drama>黑暗榮耀</Drama>
-          <Drama>海岸村恰恰恰</Drama>
-          <Drama>想見你</Drama>
-          <Drama>二十五，二十一</Drama>
-          <Drama>那年夏天的我們</Drama>
-          <Drama>青春紀錄</Drama>
-          <Drama>我的新創時代</Drama>
+          {userDramaList.map((drama) => (
+            <>
+              <Drama
+                style={{
+                  backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
+                }}
+              >
+                <div>{drama.title}</div>
+                <RemoveFromListButton
+                  onClick={() => {
+                    alert(`確定要從片單中移除 ${drama.title} 嗎？`);
+                    handleRemoveFromList(drama.id);
+                  }}
+                >
+                  -
+                </RemoveFromListButton>
+              </Drama>
+            </>
+          ))}
         </Dramas>
       </DramaList>
     </Wrapper>

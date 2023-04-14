@@ -43,8 +43,8 @@ interface IArticle {
 }
 
 function Article() {
-  const userName = useAppSelector((state) => state.auth.userName);
-  const avatar = useAppSelector((state) => state.auth.avatar);
+  const userName = useAppSelector((state) => state.user.userName);
+  const avatar = useAppSelector((state) => state.user.avatar);
   const { boardName, id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
@@ -112,7 +112,12 @@ function Article() {
                 <img
                   src={avatar}
                   alt=""
-                  style={{ borderRadius: '50%', width: '40px', height: '40px' }}
+                  style={{
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    objectFit: 'cover',
+                  }}
                 />
               )}
               <input

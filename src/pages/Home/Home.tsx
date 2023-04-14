@@ -1,8 +1,12 @@
 import styled from 'styled-components';
 import { db } from '../../config/firebase.config';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
-import { useAppSelector } from '../../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import {
+  addToDramaList,
+  removeFromDramaList,
+} from '../../redux/reducers/userSlice';
 
 const Wrapper = styled.div`
   width: 75%;
@@ -199,11 +203,6 @@ const HandleListButton = styled.button`
   position: absolute;
   top: 60px;
   right: 40px;
-
-  &:hover {
-    background-color: #fff;
-    color: #2a2a2a;
-  }
 `;
 
 const CloseButton = styled.button`
@@ -284,8 +283,11 @@ function Home() {
     '所有影集'
   );
   const [dramaCard, setDramaCard] = useState<IDrama>();
-  const userName = useAppSelector((state) => state.auth.userName);
-
+  const userName = useAppSelector((state) => state.user.userName);
+  const id = useAppSelector((state) => state.user.id);
+  const dramaList = useAppSelector((state) => state.user.dramaList);
+  const dispatch = useAppDispatch();
+  const dramaId = dramaCard?.id;
   useEffect(() => {
     const getDramas = async () => {
       const data = await getDocs(dramasCollectionRef);
@@ -298,7 +300,6 @@ function Home() {
 
   useEffect(() => {
     const getCasts = async () => {
-      const dramaId = dramaCard?.id;
       if (dramaId) {
         const castsCollectionRef = collection(db, 'dramas', dramaId, 'cast');
         const castSnapshot = await getDocs(castsCollectionRef);
@@ -387,6 +388,23 @@ function Home() {
       }
       return 0;
     });
+
+  const handleAlert = () => {
+    alert('要先登入才能加入喜愛的戲劇到自己的片單喔！');
+  };
+
+  const handleAddToDramaList = async () => {
+    if (dramaCard?.id && id) {
+      dispatch(addToDramaList(dramaCard?.id));
+      const userRef = doc(db, 'users', id);
+      await updateDoc(userRef, { dramaList: dramaList });
+    }
+  };
+
+  const handleRemoveFromList = (dramaIdToRemove: string) => {
+    dispatch(removeFromDramaList(dramaIdToRemove));
+    return () => {};
+  };
 
   return (
     <Wrapper>
@@ -538,12 +556,32 @@ function Home() {
                     </div>
                     <HandleListButton
                       onClick={() => {
-                        userName
-                          ? alert('已加入片單！')
-                          : alert('要先登入才能加入喜愛的戲劇到自己的片單喔！');
+                        if (
+                          dramaList &&
+                          dramaId &&
+                          dramaList.includes(dramaId)
+                        ) {
+                          handleRemoveFromList(dramaId);
+                        } else if (userName) {
+                          handleAddToDramaList();
+                        } else {
+                          handleAlert();
+                        }
+                      }}
+                      style={{
+                        color:
+                          dramaList && dramaId && dramaList.includes(dramaId)
+                            ? '#2a2a2a'
+                            : '#fff',
+                        backgroundColor:
+                          dramaList && dramaId && dramaList.includes(dramaId)
+                            ? '#fff'
+                            : '#2a2a2a',
                       }}
                     >
-                      ＋加入片單
+                      {dramaList && dramaId && dramaList.includes(dramaId)
+                        ? '✓已加入片單'
+                        : '＋加入片單'}
                     </HandleListButton>
                     <CloseButton onClick={() => setDramaCard(undefined)}>
                       ✕
