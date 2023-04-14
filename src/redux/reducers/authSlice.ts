@@ -8,6 +8,7 @@ export interface authState {
   userName: string | null;
   avatar: string | null;
   registrationDate: number | null;
+  dramaList: string[] | null;
 }
 
 const initialState: authState = {
@@ -17,6 +18,7 @@ const initialState: authState = {
   userName: '',
   avatar: '',
   registrationDate: NaN,
+  dramaList: [],
 };
 
 export const authSlice = createSlice({
@@ -31,6 +33,7 @@ export const authSlice = createSlice({
         email: string | null;
         userName: string | null;
         registrationDate: number | null;
+        dramaList: string[] | null;
       }>
     ) => {
       state.id = action.payload.id;
@@ -38,6 +41,7 @@ export const authSlice = createSlice({
       state.avatar = action.payload.avatar;
       state.userName = action.payload.userName;
       state.registrationDate = action.payload.registrationDate;
+      state.dramaList = action.payload.dramaList;
     },
     updateAvatar: (state, action: PayloadAction<string>) => {
       state.avatar = action.payload;
@@ -45,9 +49,30 @@ export const authSlice = createSlice({
     updateUserName: (state, action: PayloadAction<string>) => {
       state.userName = action.payload;
     },
+    addToDramaList: (state, action: PayloadAction<string>) => {
+      if (state.dramaList === null) {
+        state.dramaList = [];
+      }
+      state.dramaList.push(action.payload);
+    },
+    removeFromDramaList: (state, action: PayloadAction<string>) => {
+      if (state.dramaList === null) {
+        state.dramaList = [];
+      } else {
+        state.dramaList = state.dramaList.filter(
+          (dramaId) => dramaId !== action.payload
+        );
+      }
+    },
   },
 });
 
-export const { setUserInfo, updateAvatar,updateUserName } = authSlice.actions;
-export const selectAuth = (state: RootState) => state.auth;
+export const {
+  setUserInfo,
+  updateAvatar,
+  updateUserName,
+  addToDramaList,
+  removeFromDramaList,
+} = authSlice.actions;
+export const selectUser = (state: RootState) => state.auth;
 export default authSlice.reducer;

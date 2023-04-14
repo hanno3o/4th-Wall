@@ -31,6 +31,7 @@ function Header() {
                   email: null,
                   userName: null,
                   registrationDate: null,
+                  dramaList: null
                 })
               );
             }}

@@ -29,6 +29,7 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
             email: string | null;
             userName: string | null;
             registrationDate: number;
+            dramaList: string[];
           };
           dispatch(setUserInfo(userData));
         } else {
@@ -38,6 +39,7 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
             userName: user.displayName,
             avatar: user.photoURL,
             registrationDate: Date.now(),
+            dramaList: []
           };
           await setDoc(userRef, userData);
           dispatch(setUserInfo(userData));

@@ -2,16 +2,21 @@ import styled from 'styled-components';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../config/firebase.config';
-import { doc, updateDoc } from 'firebase/firestore';
-import { updateAvatar, updateUserName } from '../../redux/reducers/authSlice';
-import { useState } from 'react';
+import { doc, updateDoc, collection, getDoc } from 'firebase/firestore';
+import {
+  updateAvatar,
+  updateUserName,
+  removeFromDramaList,
+} from '../../redux/reducers/authSlice';
+import { useState, useEffect } from 'react';
 
 const Wrapper = styled.div`
-  width: 100%;
+  width: 80%;
   padding: 50px 100px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin: 0 auto;
 `;
 
 const UserProfile = styled.div`
@@ -97,16 +102,37 @@ const Dramas = styled.div`
 `;
 
 const Drama = styled.div`
-  background: #535353;
-  width: 14rem;
-  height: 300px;
+  cursor: pointer;
+  width: 15.8em;
+  height: 320px;
   flex-shrink: 0;
   border-radius: 5px;
   font-size: 16px;
   color: white;
+  font-weight: 700;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 20px;
+  background-size: cover;
+  position: relative;
+`;
+
+const RemoveFromListButton = styled.button`
+  color: #2a2a2a;
+  background-color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 20px;
+  opacity: 0.5;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 `;
 
 function Profile() {
@@ -130,6 +156,27 @@ function Profile() {
   };
   const [editing, setEditing] = useState(false);
   const [updatedUserName, setUpdatedUserName] = useState(userName);
+  const dramaList = useAppSelector((state) => state.auth.dramaList);
+  const dramasCollectionRef = collection(db, 'dramas');
+  const [userDramaList, setUserDramaList] = useState<any[]>([]);
+
+  useEffect(() => {
+    const getDramaList = async () => {
+      if (dramaList) {
+        const dramaListRef = await Promise.all(
+          dramaList.map((dramaId) => getDoc(doc(dramasCollectionRef, dramaId)))
+        );
+        const dramaListData = dramaListRef.map((doc) => doc.data());
+        setUserDramaList(dramaListData);
+      }
+    };
+    if (id) {
+      const userRef = doc(db, 'users', id);
+      updateDoc(userRef, { dramaList: dramaList });
+    }
+
+    getDramaList();
+  }, [dramaList]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -163,6 +210,10 @@ function Profile() {
       await updateDoc(userRef, { userName: updatedUserName });
       dispatch(updateUserName(updatedUserName));
     }
+  };
+
+  const handleRemoveFromList = (dramaIdToRemove: string) => {
+    dispatch(removeFromDramaList(dramaIdToRemove));
   };
 
   return (
@@ -242,13 +293,25 @@ function Profile() {
         </ListNavBar>
         <hr className="my-4" />
         <Dramas>
-          <Drama>黑暗榮耀</Drama>
-          <Drama>海岸村恰恰恰</Drama>
-          <Drama>想見你</Drama>
-          <Drama>二十五，二十一</Drama>
-          <Drama>那年夏天的我們</Drama>
-          <Drama>青春紀錄</Drama>
-          <Drama>我的新創時代</Drama>
+          {userDramaList.map((drama) => (
+            <>
+              <Drama
+                style={{
+                  backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
+                }}
+              >
+                <div>{drama.title}</div>
+                <RemoveFromListButton
+                  onClick={() => {
+                    alert(`確定要從片單中移除 ${drama.title} 嗎？`);
+                    handleRemoveFromList(drama.id);
+                  }}
+                >
+                  -
+                </RemoveFromListButton>
+              </Drama>
+            </>
+          ))}
         </Dramas>
       </DramaList>
     </Wrapper>
