@@ -471,42 +471,153 @@ function Home() {
         <DramaCard style={{ display: dramaCard ? 'block' : 'none' }}>
           {isLoading && (
             <div style={{ display: 'flex' }}>
-              <div style={{ width: '300px' }}>
-                <div style={{ fontSize: '20px', fontWeight: '700' }}>
-                  評論區
+              <div
+                style={{
+                  width: '320px',
+                  marginRight: '40px',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '20px',
+                    fontWeight: '900',
+                    marginBottom: '20px',
+                  }}
+                >
+                  評論
                 </div>
-                <div>
-                  <div style={{ marginTop: '10px' }}>☆☆☆☆☆</div>
-                  <input
-                    type="text"
-                    placeholder={
-                      userName
-                        ? `留下你對 ${dramaCard?.title} 的評論！`
-                        : '要先登入才能使用評論功能喔！'
-                    }
+                <div style={{ display: 'flex' }}>
+                  <img
                     style={{
-                      cursor: 'text',
-                      width: '260px',
-                      marginTop: '10px',
-                      fontSize: '12px',
-                      color: '#000',
-                      padding: '10px',
+                      borderRadius: '50%',
+                      width: '42px',
+                      height: '42px',
+                      marginRight: '10px',
                     }}
-                    disabled={!userName}
+                    src="https://resource02.ulifestyle.com.hk/ulcms/content/article/thumbnail/1280x720/uf/2440000/2443394/cover.png"
+                    alt=""
                   />
+                  <div style={{ width: '100%' }}>
+                    <div style={{fontSize: '26px' }}>☆☆☆☆☆</div>
+                    <input
+                      type="text"
+                      placeholder={
+                        userName
+                          ? `留下你對 ${dramaCard?.title} 的評論！`
+                          : '要先登入才能使用評論功能喔！'
+                      }
+                      style={{
+                        cursor: 'text',
+                        width: '100%',
+                        marginTop: '10px',
+                        fontSize: '12px',
+                        color: '#000',
+                        padding: '10px',
+                        borderRadius: '5px',
+                      }}
+                      disabled={!userName}
+                    />
+                    <button
+                      style={{
+                        fontSize: '12px',
+                        marginTop: '12px',
+                        textAlign: 'right',
+                        width: '100%',
+                      }}
+                    >
+                      送出
+                    </button>
+                  </div>
                 </div>
                 <div
                   style={{
                     marginTop: '20px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '8px',
+                    gap: '4px',
+                    paddingLeft: '2px',
                   }}
                 >
-                  <div>ffuri ★★★☆☆ 3/27</div>
-                  <div>hanny ★★★★☆ 3/29</div>
-                  <div>wendy ★★★★☆ 4/1</div>
-                  <div>joy1215 ★★★★☆ 4/2</div>
+                  <div
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: '900',
+                    marginBottom: '10px',
+                  }}
+                >
+                  其他評論
+                </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      padding: '10px 0',
+                      fontSize: '12px',
+                    }}
+                  >
+                    <img
+                      style={{
+                        borderRadius: '50%',
+                        width: '42px',
+                        height: '42px',
+                        marginRight: '10px',
+                      }}
+                      src="https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2F%E5%A4%9A%E5%A4%9A.png?alt=media&token=bdf4c641-7366-4dea-a979-1a087d27cac5"
+                      alt=""
+                    />
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '8px',
+                        flexDirection: 'column',
+                      }}
+                    >
+                      <div style={{ fontSize: '16px', fontWeight: '900' }}>
+                        Jill
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <div>★★★☆☆</div>
+                        <div>3 days ago</div>
+                      </div>
+                      <div style={{ fontWeight: '900' }}>真的很好看！</div>
+                    </div>
+                  </div>
+                  <hr style={{ margin: '6px 0', borderColor: '#696969' }} />
+                  <div
+                    style={{
+                      display: 'flex',
+                      padding: '10px 0',
+                      fontSize: '12px',
+                    }}
+                  >
+                    <img
+                      style={{
+                        borderRadius: '50%',
+                        width: '42px',
+                        height: '42px',
+                        marginRight: '10px',
+                      }}
+                      src="https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2F%EF%BC%9F.jpeg?alt=media&token=abf12692-eda8-4529-98ad-a2bc6578d330"
+                      alt=""
+                    />
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '8px',
+                        flexDirection: 'column',
+                      }}
+                    >
+                      <div style={{ fontSize: '16px', fontWeight: '900' }}>
+                        Dodo
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <div>★★★★☆</div>
+                        <div>1 month ago</div>
+                      </div>
+                      <div style={{ fontWeight: '900', lineHeight: '16px' }}>
+                        真的真的真的真的真的真的真的真的真的真的真的真的真的真的很好看！
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div>
