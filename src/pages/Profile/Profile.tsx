@@ -146,11 +146,6 @@ function Profile() {
   const today = new Date();
   const timeDiff = registrationDate ? today.getTime() - registrationDate : 0;
   const daysSinceRegistration = Math.floor(timeDiff / (1000 * 3600 * 24));
-  const recordData = [
-    { title: '使用天數', data: daysSinceRegistration },
-    { title: '已收藏的劇', data: 16 },
-    { title: '發文數', data: 36 },
-  ];
   const filterData = {
     type: ['所有影集', '台劇', '韓劇', '動畫', '美劇'],
   };
@@ -159,7 +154,11 @@ function Profile() {
   const dramaList = useAppSelector((state) => state.auth.dramaList);
   const dramasCollectionRef = collection(db, 'dramas');
   const [userDramaList, setUserDramaList] = useState<any[]>([]);
-
+  const recordData = [
+    { title: '使用天數', data: daysSinceRegistration },
+    { title: '已收藏的劇', data: userDramaList.length },
+    { title: '發文數', data: 36 },
+  ];
   useEffect(() => {
     const getDramaList = async () => {
       if (dramaList) {
