@@ -6,7 +6,7 @@ import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import {
   addToDramaList,
   removeFromDramaList,
-} from '../../redux/reducers/authSlice';
+} from '../../redux/reducers/userSlice';
 
 const Wrapper = styled.div`
   width: 75%;
@@ -283,9 +283,9 @@ function Home() {
     '所有影集'
   );
   const [dramaCard, setDramaCard] = useState<IDrama>();
-  const userName = useAppSelector((state) => state.auth.userName);
-  const id = useAppSelector((state) => state.auth.id);
-  const dramaList = useAppSelector((state) => state.auth.dramaList);
+  const userName = useAppSelector((state) => state.user.userName);
+  const id = useAppSelector((state) => state.user.id);
+  const dramaList = useAppSelector((state) => state.user.dramaList);
   const dispatch = useAppDispatch();
   const dramaId = dramaCard?.id;
   useEffect(() => {

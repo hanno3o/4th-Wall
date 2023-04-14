@@ -4,7 +4,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebase.config';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../redux/hooks';
-import { setUserInfo } from '../redux/reducers/authSlice';
+import { setUserInfo } from '../redux/reducers/userSlice';
 
 export interface AuthRouteProps {
   children?: React.ReactNode;

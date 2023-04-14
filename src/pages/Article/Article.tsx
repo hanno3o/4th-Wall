@@ -43,8 +43,8 @@ interface IArticle {
 }
 
 function Article() {
-  const userName = useAppSelector((state) => state.auth.userName);
-  const avatar = useAppSelector((state) => state.auth.avatar);
+  const userName = useAppSelector((state) => state.user.userName);
+  const avatar = useAppSelector((state) => state.user.avatar);
   const { boardName, id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();

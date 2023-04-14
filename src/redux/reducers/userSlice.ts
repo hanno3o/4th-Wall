@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
-export interface authState {
+export interface userState {
   status: 'idle' | 'loading' | 'failed';
   id: string | null;
   email: string | null;
@@ -11,7 +11,7 @@ export interface authState {
   dramaList: string[] | null;
 }
 
-const initialState: authState = {
+const initialState: userState = {
   status: 'idle',
   id: '',
   email: '',
@@ -21,8 +21,8 @@ const initialState: authState = {
   dramaList: [],
 };
 
-export const authSlice = createSlice({
-  name: 'auth',
+export const userSlice = createSlice({
+  name: 'user',
   initialState,
   reducers: {
     setUserInfo: (
@@ -73,6 +73,6 @@ export const {
   updateUserName,
   addToDramaList,
   removeFromDramaList,
-} = authSlice.actions;
-export const selectUser = (state: RootState) => state.auth;
-export default authSlice.reducer;
+} = userSlice.actions;
+export const selectUser = (state: RootState) => state.user;
+export default userSlice.reducer;

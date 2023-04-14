@@ -126,7 +126,7 @@ function Forum() {
   const [articles, setArticles] = useState<IArticles[]>([]);
   const [selectedBoard, setSelectedBoard] = useState<string | undefined>('');
   const [board, setBoard] = useState<string>('TaiwanDrama');
-  const userName = useAppSelector((state) => state.auth.userName);
+  const userName = useAppSelector((state) => state.user.userName);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 10;
   const totalPages = Math.ceil(articles.length / PAGE_SIZE);

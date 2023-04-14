@@ -7,7 +7,7 @@ import {
   updateAvatar,
   updateUserName,
   removeFromDramaList,
-} from '../../redux/reducers/authSlice';
+} from '../../redux/reducers/userSlice';
 import { useState, useEffect } from 'react';
 
 const Wrapper = styled.div`
@@ -136,12 +136,12 @@ const RemoveFromListButton = styled.button`
 `;
 
 function Profile() {
-  const id = useAppSelector((state) => state.auth.id);
-  const userName = useAppSelector((state) => state.auth.userName);
-  const avatar = useAppSelector((state) => state.auth.avatar);
+  const id = useAppSelector((state) => state.user.id);
+  const userName = useAppSelector((state) => state.user.userName);
+  const avatar = useAppSelector((state) => state.user.avatar);
   const dispatch = useAppDispatch();
   const registrationDate = useAppSelector(
-    (state) => state.auth.registrationDate
+    (state) => state.user.registrationDate
   );
   const today = new Date();
   const timeDiff = registrationDate ? today.getTime() - registrationDate : 0;
@@ -151,7 +151,7 @@ function Profile() {
   };
   const [editing, setEditing] = useState(false);
   const [updatedUserName, setUpdatedUserName] = useState(userName);
-  const dramaList = useAppSelector((state) => state.auth.dramaList);
+  const dramaList = useAppSelector((state) => state.user.dramaList);
   const dramasCollectionRef = collection(db, 'dramas');
   const [userDramaList, setUserDramaList] = useState<any[]>([]);
   const recordData = [

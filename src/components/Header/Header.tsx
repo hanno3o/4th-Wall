@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { getAuth, signOut } from 'firebase/auth';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { setUserInfo } from '../../redux/reducers/authSlice';
+import { setUserInfo } from '../../redux/reducers/userSlice';
 
 function Header() {
   const auth = getAuth();
-  const userName = useAppSelector((state) => state.auth.userName);
+  const userName = useAppSelector((state) => state.user.userName);
   const dispatch = useAppDispatch();
   return (
     <header className="bg-black text-white flex justify-between items-center h-20 px-10">
