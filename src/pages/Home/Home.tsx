@@ -6,6 +6,7 @@ import {
   getDocs,
   doc,
   updateDoc,
+  setDoc,
 } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
@@ -217,6 +218,24 @@ const CloseButton = styled.button`
   right: 20px;
   font-weight: 900;
 `;
+
+const UserRatingStars = styled.button<UserRatingStarsProps>`
+  color: ${({ isFilled }) => (isFilled ? '#fff' : '#8e8e8e')};
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+`;
+
+const ReviewInputField = styled.input`
+  cursor: text;
+  width: 100%;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #000;
+  padding: 10px;
+  border-radius: 5px;
+`;
 interface TypeFilterProps {
   selectedTypeFilter?: string | null;
 }
@@ -224,6 +243,11 @@ interface FilterOptionsProps {
   genre?: string[];
   year?: number[];
   order?: string;
+}
+interface UserRatingStarsProps {
+  key: number;
+  className: string;
+  isFilled: boolean;
 }
 
 function Home() {
@@ -298,8 +322,10 @@ function Home() {
   );
   const [dramaCard, setDramaCard] = useState<IDrama>();
   const [reviews, setReviews] = useState<IReview[]>([]);
-  const [writtenReview, setWrittenReview] = useState<string>('');
+  const [writtenReview, setWrittenReview] = useState<string | undefined>();
+  const [userRating, setUserRating] = useState(0);
   const userName = useAppSelector((state) => state.user.userName);
+  const avatar = useAppSelector((state) => state.user.avatar);
   const id = useAppSelector((state) => state.user.id);
   const dramaList = useAppSelector((state) => state.user.dramaList);
   const dispatch = useAppDispatch();
@@ -459,8 +485,33 @@ function Home() {
     return () => {};
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setWrittenReview(e.target.value);
+  const handleUploadReview = async () => {
+    if (dramaId && id) {
+      await setDoc(doc(db, 'dramas', dramaId, 'reviews', id), {
+        date: Date.now(),
+        rating: userRating,
+        writtenReview: writtenReview,
+      });
+      setWrittenReview('');
+      setUserRating(0);
+      const reviewsRef = collection(db, 'dramas', dramaId, 'reviews');
+      const reviewsSnapshot = await getDocs(reviewsRef);
+      const reviewsArr: any = [];
+      for (const singleDoc of reviewsSnapshot.docs) {
+        const reviewsData = singleDoc.data();
+        const userRef = doc(db, 'users', singleDoc.id);
+        const userDoc = await getDoc(userRef);
+        const userData = userDoc.data();
+        const review = {
+          ...reviewsData,
+          id: singleDoc.id,
+          avatar: userData?.avatar || '',
+          userName: userData?.userName || '',
+        };
+        reviewsArr.push(review);
+      }
+      setReviews(reviewsArr);
+    }
   };
 
   return (
@@ -534,46 +585,63 @@ function Home() {
                   marginRight: '40px',
                 }}
               >
-                <div
-                  style={{
-                    fontSize: '20px',
-                    fontWeight: '900',
-                    marginBottom: '20px',
-                  }}
-                >
-                  評論
-                </div>
                 <div style={{ display: 'flex' }}>
-                  <img
-                    style={{
-                      borderRadius: '50%',
-                      width: '42px',
-                      height: '42px',
-                      marginRight: '10px',
-                    }}
-                    src="https://resource02.ulifestyle.com.hk/ulcms/content/article/thumbnail/1280x720/uf/2440000/2443394/cover.png"
-                    alt=""
-                  />
+                  {avatar && (
+                    <img
+                      style={{
+                        borderRadius: '50%',
+                        width: '42px',
+                        height: '42px',
+                        marginRight: '10px',
+                      }}
+                      src={avatar}
+                      alt=""
+                    />
+                  )}
                   <div style={{ width: '100%' }}>
-                    <div style={{ fontSize: '26px' }}>☆☆☆☆☆</div>
-                    <input
+                    <div>
+                      {[...Array(5)].map((_, index) => {
+                        index += 1;
+                        return (
+                          <UserRatingStars
+                            key={index}
+                            className={index <= userRating ? 'on' : 'off'}
+                            isFilled={index <= userRating}
+                            onMouseOver={() => setUserRating(index)}
+                            onKeyPress={(e) => {
+                              if (userRating) {
+                                if (e.key === 'Enter') {
+                                  handleUploadReview();
+                                }
+                              }
+                            }}
+                          >
+                            <span style={{ fontSize: '24px' }}>&#9733;</span>
+                          </UserRatingStars>
+                        );
+                      })}
+                    </div>
+                    <ReviewInputField
                       type="text"
+                      value={writtenReview}
                       placeholder={
                         userName
                           ? `留下你對 ${dramaCard?.title} 的評論！`
                           : '要先登入才能使用評論功能喔！'
                       }
-                      style={{
-                        cursor: 'text',
-                        width: '100%',
-                        marginTop: '10px',
-                        fontSize: '12px',
-                        color: '#000',
-                        padding: '10px',
-                        borderRadius: '5px',
-                      }}
                       disabled={!userName}
-                      onChange={handleInputChange}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setWrittenReview(e.target.value);
+                      }}
+                      onKeyPress={(e) => {
+                        if (userRating) {
+                          if (e.key === 'Enter') {
+                            handleUploadReview();
+                          }
+                        } else {
+                          alert('要先選擇星星數才能送出評論喔～');
+                        }
+                      }}
                     />
                     <button
                       style={{
@@ -581,6 +649,13 @@ function Home() {
                         marginTop: '12px',
                         textAlign: 'right',
                         width: '100%',
+                      }}
+                      onClick={() => {
+                        if (userRating) {
+                          handleUploadReview();
+                        } else {
+                          alert('要先選擇星星數才能送出評論喔～');
+                        }
                       }}
                     >
                       送出
@@ -603,7 +678,7 @@ function Home() {
                       marginBottom: '10px',
                     }}
                   >
-                    其他評論
+                    評論
                     {reviews
                       .sort((a, b) => {
                         if (a.date && b.date) {
@@ -653,7 +728,7 @@ function Home() {
                                 <div style={{ display: 'flex', gap: '8px' }}>
                                   <div>
                                     {review.rating && (
-                                      <div className="star-rating">
+                                      <div>
                                         {Array.from(
                                           { length: review.rating },
                                           (_, index) => (
@@ -772,7 +847,13 @@ function Home() {
                         ? '✓已加入片單'
                         : '＋加入片單'}
                     </HandleListButton>
-                    <CloseButton onClick={() => setDramaCard(undefined)}>
+                    <CloseButton
+                      onClick={() => {
+                        setDramaCard(undefined);
+                        setWrittenReview('');
+                        setUserRating(0);
+                      }}
+                    >
                       ✕
                     </CloseButton>
                   </DramaCardMainInfo>
