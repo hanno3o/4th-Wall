@@ -311,11 +311,6 @@ function Home() {
       setDramas(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
       setIsLoading(true);
     };
-
-    getDramas();
-  }, []);
-
-  useEffect(() => {
     const getCastAndReviews = async () => {
       if (dramaId) {
         const castsCollectionRef = collection(db, 'dramas', dramaId, 'cast');
@@ -328,7 +323,6 @@ function Home() {
         const reviewsRef = collection(db, 'dramas', dramaId, 'reviews');
         const reviewsSnapshot = await getDocs(reviewsRef);
         const reviewsArr: any = [];
-        // 這邊 singleDoc 的命名是為了避免取得 userRef 時無法使用 firestore 的 doc 方法（都取 doc 的話會混淆變數）
         for (const singleDoc of reviewsSnapshot.docs) {
           const reviewsData = singleDoc.data();
           const userRef = doc(db, 'users', singleDoc.id);
@@ -345,8 +339,32 @@ function Home() {
         setReviews(reviewsArr);
       }
     };
+    getDramas();
     getCastAndReviews();
   }, [dramaCard]);
+
+  useEffect(() => {
+    const getAverageRatings = async () => {
+      if (dramaId) {
+        try {
+          const reviewRef = doc(db, 'dramas', dramaId);
+          const totalStars = reviews.reduce((acc, review) => {
+            if (review.rating) {
+              return acc + review.rating;
+            } else {
+              return acc;
+            }
+          }, 0);
+          const averageRating =
+            reviews.length > 0 ? totalStars / reviews.length : 0;
+          await updateDoc(reviewRef, { rating: averageRating });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+    getAverageRatings();
+  }, [reviews]);
 
   function handleTypeFilter(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     setSelectedTypeFilter(e.currentTarget.textContent);
