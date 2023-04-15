@@ -444,16 +444,7 @@ function Home() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setWrittenReview(e.target.value);
   };
-  // console.log(writtenReview);
 
-  // const handleSaveUserName = async () => {
-  //   setEditing(false);
-  //   if (id && updatedUserName) {
-  //     const userRef = doc(db, 'users', id);
-  //     await updateDoc(userRef, { userName: updatedUserName });
-  //     dispatch(updateUserName(updatedUserName));
-  //   }
-  // }
   return (
     <Wrapper>
       <SearchBar type="text" placeholder="請輸入想要查找的戲劇名稱" />
@@ -595,77 +586,97 @@ function Home() {
                     }}
                   >
                     其他評論
-                    {reviews.map((review) => {
-                      return (
-                        <>
-                          <div
-                            style={{
-                              display: 'flex',
-                              padding: '10px 0',
-                              fontSize: '12px',
-                            }}
-                          >
-                            <img
-                              style={{
-                                borderRadius: '50%',
-                                width: '42px',
-                                height: '42px',
-                                marginRight: '10px',
-                              }}
-                              src={review.avatar}
-                              alt=""
-                            />
+                    {reviews
+                      .sort((a, b) => {
+                        if (a.date && b.date) {
+                          return (
+                            new Date(b.date).getTime() -
+                            new Date(a.date).getTime()
+                          );
+                        } else {
+                          return 0;
+                        }
+                      })
+                      .map((review) => {
+                        return (
+                          <>
                             <div
                               style={{
                                 display: 'flex',
-                                gap: '8px',
-                                flexDirection: 'column',
+                                padding: '10px 0',
+                                fontSize: '12px',
                               }}
                             >
+                              <img
+                                style={{
+                                  borderRadius: '50%',
+                                  width: '42px',
+                                  height: '42px',
+                                  marginRight: '10px',
+                                }}
+                                src={review.avatar}
+                                alt=""
+                              />
                               <div
-                                style={{ fontSize: '16px', fontWeight: '900' }}
+                                style={{
+                                  display: 'flex',
+                                  gap: '8px',
+                                  flexDirection: 'column',
+                                }}
                               >
-                                {review.userName}
-                              </div>
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <div>
-                                  {review.rating && (
-                                    <div className="star-rating">
-                                      {Array.from(
-                                        { length: review.rating },
-                                        (_, index) => (
-                                          <span key={index}>★</span>
-                                        )
-                                      )}
-                                      {Array.from(
-                                        { length: 5 - review.rating },
-                                        (_, index) => (
-                                          <span key={review.rating! + index}>
-                                            ☆
-                                          </span>
-                                        )
-                                      )}
-                                    </div>
-                                  )}
+                                <div
+                                  style={{
+                                    fontSize: '16px',
+                                    fontWeight: '900',
+                                  }}
+                                >
+                                  {review.userName}
                                 </div>
-                                <div>3 days ago</div>
-                              </div>
-                              <div style={{ fontWeight: '900' }}>
-                                {review.writtenReview}
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <div>
+                                    {review.rating && (
+                                      <div className="star-rating">
+                                        {Array.from(
+                                          { length: review.rating },
+                                          (_, index) => (
+                                            <span key={index}>★</span>
+                                          )
+                                        )}
+                                        {Array.from(
+                                          { length: 5 - review.rating },
+                                          (_, index) => (
+                                            <span key={review.rating! + index}>
+                                              ☆
+                                            </span>
+                                          )
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div>
+                                    {review.date
+                                      ? new Date(
+                                          review.date
+                                        ).toLocaleDateString()
+                                      : null}
+                                  </div>
+                                </div>
+                                <div style={{ fontWeight: '900' }}>
+                                  {review.writtenReview}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          {reviews.length > 1 && (
-                            <hr
-                              style={{
-                                margin: '6px 0',
-                                borderColor: '#696969',
-                              }}
-                            />
-                          )}
-                        </>
-                      );
-                    })}
+                            {reviews.length > 1 && (
+                              <hr
+                                style={{
+                                  margin: '6px 0',
+                                  borderColor: '#696969',
+                                }}
+                              />
+                            )}
+                          </>
+                        );
+                      })}
                   </div>
                 </div>
               </div>
