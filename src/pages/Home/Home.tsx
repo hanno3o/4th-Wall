@@ -331,13 +331,58 @@ function Home() {
   const dispatch = useAppDispatch();
   const dramaId = dramaCard?.id;
 
+  const getAverageRatings = async () => {
+    if (dramaId) {
+      const reviewRef = doc(db, 'dramas', dramaId);
+      const totalStars = reviews.reduce((acc, review) => {
+        if (review.rating) {
+          return acc + review.rating;
+        } else {
+          return acc;
+        }
+      }, 0);
+      const averageRating =
+        reviews.length > 0 ? (totalStars / reviews.length).toFixed(1) : 0;
+      await updateDoc(reviewRef, { rating: averageRating });
+    }
+  };
+
+  const getReviews = async () => {
+    if (dramaId) {
+      const castsCollectionRef = collection(db, 'dramas', dramaId, 'cast');
+      const castSnapshot = await getDocs(castsCollectionRef);
+      const castArr: any = [];
+      castSnapshot.forEach((doc) => {
+        castArr.push(doc.data());
+      });
+      setCast(castArr);
+      const reviewsRef = collection(db, 'dramas', dramaId, 'reviews');
+      const reviewsSnapshot = await getDocs(reviewsRef);
+      const reviewsArr: any = [];
+      for (const singleDoc of reviewsSnapshot.docs) {
+        const reviewsData = singleDoc.data();
+        const userRef = doc(db, 'users', singleDoc.id);
+        const userDoc = await getDoc(userRef);
+        const userData = userDoc.data();
+        const review = {
+          ...reviewsData,
+          id: singleDoc.id,
+          avatar: userData?.avatar || '',
+          userName: userData?.userName || '',
+        };
+        reviewsArr.push(review);
+      }
+      setReviews(reviewsArr);
+    }
+  };
+
   useEffect(() => {
     const getDramas = async () => {
       const data = await getDocs(dramasCollectionRef);
       setDramas(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
       setIsLoading(true);
     };
-    const getCastAndReviews = async () => {
+    const getCast = async () => {
       if (dramaId) {
         const castsCollectionRef = collection(db, 'dramas', dramaId, 'cast');
         const castSnapshot = await getDocs(castsCollectionRef);
@@ -346,49 +391,14 @@ function Home() {
           castArr.push(doc.data());
         });
         setCast(castArr);
-        const reviewsRef = collection(db, 'dramas', dramaId, 'reviews');
-        const reviewsSnapshot = await getDocs(reviewsRef);
-        const reviewsArr: any = [];
-        for (const singleDoc of reviewsSnapshot.docs) {
-          const reviewsData = singleDoc.data();
-          const userRef = doc(db, 'users', singleDoc.id);
-          const userDoc = await getDoc(userRef);
-          const userData = userDoc.data();
-          const review = {
-            ...reviewsData,
-            id: singleDoc.id,
-            avatar: userData?.avatar || '',
-            userName: userData?.userName || '',
-          };
-          reviewsArr.push(review);
-        }
-        setReviews(reviewsArr);
       }
     };
     getDramas();
-    getCastAndReviews();
+    getCast();
+    getReviews();
   }, [dramaCard]);
 
   useEffect(() => {
-    const getAverageRatings = async () => {
-      if (dramaId) {
-        try {
-          const reviewRef = doc(db, 'dramas', dramaId);
-          const totalStars = reviews.reduce((acc, review) => {
-            if (review.rating) {
-              return acc + review.rating;
-            } else {
-              return acc;
-            }
-          }, 0);
-          const averageRating =
-            reviews.length > 0 ? totalStars / reviews.length : 0;
-          await updateDoc(reviewRef, { rating: averageRating });
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    };
     getAverageRatings();
   }, [reviews]);
 
@@ -494,23 +504,8 @@ function Home() {
       });
       setWrittenReview('');
       setUserRating(0);
-      const reviewsRef = collection(db, 'dramas', dramaId, 'reviews');
-      const reviewsSnapshot = await getDocs(reviewsRef);
-      const reviewsArr: any = [];
-      for (const singleDoc of reviewsSnapshot.docs) {
-        const reviewsData = singleDoc.data();
-        const userRef = doc(db, 'users', singleDoc.id);
-        const userDoc = await getDoc(userRef);
-        const userData = userDoc.data();
-        const review = {
-          ...reviewsData,
-          id: singleDoc.id,
-          avatar: userData?.avatar || '',
-          userName: userData?.userName || '',
-        };
-        reviewsArr.push(review);
-      }
-      setReviews(reviewsArr);
+      getReviews();
+      getAverageRatings();
     }
   };
 
