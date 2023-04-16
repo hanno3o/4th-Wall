@@ -28,7 +28,7 @@ const Wrapper = styled.div`
 const SearchBar = styled.input`
   border-radius: 5px;
   border: #b6b6b6 solid 1px;
-  height: 30px;
+  height: 36px;
   width: 100%;
   padding: 10px;
 `;
@@ -132,7 +132,7 @@ const Drama = styled.div`
   font-weight: 700;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   justify-content: flex-end;
   align-items: flex-start;
   padding: 20px;
@@ -315,6 +315,7 @@ function Home() {
   const dramasCollectionRef = collection(db, 'dramas');
   const [isLoading, setIsLoading] = useState(false);
   const [dramas, setDramas] = useState<IDrama[]>([]);
+  const [searchWords, setSearchWords] = useState('');
   const [cast, setCast] = useState<ICast[]>([]);
   const [genre, setGenre] = useState<string[]>([]);
   const [order, setOrder] = useState('');
@@ -421,6 +422,10 @@ function Home() {
     getAverageRatings();
   }, [filteredReviews]);
 
+  function handleSearchInput(e: React.ChangeEvent<HTMLInputElement>) {
+    setSearchWords(e.target.value);
+  }
+
   function handleTypeFilter(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     setSelectedTypeFilter(e.currentTarget.textContent);
   }
@@ -497,6 +502,12 @@ function Home() {
       return 0;
     });
 
+  const filteredAndQueriedDramas = filteredByMultiFiltersDramas.filter(
+    (drama) =>
+      drama.eng?.toLowerCase().includes(searchWords.toLowerCase()) ||
+      drama.title?.includes(searchWords)
+  );
+
   const handleAlert = () => {
     alert('要先登入才能加入喜愛的戲劇到自己的片單喔！');
   };
@@ -572,7 +583,24 @@ function Home() {
 
   return (
     <Wrapper>
-      <SearchBar type="text" placeholder="請輸入想要查找的戲劇名稱" />
+      <div style={{ position: 'relative' }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '10px',
+            transform: 'translate(0, -50%)',
+          }}
+        >
+          🔍
+        </div>
+        <SearchBar
+          style={{ paddingLeft: '40px' }}
+          type="text"
+          placeholder="請輸入想要查找的戲劇名稱"
+          onChange={handleSearchInput}
+        />
+      </div>
       <FilterPanel>
         <FilterNavBar>
           {filterData.type.map((type, index) => {
@@ -615,7 +643,7 @@ function Home() {
       </FilterPanel>
       <DramasSection>
         {isLoading &&
-          filteredByMultiFiltersDramas.map((drama, index) => {
+          filteredAndQueriedDramas.map((drama, index) => {
             return (
               <Drama
                 onClick={() => handleDramaCard(drama)}
@@ -624,11 +652,30 @@ function Home() {
                   backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
                 }}
               >
-                <div>{drama.title}</div>
-                <div>{drama.year}</div>
-                <div>{drama.rating}/5</div>
-                <div>{drama.genre}</div>
-                <div>{drama.type}</div>
+                <div style={{ fontSize: '18px' }}>{drama.title}</div>
+                <div style={{ fontSize: '12px', color: '#bbbbbb' }}>
+                  {drama.eng}
+                </div>
+                <div
+                  style={{ display: 'flex', gap: '4px', alignItems: 'center' }}
+                >
+                  <div style={{ fontSize: '10px' }}>{drama.year} |</div>
+                  <div style={{ fontSize: '10px' }}>{drama.type} |</div>
+                  <div style={{ fontSize: '10px' }}>{drama.genre}</div>
+                </div>
+                <div style={{ display: 'flex' }}>
+                  <div style={{ fontSize: '18px', fontWeight: '900' }}>
+                    {drama.rating}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      marginTop: '5px',
+                    }}
+                  >
+                    /5
+                  </div>
+                </div>
               </Drama>
             );
           })}

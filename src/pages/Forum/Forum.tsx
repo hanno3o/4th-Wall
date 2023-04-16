@@ -23,7 +23,7 @@ const WelcomeMessage = styled.div`
 const SearchBar = styled.input`
   border-radius: 5px;
   border: #b6b6b6 solid 1px;
-  height: 30px;
+  height: 36px;
   width: 100%;
   padding: 10px;
 `;
@@ -125,12 +125,18 @@ function Forum() {
   const [isLoading, setIsLoading] = useState(false);
   const [articles, setArticles] = useState<IArticles[]>([]);
   const [selectedBoard, setSelectedBoard] = useState<string | undefined>('');
+  const [searchWords, setSearchWords] = useState('');
   const [board, setBoard] = useState<string>('TaiwanDrama');
   const userName = useAppSelector((state) => state.user.userName);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 10;
   const totalPages = Math.ceil(articles.length / PAGE_SIZE);
-  const currentPageArticles = articles
+
+  const displayedArticles = articles.filter((article) =>
+    article.title?.includes(searchWords)
+  );
+
+  const currentPageArticles = displayedArticles
     .sort((a, b) => {
       if (a.date && b.date) {
         return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -142,6 +148,10 @@ function Forum() {
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
+  };
+
+  const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchWords(e.target.value);
   };
 
   useEffect(() => {
@@ -175,7 +185,24 @@ function Forum() {
   return (
     <Wrapper>
       <WelcomeMessage>歡迎來到 4th forum 一起討論戲劇！</WelcomeMessage>
-      <SearchBar type="text" placeholder="請輸入想要查找的文章標題" />
+      <div style={{ position: 'relative' }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '10px',
+            transform: 'translate(0, -50%)',
+          }}
+        >
+          🔍
+        </div>
+        <SearchBar
+          style={{ paddingLeft: '40px' }}
+          type="text"
+          placeholder="請輸入想要查找的文章標題"
+          onChange={handleSearchInput}
+        />
+      </div>
       <Boards>
         {BoardsData.boards.map((board, index) => {
           return (

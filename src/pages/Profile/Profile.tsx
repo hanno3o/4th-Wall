@@ -72,7 +72,7 @@ const RecordData = styled.div`
 const SearchBar = styled.input`
   border-radius: 5px;
   border: #b6b6b6 solid 1px;
-  height: 30px;
+  height: 36px;
   width: 200px;
   padding: 10px;
 `;
@@ -112,7 +112,7 @@ const Drama = styled.div`
   font-weight: 700;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   justify-content: flex-end;
   align-items: flex-start;
   padding: 20px;
@@ -149,6 +149,7 @@ function Profile() {
   const filterData = {
     type: ['所有影集', '台劇', '韓劇', '動畫', '美劇'],
   };
+  const [searchWords, setSearchWords] = useState('');
   const [editing, setEditing] = useState(false);
   const [updatedUserName, setUpdatedUserName] = useState(userName);
   const dramaList = useAppSelector((state) => state.user.dramaList);
@@ -159,6 +160,12 @@ function Profile() {
     { title: '已收藏的劇', data: userDramaList.length },
     { title: '發文數', data: 36 },
   ];
+  const displayedDramaList = userDramaList.filter(
+    (drama) =>
+      drama.eng?.toLowerCase().includes(searchWords.toLowerCase()) ||
+      drama.title?.includes(searchWords)
+  );
+
   useEffect(() => {
     const getDramaList = async () => {
       if (dramaList) {
@@ -213,6 +220,10 @@ function Profile() {
 
   const handleRemoveFromList = (dramaIdToRemove: string) => {
     dispatch(removeFromDramaList(dramaIdToRemove));
+  };
+
+  const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchWords(e.target.value);
   };
 
   return (
@@ -288,18 +299,45 @@ function Profile() {
               return <div>{type}</div>;
             })}
           </Filters>
-          <SearchBar type="text" placeholder="Search" />
+          <div style={{ position: 'relative' }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '10px',
+                transform: 'translate(0, -50%)',
+              }}
+            >
+              🔍
+            </div>
+            <SearchBar
+              style={{ paddingLeft: '40px' }}
+              type="text"
+              placeholder="Search"
+              onChange={handleSearchInput}
+            />
+          </div>
         </ListNavBar>
         <hr className="my-4" />
         <Dramas>
-          {userDramaList.map((drama) => (
+          {displayedDramaList.map((drama) => (
             <>
               <Drama
                 style={{
                   backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
                 }}
               >
-                <div>{drama.title}</div>
+                <div style={{ fontSize: '18px' }}>{drama.title}</div>
+                <div style={{ fontSize: '12px', color: '#bbbbbb' }}>
+                  {drama.eng}
+                </div>
+                <div
+                  style={{ display: 'flex', gap: '4px', alignItems: 'center' }}
+                >
+                  <div style={{ fontSize: '10px' }}>{drama.year} |</div>
+                  <div style={{ fontSize: '10px' }}>{drama.type} |</div>
+                  <div style={{ fontSize: '10px' }}>{drama.genre}</div>
+                </div>
                 <RemoveFromListButton
                   onClick={() => {
                     alert(`確定要從片單中移除 ${drama.title} 嗎？`);
