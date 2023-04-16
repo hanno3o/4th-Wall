@@ -658,6 +658,7 @@ function Home() {
                             width: '42px',
                             height: '42px',
                             marginRight: '10px',
+                            objectFit: 'cover',
                           }}
                           src={avatar}
                           alt=""
@@ -744,12 +745,18 @@ function Home() {
                 >
                   <div
                     style={{
-                      fontSize: '14px',
+                      fontSize: '18px',
                       fontWeight: '900',
-                      marginBottom: '10px',
                     }}
                   >
                     評論
+                  </div>
+                  <div
+                    style={{
+                      height: '700px',
+                      overflowY: 'scroll',
+                    }}
+                  >
                     {userReview && (
                       <>
                         <div
@@ -768,6 +775,7 @@ function Home() {
                               width: '42px',
                               height: '42px',
                               marginRight: '10px',
+                              objectFit: 'cover',
                             }}
                             src={userReview?.avatar}
                             alt=""
@@ -917,6 +925,7 @@ function Home() {
                                   width: '42px',
                                   height: '42px',
                                   marginRight: '10px',
+                                  objectFit: 'cover',
                                 }}
                                 src={review.avatar}
                                 alt=""
@@ -1003,7 +1012,7 @@ function Home() {
                     }}
                     src={dramaCard?.image}
                     alt=""
-                  ></img>
+                  />
                   <DramaCardMainInfo>
                     <DramaCardTitle>{dramaCard?.title}</DramaCardTitle>
                     <DramaCardSubTitle>{dramaCard?.eng}</DramaCardSubTitle>
