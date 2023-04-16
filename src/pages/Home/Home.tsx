@@ -321,7 +321,8 @@ function Home() {
     '所有影集'
   );
   const [dramaCard, setDramaCard] = useState<IDrama>();
-  const [reviews, setReviews] = useState<IReview[]>([]);
+  const [userReview, setUserReview] = useState<IReview | undefined>(undefined);
+  const [filteredReviews, setFilteredReviews] = useState<IReview[]>([]);
   const [writtenReview, setWrittenReview] = useState<string | undefined>();
   const [userRating, setUserRating] = useState(0);
   const userName = useAppSelector((state) => state.user.userName);
@@ -334,7 +335,7 @@ function Home() {
   const getAverageRatings = async () => {
     if (dramaId) {
       const reviewRef = doc(db, 'dramas', dramaId);
-      const totalStars = reviews.reduce((acc, review) => {
+      const totalStars = filteredReviews.reduce((acc, review) => {
         if (review.rating) {
           return acc + review.rating;
         } else {
@@ -342,7 +343,9 @@ function Home() {
         }
       }, 0);
       const averageRating =
-        reviews.length > 0 ? (totalStars / reviews.length).toFixed(1) : 0;
+        filteredReviews.length > 0
+          ? (totalStars / filteredReviews.length).toFixed(1)
+          : 0;
       await updateDoc(reviewRef, { rating: averageRating });
     }
   };
@@ -372,7 +375,17 @@ function Home() {
         };
         reviewsArr.push(review);
       }
-      setReviews(reviewsArr);
+      const filteredReviewsArr = reviewsArr.filter(
+        (review: { id: string | null }) => {
+          return review.id !== id;
+        }
+      );
+      const userReview = reviewsArr.filter((review: { id: string | null }) => {
+        return review.id === id;
+      });
+
+      setFilteredReviews(filteredReviewsArr);
+      setUserReview(userReview[0]);
     }
   };
 
@@ -400,7 +413,7 @@ function Home() {
 
   useEffect(() => {
     getAverageRatings();
-  }, [reviews]);
+  }, [filteredReviews]);
 
   function handleTypeFilter(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     setSelectedTypeFilter(e.currentTarget.textContent);
@@ -580,86 +593,101 @@ function Home() {
                   marginRight: '40px',
                 }}
               >
-                <div style={{ display: 'flex' }}>
-                  {avatar && (
-                    <img
-                      style={{
-                        borderRadius: '50%',
-                        width: '42px',
-                        height: '42px',
-                        marginRight: '10px',
-                      }}
-                      src={avatar}
-                      alt=""
-                    />
-                  )}
-                  <div style={{ width: '100%' }}>
-                    <div>
-                      {[...Array(5)].map((_, index) => {
-                        index += 1;
-                        return (
-                          <UserRatingStars
-                            key={index}
-                            className={index <= userRating ? 'on' : 'off'}
-                            isFilled={index <= userRating}
-                            onMouseOver={() => setUserRating(index)}
-                            onKeyPress={(e) => {
-                              if (userRating) {
-                                if (e.key === 'Enter') {
-                                  handleUploadReview();
-                                }
-                              }
-                            }}
-                          >
-                            <span style={{ fontSize: '24px' }}>&#9733;</span>
-                          </UserRatingStars>
-                        );
-                      })}
-                    </div>
-                    <ReviewInputField
-                      type="text"
-                      value={writtenReview}
-                      placeholder={
-                        userName
-                          ? `留下你對 ${dramaCard?.title} 的評論！`
-                          : '要先登入才能使用評論功能喔！'
-                      }
-                      disabled={!userName}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        setWrittenReview(e.target.value);
-                      }}
-                      onKeyPress={(e) => {
-                        if (userRating) {
-                          if (e.key === 'Enter') {
-                            handleUploadReview();
+                {userReview ? null : (
+                  <div
+                    style={{
+                      width: '320px',
+                      marginRight: '40px',
+                      height: '90px',
+                      marginBottom: '20px',
+                    }}
+                  >
+                    <div style={{ display: 'flex' }}>
+                      {avatar && (
+                        <img
+                          style={{
+                            borderRadius: '50%',
+                            width: '42px',
+                            height: '42px',
+                            marginRight: '10px',
+                          }}
+                          src={avatar}
+                          alt=""
+                        />
+                      )}
+                      <div style={{ width: '100%' }}>
+                        <div>
+                          {[...Array(5)].map((_, index) => {
+                            index += 1;
+                            return (
+                              <UserRatingStars
+                                key={index}
+                                className={index <= userRating ? 'on' : 'off'}
+                                isFilled={index <= userRating}
+                                onMouseOver={() => setUserRating(index)}
+                                onKeyPress={(e) => {
+                                  if (userRating) {
+                                    if (e.key === 'Enter') {
+                                      handleUploadReview();
+                                    }
+                                  }
+                                }}
+                              >
+                                <span style={{ fontSize: '24px' }}>
+                                  &#9733;
+                                </span>
+                              </UserRatingStars>
+                            );
+                          })}
+                        </div>
+                        <ReviewInputField
+                          type="text"
+                          value={writtenReview}
+                          placeholder={
+                            userName
+                              ? `留下你對 ${dramaCard?.title} 的評論！`
+                              : '要先登入才能使用評論功能喔！'
                           }
-                        } else {
-                          alert('要先選擇星星數才能送出評論喔～');
-                        }
-                      }}
-                    />
-                    <button
-                      style={{
-                        fontSize: '12px',
-                        marginTop: '12px',
-                        textAlign: 'right',
-                        width: '100%',
-                      }}
-                      onClick={() => {
-                        if (userRating) {
-                          handleUploadReview();
-                        } else {
-                          alert('要先選擇星星數才能送出評論喔～');
-                        }
-                      }}
-                    >
-                      送出
-                    </button>
+                          disabled={!userName}
+                          onChange={(
+                            e: React.ChangeEvent<HTMLInputElement>
+                          ) => {
+                            setWrittenReview(e.target.value);
+                          }}
+                          onKeyPress={(e) => {
+                            if (userRating) {
+                              if (e.key === 'Enter') {
+                                handleUploadReview();
+                              }
+                            } else {
+                              alert('要先選擇星星數才能送出評論喔～');
+                            }
+                          }}
+                        />
+                        <button
+                          style={{
+                            fontSize: '12px',
+                            marginTop: '12px',
+                            textAlign: 'right',
+                            width: '100%',
+                          }}
+                          onClick={() => {
+                            if (userRating) {
+                              handleUploadReview();
+                            } else {
+                              alert('要先選擇星星數才能送出評論喔～');
+                            }
+                          }}
+                        >
+                          送出
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+
                 <div
                   style={{
-                    marginTop: '20px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '4px',
@@ -674,7 +702,77 @@ function Home() {
                     }}
                   >
                     評論
-                    {reviews
+                    {userReview && (
+                      <>
+                        <div
+                          style={{
+                            display: 'flex',
+                            margin: '14px 0',
+                            fontSize: '13px',
+                            padding: '14px 8px',
+                            borderRadius: '5px',
+                            backgroundColor: '#000',
+                          }}
+                        >
+                          <img
+                            style={{
+                              borderRadius: '50%',
+                              width: '42px',
+                              height: '42px',
+                              marginRight: '10px',
+                            }}
+                            src={userReview?.avatar}
+                            alt=""
+                          />
+                          <div style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              {userReview?.rating && (
+                                <div>
+                                  {Array.from(
+                                    { length: userReview?.rating },
+                                    (_, index) => (
+                                      <span key={index}>★</span>
+                                    )
+                                  )}
+                                  {Array.from(
+                                    { length: 5 - userReview?.rating },
+                                    (_, index) => (
+                                      <span key={userReview?.rating! + index}>
+                                        ☆
+                                      </span>
+                                    )
+                                  )}
+                                </div>
+                              )}
+                              <div>
+                                {userReview.date
+                                  ? new Date(
+                                      userReview.date
+                                    ).toLocaleDateString()
+                                  : null}
+                              </div>
+                              <div>📌</div>
+                            </div>
+                            <div style={{ display: 'flex' }}>
+                              <ReviewInputField
+                                type="text"
+                                value={userReview?.writtenReview}
+                                style={{
+                                  color: '#fff',
+                                  backgroundColor: 'transparent',
+                                  padding: '0',
+                                  marginTop: '8px',
+                                  height: 'fit-content',
+                                }}
+                                disabled
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex' }}></div>
+                      </>
+                    )}
+                    {filteredReviews
                       .sort((a, b) => {
                         if (a.date && b.date) {
                           return (
@@ -691,7 +789,7 @@ function Home() {
                             <div
                               style={{
                                 display: 'flex',
-                                padding: '10px 0',
+                                padding: '10px 8px',
                                 fontSize: '12px',
                               }}
                             >
@@ -754,7 +852,7 @@ function Home() {
                                 </div>
                               </div>
                             </div>
-                            {reviews.length > 1 && (
+                            {filteredReviews.length > 1 && (
                               <hr
                                 style={{
                                   margin: '6px 0',
@@ -791,7 +889,7 @@ function Home() {
                     </DramaCardType>
                     <DramaCardRating>{dramaCard?.rating}/5</DramaCardRating>
                     <DramaCardDescription>
-                      已有 {reviews.length} 人留下評價
+                      已有 {filteredReviews.length} 人留下評價
                     </DramaCardDescription>
                     <div>
                       <DramaCardDescriptionTitle>
