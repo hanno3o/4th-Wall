@@ -132,7 +132,7 @@ const Drama = styled.div`
   font-weight: 700;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   justify-content: flex-end;
   align-items: flex-start;
   padding: 20px;
@@ -652,11 +652,30 @@ function Home() {
                   backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
                 }}
               >
-                <div>{drama.title}</div>
-                <div>{drama.year}</div>
-                <div>{drama.rating}/5</div>
-                <div>{drama.genre}</div>
-                <div>{drama.type}</div>
+                <div style={{ fontSize: '18px' }}>{drama.title}</div>
+                <div style={{ fontSize: '12px', color: '#bbbbbb' }}>
+                  {drama.eng}
+                </div>
+                <div
+                  style={{ display: 'flex', gap: '4px', alignItems: 'center' }}
+                >
+                  <div style={{ fontSize: '10px' }}>{drama.year} |</div>
+                  <div style={{ fontSize: '10px' }}>{drama.type} |</div>
+                  <div style={{ fontSize: '10px' }}>{drama.genre}</div>
+                </div>
+                <div style={{ display: 'flex' }}>
+                  <div style={{ fontSize: '18px', fontWeight: '900' }}>
+                    {drama.rating}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      marginTop: '5px',
+                    }}
+                  >
+                    /5
+                  </div>
+                </div>
               </Drama>
             );
           })}
