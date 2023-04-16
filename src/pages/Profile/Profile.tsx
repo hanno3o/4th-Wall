@@ -72,7 +72,7 @@ const RecordData = styled.div`
 const SearchBar = styled.input`
   border-radius: 5px;
   border: #b6b6b6 solid 1px;
-  height: 30px;
+  height: 36px;
   width: 200px;
   padding: 10px;
 `;
@@ -288,7 +288,23 @@ function Profile() {
               return <div>{type}</div>;
             })}
           </Filters>
-          <SearchBar type="text" placeholder="Search" />
+          <div style={{ position: 'relative' }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '10px',
+                transform: 'translate(0, -50%)',
+              }}
+            >
+              🔍
+            </div>
+            <SearchBar
+              style={{ paddingLeft: '40px' }}
+              type="text"
+              placeholder="Search"
+            />
+          </div>
         </ListNavBar>
         <hr className="my-4" />
         <Dramas>

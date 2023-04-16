@@ -28,7 +28,7 @@ const Wrapper = styled.div`
 const SearchBar = styled.input`
   border-radius: 5px;
   border: #b6b6b6 solid 1px;
-  height: 30px;
+  height: 36px;
   width: 100%;
   padding: 10px;
 `;
@@ -572,7 +572,23 @@ function Home() {
 
   return (
     <Wrapper>
-      <SearchBar type="text" placeholder="請輸入想要查找的戲劇名稱" />
+      <div style={{ position: 'relative' }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '10px',
+            transform: 'translate(0, -50%)',
+          }}
+        >
+          🔍
+        </div>
+        <SearchBar
+          style={{ paddingLeft: '40px' }}
+          type="text"
+          placeholder="請輸入想要查找的戲劇名稱"
+        />
+      </div>
       <FilterPanel>
         <FilterNavBar>
           {filterData.type.map((type, index) => {

@@ -23,7 +23,7 @@ const WelcomeMessage = styled.div`
 const SearchBar = styled.input`
   border-radius: 5px;
   border: #b6b6b6 solid 1px;
-  height: 30px;
+  height: 36px;
   width: 100%;
   padding: 10px;
 `;
@@ -175,7 +175,23 @@ function Forum() {
   return (
     <Wrapper>
       <WelcomeMessage>歡迎來到 4th forum 一起討論戲劇！</WelcomeMessage>
-      <SearchBar type="text" placeholder="請輸入想要查找的文章標題" />
+      <div style={{ position: 'relative' }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '10px',
+            transform: 'translate(0, -50%)',
+          }}
+        >
+          🔍
+        </div>
+        <SearchBar
+          style={{ paddingLeft: '40px' }}
+          type="text"
+          placeholder="請輸入想要查找的文章標題"
+        />
+      </div>
       <Boards>
         {BoardsData.boards.map((board, index) => {
           return (
