@@ -504,7 +504,8 @@ function Home() {
 
   const filteredAndQueriedDramas = filteredByMultiFiltersDramas.filter(
     (drama) =>
-      drama.eng?.includes(searchWords) || drama.title?.includes(searchWords)
+      drama.eng?.toLowerCase().includes(searchWords.toLowerCase()) ||
+      drama.title?.includes(searchWords)
   );
 
   const handleAlert = () => {

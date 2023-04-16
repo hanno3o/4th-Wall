@@ -162,7 +162,8 @@ function Profile() {
   ];
   const displayedDramaList = userDramaList.filter(
     (drama) =>
-      drama.eng?.includes(searchWords) || drama.title?.includes(searchWords)
+      drama.eng?.toLowerCase().includes(searchWords.toLowerCase()) ||
+      drama.title?.includes(searchWords)
   );
 
   useEffect(() => {
@@ -221,9 +222,9 @@ function Profile() {
     dispatch(removeFromDramaList(dramaIdToRemove));
   };
 
-  const handleSearchInput =(e: React.ChangeEvent<HTMLInputElement>)  =>{
+  const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchWords(e.target.value);
-  }
+  };
 
   return (
     <Wrapper>
