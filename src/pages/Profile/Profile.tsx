@@ -149,6 +149,7 @@ function Profile() {
   const filterData = {
     type: ['所有影集', '台劇', '韓劇', '動畫', '美劇'],
   };
+  const [searchWords, setSearchWords] = useState('');
   const [editing, setEditing] = useState(false);
   const [updatedUserName, setUpdatedUserName] = useState(userName);
   const dramaList = useAppSelector((state) => state.user.dramaList);
@@ -159,6 +160,11 @@ function Profile() {
     { title: '已收藏的劇', data: userDramaList.length },
     { title: '發文數', data: 36 },
   ];
+  const displayedDramaList = userDramaList.filter(
+    (drama) =>
+      drama.eng?.includes(searchWords) || drama.title?.includes(searchWords)
+  );
+
   useEffect(() => {
     const getDramaList = async () => {
       if (dramaList) {
@@ -214,6 +220,10 @@ function Profile() {
   const handleRemoveFromList = (dramaIdToRemove: string) => {
     dispatch(removeFromDramaList(dramaIdToRemove));
   };
+
+  const handleSearchInput =(e: React.ChangeEvent<HTMLInputElement>)  =>{
+    setSearchWords(e.target.value);
+  }
 
   return (
     <Wrapper>
@@ -303,12 +313,13 @@ function Profile() {
               style={{ paddingLeft: '40px' }}
               type="text"
               placeholder="Search"
+              onChange={handleSearchInput}
             />
           </div>
         </ListNavBar>
         <hr className="my-4" />
         <Dramas>
-          {userDramaList.map((drama) => (
+          {displayedDramaList.map((drama) => (
             <>
               <Drama
                 style={{

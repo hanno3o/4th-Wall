@@ -315,6 +315,7 @@ function Home() {
   const dramasCollectionRef = collection(db, 'dramas');
   const [isLoading, setIsLoading] = useState(false);
   const [dramas, setDramas] = useState<IDrama[]>([]);
+  const [searchWords, setSearchWords] = useState('');
   const [cast, setCast] = useState<ICast[]>([]);
   const [genre, setGenre] = useState<string[]>([]);
   const [order, setOrder] = useState('');
@@ -421,6 +422,10 @@ function Home() {
     getAverageRatings();
   }, [filteredReviews]);
 
+  function handleSearchInput(e: React.ChangeEvent<HTMLInputElement>) {
+    setSearchWords(e.target.value);
+  }
+
   function handleTypeFilter(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     setSelectedTypeFilter(e.currentTarget.textContent);
   }
@@ -496,6 +501,11 @@ function Home() {
       }
       return 0;
     });
+
+  const filteredAndQueriedDramas = filteredByMultiFiltersDramas.filter(
+    (drama) =>
+      drama.eng?.includes(searchWords) || drama.title?.includes(searchWords)
+  );
 
   const handleAlert = () => {
     alert('要先登入才能加入喜愛的戲劇到自己的片單喔！');
@@ -587,6 +597,7 @@ function Home() {
           style={{ paddingLeft: '40px' }}
           type="text"
           placeholder="請輸入想要查找的戲劇名稱"
+          onChange={handleSearchInput}
         />
       </div>
       <FilterPanel>
@@ -631,7 +642,7 @@ function Home() {
       </FilterPanel>
       <DramasSection>
         {isLoading &&
-          filteredByMultiFiltersDramas.map((drama, index) => {
+          filteredAndQueriedDramas.map((drama, index) => {
             return (
               <Drama
                 onClick={() => handleDramaCard(drama)}
