@@ -7,6 +7,7 @@ import {
   doc,
   updateDoc,
   setDoc,
+  deleteDoc,
 } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
@@ -228,12 +229,13 @@ const UserRatingStars = styled.button<UserRatingStarsProps>`
 `;
 
 const ReviewInputField = styled.input`
+  color: #000;
   cursor: text;
   width: 100%;
   margin-top: 10px;
+  margin-right: 10px;
   font-size: 12px;
-  color: #000;
-  padding: 10px;
+  padding: 4px 2px;
   border-radius: 5px;
 `;
 interface TypeFilterProps {
@@ -322,12 +324,16 @@ function Home() {
   );
   const [dramaCard, setDramaCard] = useState<IDrama>();
   const [userReview, setUserReview] = useState<IReview | undefined>(undefined);
+  const [allReviews, setAllReviews] = useState<IReview[]>([]);
   const [filteredReviews, setFilteredReviews] = useState<IReview[]>([]);
   const [writtenReview, setWrittenReview] = useState<string | undefined>();
   const [userRating, setUserRating] = useState(0);
+  const [editing, setEditing] = useState(false);
+  const [updatedUserReview, setUpdatedUserReview] = useState('');
+
   const userName = useAppSelector((state) => state.user.userName);
   const avatar = useAppSelector((state) => state.user.avatar);
-  const id = useAppSelector((state) => state.user.id);
+  const userId = useAppSelector((state) => state.user.id);
   const dramaList = useAppSelector((state) => state.user.dramaList);
   const dispatch = useAppDispatch();
   const dramaId = dramaCard?.id;
@@ -335,7 +341,7 @@ function Home() {
   const getAverageRatings = async () => {
     if (dramaId) {
       const reviewRef = doc(db, 'dramas', dramaId);
-      const totalStars = filteredReviews.reduce((acc, review) => {
+      const totalStars = allReviews.reduce((acc, review) => {
         if (review.rating) {
           return acc + review.rating;
         } else {
@@ -343,9 +349,7 @@ function Home() {
         }
       }, 0);
       const averageRating =
-        filteredReviews.length > 0
-          ? (totalStars / filteredReviews.length).toFixed(1)
-          : 0;
+        allReviews.length > 0 ? (totalStars / allReviews.length).toFixed(1) : 0;
       await updateDoc(reviewRef, { rating: averageRating });
     }
   };
@@ -375,15 +379,17 @@ function Home() {
         };
         reviewsArr.push(review);
       }
+
       const filteredReviewsArr = reviewsArr.filter(
         (review: { id: string | null }) => {
-          return review.id !== id;
+          return review.id !== userId;
         }
       );
       const userReview = reviewsArr.filter((review: { id: string | null }) => {
-        return review.id === id;
+        return review.id === userId;
       });
 
+      setAllReviews(reviewsArr);
       setFilteredReviews(filteredReviewsArr);
       setUserReview(userReview[0]);
     }
@@ -496,9 +502,9 @@ function Home() {
   };
 
   const handleAddToDramaList = async () => {
-    if (dramaCard?.id && id) {
+    if (dramaCard?.id && userId) {
       dispatch(addToDramaList(dramaCard?.id));
-      const userRef = doc(db, 'users', id);
+      const userRef = doc(db, 'users', userId);
       await updateDoc(userRef, { dramaList: dramaList });
     }
   };
@@ -509,8 +515,8 @@ function Home() {
   };
 
   const handleUploadReview = async () => {
-    if (dramaId && id) {
-      await setDoc(doc(db, 'dramas', dramaId, 'reviews', id), {
+    if (dramaId && userId) {
+      await setDoc(doc(db, 'dramas', dramaId, 'reviews', userId), {
         date: Date.now(),
         rating: userRating,
         writtenReview: writtenReview,
@@ -519,6 +525,48 @@ function Home() {
       setUserRating(0);
       getReviews();
       getAverageRatings();
+      setEditing(false);
+    }
+  };
+
+  const handleEditReview = () => {
+    setEditing(true);
+  };
+
+  const handleReviewInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUpdatedUserReview(e.target.value);
+  };
+
+  const handleSaveReview = async () => {
+    setEditing(false);
+    if (dramaId && userId) {
+      const reviewRef = doc(db, 'dramas', dramaId, 'reviews', userId);
+      await updateDoc(reviewRef, {
+        date: Date.now(),
+        rating: userRating,
+        writtenReview: updatedUserReview,
+      });
+      getReviews();
+    }
+  };
+
+  const handleRemoveReview = async () => {
+    if (dramaId) {
+      try {
+        const reviewsRef = collection(db, 'dramas', dramaId, 'reviews');
+        const reviewsSnapshot = await getDocs(reviewsRef);
+        for (const singleDoc of reviewsSnapshot.docs) {
+          const reviewId = singleDoc.id;
+          if (reviewId === userId) {
+            const reviewDocRef = doc(reviewsRef, reviewId);
+            await deleteDoc(reviewDocRef);
+            break;
+          }
+        }
+        getReviews();
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
@@ -641,6 +689,7 @@ function Home() {
                           })}
                         </div>
                         <ReviewInputField
+                          style={{ padding: '10px' }}
                           type="text"
                           value={writtenReview}
                           placeholder={
@@ -685,7 +734,6 @@ function Home() {
                     </div>
                   </div>
                 )}
-
                 <div
                   style={{
                     display: 'flex',
@@ -726,23 +774,45 @@ function Home() {
                           />
                           <div style={{ width: '100%' }}>
                             <div style={{ display: 'flex', gap: '8px' }}>
-                              {userReview?.rating && (
+                              {editing ? (
                                 <div>
-                                  {Array.from(
-                                    { length: userReview?.rating },
-                                    (_, index) => (
-                                      <span key={index}>★</span>
-                                    )
-                                  )}
-                                  {Array.from(
-                                    { length: 5 - userReview?.rating },
-                                    (_, index) => (
-                                      <span key={userReview?.rating! + index}>
-                                        ☆
-                                      </span>
-                                    )
-                                  )}
+                                  {[...Array(5)].map((_, index) => {
+                                    index += 1;
+                                    return (
+                                      <UserRatingStars
+                                        key={index}
+                                        className={
+                                          index <= userRating ? 'on' : 'off'
+                                        }
+                                        isFilled={index <= userRating}
+                                        onMouseOver={() => setUserRating(index)}
+                                      >
+                                        <span style={{ fontSize: '13px' }}>
+                                          &#9733;
+                                        </span>
+                                      </UserRatingStars>
+                                    );
+                                  })}
                                 </div>
+                              ) : (
+                                userReview?.rating && (
+                                  <div>
+                                    {Array.from(
+                                      { length: userReview?.rating },
+                                      (_, index) => (
+                                        <span key={index}>★</span>
+                                      )
+                                    )}
+                                    {Array.from(
+                                      { length: 5 - userReview?.rating },
+                                      (_, index) => (
+                                        <span key={userReview?.rating! + index}>
+                                          ☆
+                                        </span>
+                                      )
+                                    )}
+                                  </div>
+                                )
                               )}
                               <div>
                                 {userReview.date
@@ -754,18 +824,66 @@ function Home() {
                               <div>📌</div>
                             </div>
                             <div style={{ display: 'flex' }}>
-                              <ReviewInputField
-                                type="text"
-                                value={userReview?.writtenReview}
+                              {editing ? (
+                                <>
+                                  <ReviewInputField
+                                    type="text"
+                                    style={{
+                                      color: '#000',
+                                      marginTop: '8px',
+                                    }}
+                                    placeholder={userReview?.writtenReview}
+                                    onChange={handleReviewInputChange}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        if (userRating) {
+                                          handleSaveReview();
+                                        } else {
+                                          alert(
+                                            '要先選擇星星數才能送出評論喔～'
+                                          );
+                                        }
+                                      }
+                                    }}
+                                  />
+                                </>
+                              ) : (
+                                <ReviewInputField
+                                  type="text"
+                                  value={userReview?.writtenReview}
+                                  style={{
+                                    color: '#fff',
+                                    backgroundColor: 'transparent',
+                                    marginTop: '8px',
+                                  }}
+                                  disabled
+                                />
+                              )}
+                              <button
+                                style={{
+                                  marginTop: '16px',
+                                  marginRight: '10px',
+                                  fontSize: '10px',
+                                }}
+                                onClick={
+                                  editing && userRating
+                                    ? handleSaveReview
+                                    : handleEditReview
+                                }
+                              >
+                                {editing ? 'Save' : '🖋'}
+                              </button>
+                              <button
+                                onClick={handleRemoveReview}
                                 style={{
                                   color: '#fff',
                                   backgroundColor: 'transparent',
-                                  padding: '0',
-                                  marginTop: '8px',
-                                  height: 'fit-content',
+                                  marginTop: '14px',
+                                  marginRight: '10px',
                                 }}
-                                disabled
-                              />
+                              >
+                                🗑
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -847,7 +965,12 @@ function Home() {
                                       : null}
                                   </div>
                                 </div>
-                                <div style={{ fontWeight: '900' }}>
+                                <div
+                                  style={{
+                                    fontWeight: '900',
+                                    lineHeight: '18px',
+                                  }}
+                                >
                                   {review.writtenReview}
                                 </div>
                               </div>
@@ -889,7 +1012,7 @@ function Home() {
                     </DramaCardType>
                     <DramaCardRating>{dramaCard?.rating}/5</DramaCardRating>
                     <DramaCardDescription>
-                      已有 {filteredReviews.length} 人留下評價
+                      已有 {allReviews.length} 人留下評價
                     </DramaCardDescription>
                     <div>
                       <DramaCardDescriptionTitle>
@@ -945,6 +1068,7 @@ function Home() {
                         setDramaCard(undefined);
                         setWrittenReview('');
                         setUserRating(0);
+                        setEditing(false);
                       }}
                     >
                       ✕
