@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { db } from '../../config/firebase.config';
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 import { useAppSelector } from '../../redux/hooks';
 
 const Wrapper = styled.div`
@@ -43,6 +43,7 @@ interface IArticle {
 }
 
 interface IComments {
+  id?: string;
   userName?: string;
   comment?: string;
   date?: Date;
@@ -55,23 +56,45 @@ function Article() {
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
   const [comments, setComments] = useState<IComments[]>([]);
+  const [writtenComment, setWrittenComment] = useState<string>('');
   const articleRef =
     id && boardName ? doc(db, 'forum', boardName, 'articles', id) : undefined;
 
-  useEffect(() => {
-    async function getArticle() {
-      if (articleRef) {
-        const articleSnapshot = await getDoc(articleRef);
-        setArticle(articleSnapshot.data() as IArticle);
-        setIsLoading(false);
-        const commentsRef = articleRef && collection(articleRef, 'comments');
-        const commentsSnapshot = await getDocs(commentsRef);
-        setComments(commentsSnapshot.docs.map((doc) => doc.data()));
-      }
+  const getArticleAndComments = async () => {
+    if (articleRef) {
+      const articleSnapshot = await getDoc(articleRef);
+      setArticle(articleSnapshot.data() as IArticle);
+      setIsLoading(false);
+      const commentsRef = articleRef && collection(articleRef, 'comments');
+      const commentsSnapshot = await getDocs(commentsRef);
+      setComments(
+        commentsSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+      );
     }
-
-    getArticle();
+  };
+  useEffect(() => {
+    getArticleAndComments();
   }, []);
+
+  const handleCommentInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setWrittenComment(e.target.value);
+  };
+
+  const handleUploadComment = async () => {
+    try {
+      if (articleRef && id) {
+        await setDoc(doc(articleRef, 'comments', `${Date.now()}`), {
+          date: Date.now(),
+          userName: userName,
+          comment: writtenComment,
+        });
+        setWrittenComment('');
+        getArticleAndComments();
+      }
+    } catch (err) {
+      console.error('Error uploading comment:', err);
+    }
+  };
 
   return (
     <Wrapper>
@@ -103,10 +126,13 @@ function Article() {
                       return 0;
                     }
                   })
-                  .map((comment) => {
+                  .map((comment, index) => {
                     return (
                       <>
-                        <div className="flex justify-between w-full">
+                        <div
+                          key={index}
+                          className="flex justify-between w-full"
+                        >
                           <div>
                             {comment.userName}:{comment.comment}
                           </div>
@@ -144,6 +170,7 @@ function Article() {
               )}
               <input
                 type="text"
+                value={writtenComment}
                 placeholder={
                   userName
                     ? '留言.......'
@@ -158,6 +185,12 @@ function Article() {
                   padding: '8px',
                   border: '#898989 solid 1px',
                   borderRadius: '5px',
+                }}
+                onChange={handleCommentInput}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleUploadComment();
+                  }
                 }}
                 disabled={!userName}
               />
