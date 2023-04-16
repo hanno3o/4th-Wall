@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { db } from '../../config/firebase.config';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { useAppSelector } from '../../redux/hooks';
 
 const Wrapper = styled.div`
@@ -42,12 +42,19 @@ interface IArticle {
   date?: Date;
 }
 
+interface IComments {
+  userName?: string;
+  comment?: string;
+  date?: Date;
+}
+
 function Article() {
   const userName = useAppSelector((state) => state.user.userName);
   const avatar = useAppSelector((state) => state.user.avatar);
   const { boardName, id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
+  const [comments, setComments] = useState<IComments[]>([]);
   const articleRef =
     id && boardName ? doc(db, 'forum', boardName, 'articles', id) : undefined;
 
@@ -57,8 +64,12 @@ function Article() {
         const articleSnapshot = await getDoc(articleRef);
         setArticle(articleSnapshot.data() as IArticle);
         setIsLoading(false);
+        const commentsRef = articleRef && collection(articleRef, 'comments');
+        const commentsSnapshot = await getDocs(commentsRef);
+        setComments(commentsSnapshot.docs.map((doc) => doc.data()));
       }
     }
+
     getArticle();
   }, []);
 
@@ -80,23 +91,34 @@ function Article() {
           />
           <div className="p-4 leading-6 mt-4 mx-6 h-96">
             <hr className="my-4"></hr>
-            <div className="flex justify-between w-full">
-              <div>furri: 韓國人說要當演員的人都開去看金編的劇，是教科書</div>
-              <div>03/27 22:26</div>
-            </div>
-            <div className="flex justify-between w-full">
-              <div>
-                hanno3o: 到底要以編劇為主還是演員為主 還是觀眾自己解讀為主
-              </div>
-              <div>03/27 23:04</div>
-            </div>
-            <div className="flex justify-between w-full">
-              <div>oliva: 最近重溫鬼怪， 金編的台詞都很有深度</div>
-              <div>03/28 00:26</div>
-            </div>
-            <div className="flex justify-between w-full">
-              <div>jpeg: 結果演員跟編劇想法不太一樣，這也是很妙XD</div>
-              <div>03/28 00:34</div>
+            <div>
+              {comments &&
+                comments
+                  .sort((a, b) => {
+                    if (a.date && b.date) {
+                      return (
+                        new Date(a.date).getTime() - new Date(b.date).getTime()
+                      );
+                    } else {
+                      return 0;
+                    }
+                  })
+                  .map((comment) => {
+                    return (
+                      <>
+                        <div className="flex justify-between w-full">
+                          <div>
+                            {comment.userName}:{comment.comment}
+                          </div>
+                          <div>
+                            {comment.date
+                              ? new Date(comment.date).toLocaleString()
+                              : null}
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })}
             </div>
             <div
               style={{

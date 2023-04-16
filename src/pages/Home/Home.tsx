@@ -357,13 +357,6 @@ function Home() {
 
   const getReviews = async () => {
     if (dramaId) {
-      const castsCollectionRef = collection(db, 'dramas', dramaId, 'cast');
-      const castSnapshot = await getDocs(castsCollectionRef);
-      const castArr: any = [];
-      castSnapshot.forEach((doc) => {
-        castArr.push(doc.data());
-      });
-      setCast(castArr);
       const reviewsRef = collection(db, 'dramas', dramaId, 'reviews');
       const reviewsSnapshot = await getDocs(reviewsRef);
       const reviewsArr: any = [];
