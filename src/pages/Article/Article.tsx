@@ -2,7 +2,14 @@ import styled from 'styled-components';
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { db } from '../../config/firebase.config';
-import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+} from 'firebase/firestore';
 import { useAppSelector } from '../../redux/hooks';
 
 const Wrapper = styled.div`
@@ -23,7 +30,7 @@ const ArticleHeader = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
 `;
 
@@ -76,8 +83,11 @@ function Article() {
     getArticleAndComments();
   }, []);
 
-  const handleCommentInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCommentInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setWrittenComment(e.target.value);
+    if (articleRef) {
+      await updateDoc(articleRef, { commentsNum: comments.length + 1 });
+    }
   };
 
   const handleUploadComment = async () => {
@@ -97,10 +107,15 @@ function Article() {
   };
 
   return (
-    <Wrapper>
+    <Wrapper
+      style={{
+        overflowY: 'scroll',
+        height: '100vh',
+      }}
+    >
       {isLoading && <p>loading...</p>}
       {!isLoading && article && (
-        <>
+        <div>
           <ArticleHeader>
             <Title>{`[${article.type}] ${article.title}`}</Title>
             <Info>
@@ -109,11 +124,25 @@ function Article() {
             </Info>
           </ArticleHeader>
           <div
+            style={{ fontSize: '18px', lineHeight: '32px' }}
             dangerouslySetInnerHTML={{ __html: article.content }}
-            className="p-4 leading-6 mt-8 mx-6"
+            className="p-4 mt-8 mx-6"
           />
-          <div className="p-4 leading-6 mt-4 mx-6 h-96">
-            <hr className="my-4"></hr>
+          <div className="p-4 mt-4 mx-6 h-96">
+            <div style={{ display: 'flex' }}>
+              <div
+                style={{
+                  fontSize: '22px',
+                  fontWeight: '700',
+                  marginBottom: '10px',
+                }}
+              >
+                留言區
+              </div>
+              <div style={{ fontSize: '14px', marginTop: '7px' }}>
+                （共有 {comments.length} 則留言）
+              </div>
+            </div>
             <div>
               {comments &&
                 comments
@@ -128,21 +157,41 @@ function Article() {
                   })
                   .map((comment, index) => {
                     return (
-                      <>
+                      <div>
                         <div
                           key={index}
-                          className="flex justify-between w-full"
+                          style={{
+                            padding: '20px 12px',
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            border: '#dcdcdc solid 1px',
+                            margin: '10px 0',
+                            borderRadius: '5px',
+                          }}
                         >
                           <div>
-                            {comment.userName}:{comment.comment}
+                            <div
+                              style={{
+                                fontSize: '16px',
+                                marginBottom: '8px',
+                                fontWeight: '500',
+                              }}
+                            >
+                              {comment.userName}
+                            </div>
+                            <div style={{ fontSize: '18px' }}>
+                              {comment.comment}
+                            </div>
                           </div>
-                          <div>
+
+                          <div style={{ marginTop: '24px' }}>
                             {comment.date
                               ? new Date(comment.date).toLocaleString()
                               : null}
                           </div>
                         </div>
-                      </>
+                      </div>
                     );
                   })}
             </div>
@@ -165,6 +214,7 @@ function Article() {
                     width: '40px',
                     height: '40px',
                     objectFit: 'cover',
+                    marginBottom: '200px',
                   }}
                 />
               )}
@@ -178,13 +228,15 @@ function Article() {
                 }
                 style={{
                   cursor: 'text',
-                  height: '40px',
+                  height: '65px',
                   width: '100%',
-                  fontSize: '16px',
                   color: '#2a2a2a',
                   padding: '8px',
                   border: '#898989 solid 1px',
                   borderRadius: '5px',
+                  marginTop: '10px',
+                  marginBottom: '200px',
+                  fontSize: '18px',
                 }}
                 onChange={handleCommentInput}
                 onKeyDown={(e) => {
@@ -196,7 +248,7 @@ function Article() {
               />
             </div>
           </div>
-        </>
+        </div>
       )}
     </Wrapper>
   );
