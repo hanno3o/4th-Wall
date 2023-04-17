@@ -52,6 +52,7 @@ interface IArticle {
 interface IComments {
   id?: string;
   userName?: string;
+  userId?: string;
   comment?: string;
   date?: Date;
 }
@@ -59,6 +60,7 @@ interface IComments {
 function Article() {
   const userName = useAppSelector((state) => state.user.userName);
   const avatar = useAppSelector((state) => state.user.avatar);
+  const userId = useAppSelector((state) => state.user.id);
   const { boardName, id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
@@ -68,15 +70,25 @@ function Article() {
     id && boardName ? doc(db, 'forum', boardName, 'articles', id) : undefined;
 
   const getArticleAndComments = async () => {
-    if (articleRef) {
+    if (articleRef && userId) {
       const articleSnapshot = await getDoc(articleRef);
       setArticle(articleSnapshot.data() as IArticle);
       setIsLoading(false);
       const commentsRef = articleRef && collection(articleRef, 'comments');
       const commentsSnapshot = await getDocs(commentsRef);
-      setComments(
-        commentsSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-      );
+      const commentsArr: any = [];
+      for (const singleDoc of commentsSnapshot.docs) {
+        const commentData = singleDoc.data();
+        const commentUserId = commentData.userId;
+        const userDoc = await getDoc(doc(db, 'users', commentUserId));
+        const userData = userDoc.data();
+        const comment = {
+          ...commentData,
+          userName: userData?.userName || '',
+        };
+        commentsArr.push(comment);
+      }
+      setComments(commentsArr);
     }
   };
   useEffect(() => {
@@ -95,7 +107,7 @@ function Article() {
       if (articleRef && id) {
         await setDoc(doc(articleRef, 'comments', `${Date.now()}`), {
           date: Date.now(),
-          userName: userName,
+          userId: userId,
           comment: writtenComment,
         });
         setWrittenComment('');
