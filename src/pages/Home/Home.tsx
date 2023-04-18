@@ -8,6 +8,8 @@ import {
   updateDoc,
   setDoc,
   deleteDoc,
+  query,
+  where,
 } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
@@ -238,6 +240,40 @@ const ReviewInputField = styled.input`
   padding: 4px 2px;
   border-radius: 5px;
 `;
+
+const ActorLink = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+`;
+
+const ActorCardButton = styled.button`
+  font-size: 12px;
+  border: 1px solid #fff;
+  padding: 4px 8px;
+  border-radius: 2px;
+
+  &:hover {
+    color: #2a2a2a;
+    background-color: #fff;
+    font-weight: 700;
+  }
+`;
+
+const ActorCard = styled.div`
+  width: 1000px;
+  height: 800px;
+  transform: translate(-50%, -50%);
+  background: #2a2a2a;
+  color: #fff;
+  position: fixed;
+  left: 50vw;
+  top: 50vh;
+  border-radius: 10px;
+  opacity: 0.9;
+  padding: 60px 40px;
+  display: block;
+`;
 interface TypeFilterProps {
   selectedTypeFilter?: string | null;
 }
@@ -300,8 +336,10 @@ function Home() {
     spotify?: string;
     episodes?: number;
   }
-  interface ICast {
+  interface IActor {
     name?: string;
+    id: string;
+    dramas?: string[];
   }
   interface IReview {
     date?: number;
@@ -312,11 +350,12 @@ function Home() {
     userName?: string;
   }
 
-  const dramasCollectionRef = collection(db, 'dramas');
+  const dramasRef = collection(db, 'dramas');
+  const actorsRef = collection(db, 'actors');
   const [isLoading, setIsLoading] = useState(false);
   const [dramas, setDramas] = useState<IDrama[]>([]);
   const [searchWords, setSearchWords] = useState('');
-  const [cast, setCast] = useState<ICast[]>([]);
+  const [actors, setActors] = useState<IActor[] | undefined>(undefined);
   const [genre, setGenre] = useState<string[]>([]);
   const [order, setOrder] = useState('');
   const [year, setYear] = useState<number[]>([]);
@@ -324,6 +363,7 @@ function Home() {
     '所有影集'
   );
   const [dramaCard, setDramaCard] = useState<IDrama>();
+  const [actorCard, setActorCard] = useState<IActor>();
   const [userReview, setUserReview] = useState<IReview | undefined>(undefined);
   const [allReviews, setAllReviews] = useState<IReview[]>([]);
   const [filteredReviews, setFilteredReviews] = useState<IReview[]>([]);
@@ -390,24 +430,25 @@ function Home() {
   };
 
   useEffect(() => {
-    const getDramas = async () => {
-      const data = await getDocs(dramasCollectionRef);
-      setDramas(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    const getDramasAndActors = async () => {
+      const dramasSnapshot = await getDocs(dramasRef);
+      setDramas(
+        dramasSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+      );
       setIsLoading(true);
+      const actorsQuery = await query(
+        actorsRef,
+        where('dramas', 'array-contains', dramaId)
+      );
+      const actorsQuerySnapshot = await getDocs(actorsQuery);
+      const actors = actorsQuerySnapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      setActors(actors);
     };
-    const getCast = async () => {
-      if (dramaId) {
-        const castsCollectionRef = collection(db, 'dramas', dramaId, 'cast');
-        const castSnapshot = await getDocs(castsCollectionRef);
-        const castArr: any = [];
-        castSnapshot.forEach((doc) => {
-          castArr.push(doc.data());
-        });
-        setCast(castArr);
-      }
-    };
-    getDramas();
-    getCast();
+
+    getDramasAndActors();
     getReviews();
   }, [dramaCard]);
 
@@ -571,6 +612,13 @@ function Home() {
       } catch (err) {
         console.error(err);
       }
+    }
+  };
+  const handleActorCard = (actor: IActor) => {
+    if (actor.dramas) {
+      const otherDramas = actor.dramas.filter((dramaID) => dramaID !== dramaId);
+      const updatedActor = { ...actor, dramas: otherDramas };
+      setActorCard(updatedActor);
     }
   };
 
@@ -1079,9 +1127,21 @@ function Home() {
                       <DramaCardDescriptionTitle>
                         演員
                       </DramaCardDescriptionTitle>
-                      <DramaCardDescription>
-                        {cast.map((cast) => ` ${cast.name}`)}
-                      </DramaCardDescription>
+                      <ActorLink>
+                        {actors &&
+                          actors.map((actor) => (
+                            <ActorCardButton
+                              onClick={() => {
+                                handleActorCard(actor);
+                                setDramaCard(undefined);
+                                setUserRating(0);
+                                setEditing(false);
+                              }}
+                            >
+                              {actor.name}
+                            </ActorCardButton>
+                          ))}
+                      </ActorLink>
                     </div>
                     <HandleListButton
                       onClick={() => {
@@ -1169,6 +1229,50 @@ function Home() {
             </div>
           )}
         </DramaCard>
+        <ActorCard style={{ display: actorCard ? 'block' : 'none' }}>
+          <div>
+            {actorCard && actorCard.dramas ? (
+              actorCard.dramas?.length > 0 ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    marginBottom: '10px',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      fontWeight: '800',
+                      alignItems: 'flex-end',
+                      gap: '8px',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    <div style={{ fontSize: '20px' }}>{actorCard.name}</div>
+                    <div>還有出演過這些戲劇</div>
+                  </div>
+                  <div>
+                    {actorCard.dramas?.map((drama) => (
+                      <> {drama}</>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ fontSize: '16px' }}>
+                  目前沒有 {actorCard.name} 出演過的其他戲劇資料喔：（
+                </div>
+              )
+            ) : null}
+          </div>
+          <CloseButton
+            onClick={() => {
+              setActorCard(undefined);
+            }}
+          >
+            ✕
+          </CloseButton>
+        </ActorCard>
       </DramasSection>
     </Wrapper>
   );
