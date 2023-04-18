@@ -57,11 +57,13 @@ const Articles = styled.div`
 `;
 
 const Article = styled(Link)`
-  background-color: #dfdfdf;
+  border: #d4d4d4 solid 1px;
+  border-radius: 5px;
+  box-shadow: 1px 1px 4px #bdbdbd;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px;
+  padding: 30px;
   height: 60px;
 `;
 
@@ -103,7 +105,7 @@ interface IArticles {
   content?: string;
   type?: string;
   date?: Date;
-  commentsNum?: number | string;
+  commentsNum?: number;
 }
 
 interface ISelectedBoardProps {
@@ -236,7 +238,24 @@ function Forum() {
                 to={`/forum/${boardName}/article/${article.id}`}
                 key={article.id}
               >
-                <div>{article.commentsNum}</div>
+                <div>
+                  {article.commentsNum && (
+                    <div
+                      style={{
+                        fontWeight: '900',
+                        fontSize: '24px',
+                        color:
+                          article.commentsNum <= 10
+                            ? '#a2c548'
+                            : article.commentsNum <= 99
+                            ? '#ecba5c'
+                            : '#cb322c',
+                      }}
+                    >
+                      {article.commentsNum >= 100 ? '爆' : article.commentsNum}
+                    </div>
+                  )}
+                </div>
                 <Title>
                   [{article.type}] {article.title}
                 </Title>
