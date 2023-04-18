@@ -9,6 +9,7 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  deleteDoc,
 } from 'firebase/firestore';
 import { useAppSelector } from '../../redux/hooks';
 
@@ -22,7 +23,7 @@ const Wrapper = styled.div`
 const ArticleHeader = styled.div`
   background-color: #4e4d4d;
   color: #fff;
-  padding: 30px 45px;
+  padding: 30px 360px;
   height: 90px;
   display: flex;
   justify-content: space-between;
@@ -126,16 +127,22 @@ function Article() {
   const [commentOptionWindow, setCommentOptionWindow] = useState<
     string | undefined | null
   >();
-
+  const [editingCommentId, setEditingCommentId] = useState('');
+  const [updatedComment, setUpdatedComment] = useState('');
   const articleRef =
     id && boardName ? doc(db, 'forum', boardName, 'articles', id) : undefined;
+  const commentsRef = articleRef && collection(articleRef, 'comments');
+
+  useEffect(() => {
+    getArticleAndComments();
+  }, []);
 
   const getArticleAndComments = async () => {
-    if (articleRef && userId) {
+    if (articleRef && commentsRef && userId) {
       const articleSnapshot = await getDoc(articleRef);
       setArticle(articleSnapshot.data() as IArticle);
       setIsLoading(false);
-      const commentsRef = articleRef && collection(articleRef, 'comments');
+
       const commentsSnapshot = await getDocs(commentsRef);
       const commentsArr: any = [];
       for (const singleDoc of commentsSnapshot.docs) {
@@ -153,9 +160,6 @@ function Article() {
       setComments(commentsArr);
     }
   };
-  useEffect(() => {
-    getArticleAndComments();
-  }, []);
 
   const handleCommentInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setWrittenComment(e.target.value);
@@ -179,8 +183,44 @@ function Article() {
       console.error('Error uploading comment:', err);
     }
   };
+
   const showCommentOptions = (commentId: string | undefined) => {
     if (commentId) setCommentOptionWindow(commentId);
+  };
+
+  const handleEditComment = (commentId: string | undefined) => {
+    if (commentId) setEditingCommentId(commentId);
+  };
+
+  const handleCommentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUpdatedComment(e.target.value);
+  };
+
+  const handleUpdateComment = async (commentId: string | undefined) => {
+    if (commentId) setEditingCommentId(commentId);
+    try {
+      if (commentsRef && updatedComment) {
+        const commentRef = doc(commentsRef, commentId);
+        await updateDoc(commentRef, { comment: updatedComment });
+        handleEditComment('Other word instead of comment id');
+        getArticleAndComments();
+      }
+    } catch (err) {
+      console.error('Error updating comment:', err);
+    }
+  };
+
+  const handleRemoveComment = async (commentId: string | undefined) => {
+    try {
+      if (commentsRef) {
+        const commentRef = doc(commentsRef, commentId);
+        await deleteDoc(commentRef);
+        alert('已刪除留言');
+        getArticleAndComments();
+      }
+    } catch (err) {
+      console.error('Error Removing comment:', err);
+    }
   };
 
   return (
@@ -200,149 +240,193 @@ function Article() {
               <p>{article.date && new Date(article.date).toLocaleString()}</p>
             </Info>
           </ArticleHeader>
-          <div
-            style={{ fontSize: '18px', lineHeight: '32px' }}
-            dangerouslySetInnerHTML={{ __html: article.content }}
-            className="p-4 mt-8 mx-6"
-          />
-          <div className="p-4 mt-4 mx-6 h-96">
-            <div style={{ display: 'flex' }}>
-              <div
-                style={{
-                  fontSize: '22px',
-                  fontWeight: '700',
-                  marginBottom: '10px',
-                }}
-              >
-                留言區
+          <div style={{ width: '70%', margin: '0 auto' }}>
+            <div
+              style={{ fontSize: '18px', lineHeight: '32px' }}
+              dangerouslySetInnerHTML={{ __html: article.content }}
+              className="p-4 mt-8 mx-6"
+            />
+            <div className="p-4 mt-4 mx-6 h-96">
+              <div style={{ display: 'flex' }}>
+                <div
+                  style={{
+                    fontSize: '22px',
+                    fontWeight: '700',
+                    marginBottom: '10px',
+                  }}
+                >
+                  留言區
+                </div>
+                <div style={{ fontSize: '14px', marginTop: '7px' }}>
+                  （共有 {comments.length} 則留言）
+                </div>
               </div>
-              <div style={{ fontSize: '14px', marginTop: '7px' }}>
-                （共有 {comments.length} 則留言）
-              </div>
-            </div>
-            <div>
-              {comments &&
-                comments
-                  .sort((a, b) => {
-                    if (a.date && b.date) {
+              <div>
+                {comments &&
+                  comments
+                    .sort((a, b) => {
+                      if (a.date && b.date) {
+                        return (
+                          new Date(a.date).getTime() -
+                          new Date(b.date).getTime()
+                        );
+                      } else {
+                        return 0;
+                      }
+                    })
+                    .map((comment, index) => {
                       return (
-                        new Date(a.date).getTime() - new Date(b.date).getTime()
-                      );
-                    } else {
-                      return 0;
-                    }
-                  })
-                  .map((comment, index) => {
-                    return (
-                      <>
-                        <Comment key={index}>
-                          <div>
-                            <div
-                              style={{
-                                fontSize: '16px',
-                                marginBottom: '8px',
-                                fontWeight: '500',
-                              }}
-                            >
-                              {comment.userName}
-                            </div>
-                            <div style={{ fontSize: '18px' }}>
-                              {comment.comment}
-                            </div>
-                          </div>
-                          <div
-                            style={{
-                              marginTop: '24px',
-                              position: 'absolute',
-                              right: '10px',
-                            }}
-                          >
-                            {comment.date
-                              ? new Date(comment.date).toLocaleString()
-                              : null}
-                          </div>
-                          {comment.userId === userId && (
-                            <div
-                              onClick={() => {
-                                if (commentOptionWindow === comment.id) {
-                                  setCommentOptionWindow(null);
-                                }
-                              }}
-                            >
-                              <MoreButton
-                                onClick={() => showCommentOptions(comment.id)}
-                              >
-                                …
-                              </MoreButton>
-                              <CommentOptions
+                        <>
+                          <Comment key={index}>
+                            <div>
+                              <div
                                 style={{
-                                  display:
-                                    commentOptionWindow === comment.id
-                                      ? 'flex'
-                                      : 'none',
+                                  fontSize: '16px',
+                                  marginBottom: '8px',
+                                  fontWeight: '900',
+                                  paddingLeft: '4px',
                                 }}
                               >
-                                <CommentOption>🖋 編輯</CommentOption>
-                                <CommentOption>🗑 刪除</CommentOption>
-                              </CommentOptions>
+                                {comment.userName}
+                              </div>
+                              <div>
+                                {editingCommentId === comment.id ? (
+                                  <input
+                                    style={{
+                                      border: '#a1a1a1 solid 1px',
+                                      padding: '4px 4px',
+                                      borderRadius: '5px',
+                                      width: '1190px',
+                                    }}
+                                    type="text"
+                                    onChange={handleCommentInputChange}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        handleUpdateComment(comment.id);
+                                      }
+                                    }}
+                                  />
+                                ) : (
+                                  <input
+                                    style={{
+                                      backgroundColor: 'transparent',
+                                      padding: '4px 4px',
+                                      borderRadius: '5px',
+                                      width: '1190px',
+                                    }}
+                                    type="text"
+                                    value={comment.comment}
+                                    disabled
+                                  />
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </Comment>
-                      </>
-                    );
-                  })}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                gap: '10px',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '10px 0',
-                marginTop: '10px',
-              }}
-            >
-              {avatar && (
-                <img
-                  src={avatar}
-                  alt=""
-                  style={{
-                    borderRadius: '50%',
-                    width: '40px',
-                    height: '40px',
-                    objectFit: 'cover',
-                    marginBottom: '200px',
-                  }}
-                />
-              )}
-              <input
-                type="text"
-                value={writtenComment}
-                placeholder={
-                  userName
-                    ? '留言.......'
-                    : '要先登入才能使用論壇的討論功能喔！'
-                }
+                            <div
+                              style={{
+                                marginTop: '24px',
+                                position: 'absolute',
+                                right: '10px',
+                              }}
+                            >
+                              {comment.date
+                                ? new Date(comment.date).toLocaleString()
+                                : null}
+                            </div>
+                            {comment.userId === userId && (
+                              <div
+                                onClick={() => {
+                                  if (commentOptionWindow === comment.id) {
+                                    setCommentOptionWindow(null);
+                                  }
+                                }}
+                              >
+                                <MoreButton
+                                  onClick={() => showCommentOptions(comment.id)}
+                                >
+                                  …
+                                </MoreButton>
+                                <CommentOptions
+                                  style={{
+                                    display:
+                                      commentOptionWindow === comment.id
+                                        ? 'flex'
+                                        : 'none',
+                                  }}
+                                >
+                                  <CommentOption
+                                    onClick={() =>
+                                      handleEditComment(comment.id)
+                                    }
+                                  >
+                                    🖋 編輯
+                                  </CommentOption>
+                                  <CommentOption
+                                    onClick={() =>
+                                      handleRemoveComment(comment.id)
+                                    }
+                                  >
+                                    🗑 刪除
+                                  </CommentOption>
+                                </CommentOptions>
+                              </div>
+                            )}
+                          </Comment>
+                        </>
+                      );
+                    })}
+              </div>
+              <div
                 style={{
-                  cursor: 'text',
-                  height: '65px',
-                  width: '100%',
-                  color: '#2a2a2a',
-                  padding: '8px',
-                  border: '#898989 solid 1px',
-                  borderRadius: '5px',
+                  display: 'flex',
+                  gap: '10px',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '10px 0',
                   marginTop: '10px',
-                  marginBottom: '200px',
-                  fontSize: '18px',
                 }}
-                onChange={handleCommentInput}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleUploadComment();
+              >
+                {avatar && (
+                  <img
+                    src={avatar}
+                    alt=""
+                    style={{
+                      borderRadius: '50%',
+                      width: '40px',
+                      height: '40px',
+                      objectFit: 'cover',
+                      marginBottom: '200px',
+                    }}
+                  />
+                )}
+                <input
+                  type="text"
+                  value={writtenComment}
+                  placeholder={
+                    userName
+                      ? '留言.......'
+                      : '要先登入才能使用論壇的討論功能喔！'
                   }
-                }}
-                disabled={!userName}
-              />
+                  style={{
+                    cursor: 'text',
+                    height: '65px',
+                    width: '100%',
+                    color: '#2a2a2a',
+                    padding: '8px',
+                    border: '#898989 solid 1px',
+                    borderRadius: '5px',
+                    marginTop: '10px',
+                    marginBottom: '200px',
+                    fontSize: '18px',
+                  }}
+                  onChange={handleCommentInput}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleUploadComment();
+                    }
+                  }}
+                  disabled={!userName}
+                />
+              </div>
             </div>
           </div>
         </div>
