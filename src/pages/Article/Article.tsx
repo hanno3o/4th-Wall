@@ -39,6 +39,63 @@ const Info = styled.div`
   gap: 30px;
 `;
 
+const MoreButton = styled.div`
+  cursor: pointer;
+  font-size: 20px;
+  position: absolute;
+  top: 4px;
+  right: 10px;
+  border-radius: 50%;
+  padding: 0 5px 10px;
+  color: transparent;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+`;
+
+const Comment = styled.div`
+  padding: 20px 12px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  border: #dcdcdc solid 1px;
+  margin: 10px 0;
+  border-radius: 5px;
+  position: relative;
+
+  &:hover {
+    ${MoreButton} {
+      color: #2a2a2a;
+    }
+  }
+`;
+
+const CommentOptions = styled.div`
+  cursor: pointer;
+  flex-direction: column;
+  font-size: 14px;
+  background-color: #fff;
+  border: solid 1px #eee;
+  border-radius: 4px;
+  width: 80px;
+  /* padding: 16px; */
+  box-shadow: 2px 2px 4px #bdbdbd;
+  position: absolute;
+  top: 4px;
+  right: 50px;
+`;
+
+const CommentOption = styled.div`
+  height: 42px;
+  line-height: 42px;
+  padding-left: 12px;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+`;
+
 interface IArticle {
   drama?: string;
   title?: string;
@@ -66,6 +123,10 @@ function Article() {
   const [article, setArticle] = useState<IArticle>();
   const [comments, setComments] = useState<IComments[]>([]);
   const [writtenComment, setWrittenComment] = useState<string>('');
+  const [commentOptionWindow, setCommentOptionWindow] = useState<
+    string | undefined | null
+  >();
+
   const articleRef =
     id && boardName ? doc(db, 'forum', boardName, 'articles', id) : undefined;
 
@@ -84,6 +145,7 @@ function Article() {
         const userData = userDoc.data();
         const comment = {
           ...commentData,
+          id: singleDoc.id,
           userName: userData?.userName || '',
         };
         commentsArr.push(comment);
@@ -116,6 +178,9 @@ function Article() {
     } catch (err) {
       console.error('Error uploading comment:', err);
     }
+  };
+  const showCommentOptions = (commentId: string | undefined) => {
+    if (commentId) setCommentOptionWindow(commentId);
   };
 
   return (
@@ -169,19 +234,8 @@ function Article() {
                   })
                   .map((comment, index) => {
                     return (
-                      <div>
-                        <div
-                          key={index}
-                          style={{
-                            padding: '20px 12px',
-                            width: '100%',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            border: '#dcdcdc solid 1px',
-                            margin: '10px 0',
-                            borderRadius: '5px',
-                          }}
-                        >
+                      <>
+                        <Comment key={index}>
                           <div>
                             <div
                               style={{
@@ -196,14 +250,45 @@ function Article() {
                               {comment.comment}
                             </div>
                           </div>
-
-                          <div style={{ marginTop: '24px' }}>
+                          <div
+                            style={{
+                              marginTop: '24px',
+                              position: 'absolute',
+                              right: '10px',
+                            }}
+                          >
                             {comment.date
                               ? new Date(comment.date).toLocaleString()
                               : null}
                           </div>
-                        </div>
-                      </div>
+                          {comment.userId === userId && (
+                            <div
+                              onClick={() => {
+                                if (commentOptionWindow === comment.id) {
+                                  setCommentOptionWindow(null);
+                                }
+                              }}
+                            >
+                              <MoreButton
+                                onClick={() => showCommentOptions(comment.id)}
+                              >
+                                …
+                              </MoreButton>
+                              <CommentOptions
+                                style={{
+                                  display:
+                                    commentOptionWindow === comment.id
+                                      ? 'flex'
+                                      : 'none',
+                                }}
+                              >
+                                <CommentOption>🖋 編輯</CommentOption>
+                                <CommentOption>🗑 刪除</CommentOption>
+                              </CommentOptions>
+                            </div>
+                          )}
+                        </Comment>
+                      </>
                     );
                   })}
             </div>
