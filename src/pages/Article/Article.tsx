@@ -170,7 +170,7 @@ function Article() {
 
   const handleUploadComment = async () => {
     try {
-      if (articleRef && id) {
+      if (articleRef && id && writtenComment) {
         await setDoc(doc(articleRef, 'comments', `${Date.now()}`), {
           date: Date.now(),
           userId: userId,
@@ -192,7 +192,9 @@ function Article() {
     if (commentId) setEditingCommentId(commentId);
   };
 
-  const handleCommentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpdatedCommentInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setUpdatedComment(e.target.value);
   };
 
@@ -217,9 +219,16 @@ function Article() {
         await deleteDoc(commentRef);
         alert('已刪除留言');
         getArticleAndComments();
+        await updateDoc(articleRef, { commentsNum: comments.length - 1 });
       }
     } catch (err) {
       console.error('Error Removing comment:', err);
+    }
+  };
+
+  const handleReply = (commentId: string | undefined, index: number) => {
+    if (commentId) {
+      setWrittenComment(`B${index + 1} `);
     }
   };
 
@@ -281,10 +290,10 @@ function Article() {
                             <div>
                               <div
                                 style={{
-                                  fontSize: '16px',
-                                  marginBottom: '8px',
-                                  fontWeight: '900',
+                                  fontSize: '14px',
                                   paddingLeft: '4px',
+                                  fontWeight: '500',
+                                  marginBottom: '4px',
                                 }}
                               >
                                 {comment.userName}
@@ -297,9 +306,10 @@ function Article() {
                                       padding: '4px 4px',
                                       borderRadius: '5px',
                                       width: '1190px',
+                                      marginBottom: '4px',
                                     }}
                                     type="text"
-                                    onChange={handleCommentInputChange}
+                                    onChange={handleUpdatedCommentInputChange}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         handleUpdateComment(comment.id);
@@ -313,11 +323,35 @@ function Article() {
                                       padding: '4px 4px',
                                       borderRadius: '5px',
                                       width: '1190px',
+                                      marginBottom: '4px',
                                     }}
                                     type="text"
                                     value={comment.comment}
                                     disabled
                                   />
+                                )}
+                              </div>
+                              <div
+                                style={{
+                                  paddingLeft: '4px',
+                                  fontSize: '14px',
+                                  color: '#585858',
+                                  display: 'flex',
+                                  gap: '6px',
+                                }}
+                              >
+                                <div>B{index + 1}</div>
+                                {comment.userId !== userId && (
+                                  <>
+                                    <div> · </div>
+                                    <button
+                                      onClick={() =>
+                                        handleReply(comment.id, index)
+                                      }
+                                    >
+                                      回覆
+                                    </button>
+                                  </>
                                 )}
                               </div>
                             </div>
