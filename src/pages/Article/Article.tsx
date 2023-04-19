@@ -23,7 +23,7 @@ const Wrapper = styled.div`
 const ArticleHeader = styled.div`
   background-color: #4e4d4d;
   color: #fff;
-  padding: 30px 360px;
+  padding: 30px 330px;
   height: 90px;
   display: flex;
   justify-content: space-between;
@@ -305,7 +305,7 @@ function Article() {
                                       border: '#a1a1a1 solid 1px',
                                       padding: '4px 4px',
                                       borderRadius: '5px',
-                                      width: '1190px',
+                                      width: '1060px',
                                       marginBottom: '4px',
                                     }}
                                     type="text"

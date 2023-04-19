@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link, useParams } from 'react-router-dom';
 import { db } from '../../config/firebase.config';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
 import { useAppSelector } from '../../redux/hooks';
 
 const Wrapper = styled.div`
@@ -63,14 +63,13 @@ const Article = styled(Link)`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 30px;
-  height: 60px;
+  padding: 40px 30px;
+  height: 70px;
 `;
 
 const Title = styled.div`
   text-align: left;
   font-weight: 700;
-  width: 360px;
 `;
 
 const Pagination = styled.div`
@@ -100,6 +99,7 @@ interface IArticles {
   id?: string;
   drama?: string;
   title?: string;
+  authorId?: string;
   author?: string;
   episodes?: string;
   content?: string;
@@ -164,6 +164,31 @@ function Forum() {
     window.history.replaceState(null, '', url);
   };
 
+  const getArticles = async () => {
+    try {
+      const articlesCollectionRef = collection(db, 'forum', board, 'articles');
+      const articleSnapShot = await getDocs(articlesCollectionRef);
+      const articleArr: IArticles[] = [];
+      for (const singleDoc of articleSnapShot.docs) {
+        const articleData = singleDoc.data();
+        const articleUserId = articleData.authorId;
+        const userDoc = await getDoc(doc(db, 'users', articleUserId));
+        const userData = userDoc.data();
+        const article = {
+          ...articleData,
+          id: singleDoc.id,
+          author: userData?.userName || '',
+        };
+        articleArr.push(article);
+      }
+      setArticles(articleArr);
+      setIsLoading(true);
+    } catch (error) {
+      console.error('Error getting articles: ', error);
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     setSearchWords(keyword ?? '');
     if (boardName === 'TaiwanDrama') {
@@ -178,17 +203,6 @@ function Forum() {
       setSelectedBoard('陸劇版');
     }
     setBoard(boardName ? boardName : 'TaiwanDrama');
-    const articlesCollectionRef = collection(db, 'forum', board, 'articles');
-    const getArticles = async () => {
-      const articleSnapShot = await getDocs(articlesCollectionRef);
-      setArticles(
-        articleSnapShot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        })) as IArticles[]
-      );
-      setIsLoading(true);
-    };
 
     getArticles();
   }, [board]);
@@ -220,12 +234,12 @@ function Forum() {
           return (
             <Board
               key={index}
-              to={`/forum/${board.English}`}
               onClick={() => {
                 setSelectedBoard(board.Chinese);
                 setBoard(board.English);
                 setSearchWords('');
               }}
+              to={`/forum/${board.English}`}
               selectedBoard={selectedBoard}
             >
               {board.Chinese}
@@ -235,14 +249,14 @@ function Forum() {
       </Boards>
       <hr className="mb-3" />
       {userName ? (
-        <Btn to="/post">Post</Btn>
+        <Btn to={`/forum/${board}/post`}>Post</Btn>
       ) : (
         <Btn to="" onClick={() => alert('要先登入才能發布文章喔！')}>
           Post
         </Btn>
       )}
       <Articles>
-        {isLoading &&
+        {isLoading ?
           currentPageArticles.map((article) => {
             return (
               <Article
@@ -250,11 +264,14 @@ function Forum() {
                 key={article.id}
               >
                 <div>
-                  {article.commentsNum && (
+                  {!!article.commentsNum ? (
                     <div
                       style={{
+                        flexGrow: '1',
                         fontWeight: '900',
                         fontSize: '24px',
+                        width: '40px',
+
                         color:
                           article.commentsNum <= 10
                             ? '#a2c548'
@@ -265,20 +282,60 @@ function Forum() {
                     >
                       {article.commentsNum >= 100 ? '爆' : article.commentsNum}
                     </div>
+                  ) : (
+                    <div
+                      style={{
+                        fontWeight: '900',
+                        fontSize: '24px',
+                        width: '40px',
+                        color: 'transparent',
+                      }}
+                    ></div>
                   )}
                 </div>
-                <Title>
-                  [{article.type}] {article.title}
-                </Title>
-                <div style={{ textAlign: 'left', width: '50px' }}>
-                  {article.author}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexGrow: '2',
+                    marginLeft: '20px',
+                  }}
+                >
+                  <Title>
+                    [{article.type}] {article.title}
+                  </Title>
+                  <div
+                    style={{
+                      width: '50px',
+                      flexGrow: '1',
+                      fontSize: '14px',
+                      marginTop: '10px',
+                      textAlign: 'left',
+                      color: '#a3a3a3',
+                      fontWeight: '700',
+                    }}
+                  >
+                    {article.author}
+                  </div>
                 </div>
-                <div>
-                  {article.date && new Date(article.date).toLocaleString()}
+                <div
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: '400',
+                  }}
+                >
+                  {article.date &&
+                    new Date(article.date).toLocaleString(undefined, {
+                      year: 'numeric',
+                      month: 'numeric',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    })}
                 </div>
               </Article>
             );
-          })}
+          }) : 'Loading...'}
         <Pagination>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button
