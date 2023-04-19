@@ -63,14 +63,13 @@ const Article = styled(Link)`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 30px;
-  height: 60px;
+  padding: 40px 30px;
+  height: 70px;
 `;
 
 const Title = styled.div`
   text-align: left;
   font-weight: 700;
-  width: 360px;
 `;
 
 const Pagination = styled.div`
@@ -250,11 +249,14 @@ function Forum() {
                 key={article.id}
               >
                 <div>
-                  {!!article.commentsNum && (
+                  {!!article.commentsNum ? (
                     <div
                       style={{
+                        flexGrow: '1',
                         fontWeight: '900',
                         fontSize: '24px',
+                        width: '40px',
+
                         color:
                           article.commentsNum <= 10
                             ? '#a2c548'
@@ -265,16 +267,56 @@ function Forum() {
                     >
                       {article.commentsNum >= 100 ? '爆' : article.commentsNum}
                     </div>
+                  ) : (
+                    <div
+                      style={{
+                        fontWeight: '900',
+                        fontSize: '24px',
+                        width: '40px',
+                        color: 'transparent',
+                      }}
+                    ></div>
                   )}
                 </div>
-                <Title>
-                  [{article.type}] {article.title}
-                </Title>
-                <div style={{ textAlign: 'left', width: '50px' }}>
-                  {article.author}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexGrow: '2',
+                    marginLeft: '20px',
+                  }}
+                >
+                  <Title>
+                    [{article.type}] {article.title}
+                  </Title>
+                  <div
+                    style={{
+                      width: '50px',
+                      flexGrow: '1',
+                      fontSize: '14px',
+                      marginTop: '10px',
+                      textAlign: 'left',
+                      color: '#a3a3a3',
+                      fontWeight: '700',
+                    }}
+                  >
+                    {article.author}
+                  </div>
                 </div>
-                <div>
-                  {article.date && new Date(article.date).toLocaleString()}
+                <div
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: '400',
+                  }}
+                >
+                  {article.date &&
+                    new Date(article.date).toLocaleString(undefined, {
+                      year: 'numeric',
+                      month: 'numeric',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    })}
                 </div>
               </Article>
             );
