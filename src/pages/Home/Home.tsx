@@ -274,6 +274,15 @@ const ActorCard = styled.div`
   padding: 60px 40px;
   display: block;
 `;
+
+const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
 interface TypeFilterProps {
   selectedTypeFilter?: string | null;
 }
@@ -726,6 +735,18 @@ function Home() {
               </Drama>
             );
           })}
+        {(dramaCard || actorCard) && (
+          <Overlay
+            onClick={() => {
+              setDramaCard(undefined);
+              setActorCard(undefined);
+              setWrittenReview(undefined);
+              setUserRating(0);
+              setWrittenReview('');
+              setEditing(false);
+            }}
+          />
+        )}
         <DramaCard style={{ display: dramaCard ? 'block' : 'none' }}>
           {isLoading && (
             <div style={{ display: 'flex' }}>
