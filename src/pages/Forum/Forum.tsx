@@ -235,7 +235,7 @@ function Forum() {
       </Boards>
       <hr className="mb-3" />
       {userName ? (
-        <Btn to="/post">Post</Btn>
+        <Btn to={`/forum/${board}/post`}>Post</Btn>
       ) : (
         <Btn to="" onClick={() => alert('要先登入才能發布文章喔！')}>
           Post
@@ -250,7 +250,7 @@ function Forum() {
                 key={article.id}
               >
                 <div>
-                  {article.commentsNum && (
+                  {!!article.commentsNum && (
                     <div
                       style={{
                         fontWeight: '900',

@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { db } from '../../config/firebase.config';
 import { collection, addDoc } from 'firebase/firestore';
@@ -59,6 +59,7 @@ const Input = styled.input`
 `;
 
 function Post() {
+  const { boardName } = useParams();
   const [type, setType] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -101,9 +102,10 @@ function Post() {
           textAlign: 'center',
           borderRadius: '5px',
         }}
-        to="/forum"
+        to={`/forum/${boardName}`}
         onClick={async () => {
-          await addDoc(collection(db, 'forum', 'KoreanDrama', 'articles'), {
+          boardName &&
+          await addDoc(collection(db, 'forum', boardName, 'articles'), {
             author: userName,
             type: type,
             title: title,
