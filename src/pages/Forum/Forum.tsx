@@ -133,6 +133,8 @@ function Forum() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 10;
   const totalPages = Math.ceil(articles.length / PAGE_SIZE);
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  const keyword = urlSearchParams.get('keyword');
 
   const displayedArticles = articles.filter((article) =>
     article.title?.includes(searchWords)
@@ -154,9 +156,16 @@ function Forum() {
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchWords(e.target.value);
+    const searchParams = new URLSearchParams();
+    const currentPath = window.location.pathname;
+    e.target.value !== '' && searchParams.append('keyword', e.target.value);
+    const queryString = searchParams.toString();
+    const url = queryString ? `${currentPath}?${queryString}` : currentPath;
+    window.history.replaceState(null, '', url);
   };
 
   useEffect(() => {
+    setSearchWords(keyword ?? '');
     if (boardName === 'TaiwanDrama') {
       setSelectedBoard('台劇版');
     } else if (boardName === 'KoreanDrama') {
@@ -202,6 +211,7 @@ function Forum() {
           style={{ paddingLeft: '40px' }}
           type="text"
           placeholder="請輸入想要查找的文章標題"
+          value={searchWords}
           onChange={handleSearchInput}
         />
       </div>
@@ -214,6 +224,7 @@ function Forum() {
               onClick={() => {
                 setSelectedBoard(board.Chinese);
                 setBoard(board.English);
+                setSearchWords('');
               }}
               selectedBoard={selectedBoard}
             >
