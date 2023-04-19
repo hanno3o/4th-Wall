@@ -17,6 +17,7 @@ import {
   addToDramaList,
   removeFromDramaList,
 } from '../../redux/reducers/userSlice';
+import { Link } from 'react-router-dom';
 
 const Wrapper = styled.div`
   width: 75%;
@@ -351,6 +352,7 @@ function Home() {
     screenwriter?: string;
     spotify?: string;
     episodes?: number;
+    engType?: string;
   }
   interface IActor {
     name?: string;
@@ -1140,6 +1142,12 @@ function Home() {
                   <DramaCardMainInfo>
                     <DramaCardTitle>{dramaCard?.title}</DramaCardTitle>
                     <DramaCardSubTitle>{dramaCard?.eng}</DramaCardSubTitle>
+                    <Link
+                      to={`/forum/${dramaCard?.engType}?keyword=${dramaCard?.title}`}
+                      style={{ textAlign: 'left', width: '22px' }}
+                    >
+                      💬
+                    </Link>
                     <DramaCardType>
                       {dramaCard?.type} | {dramaCard?.year} | {dramaCard?.genre}
                     </DramaCardType>
