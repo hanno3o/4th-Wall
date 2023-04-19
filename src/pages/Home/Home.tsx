@@ -354,6 +354,7 @@ function Home() {
   const actorsRef = collection(db, 'actors');
   const [isLoading, setIsLoading] = useState(false);
   const [dramas, setDramas] = useState<IDrama[]>([]);
+  const [actorAppearedDramas, setActorAppearedDramas] = useState<IDrama[]>([]);
   const [searchWords, setSearchWords] = useState('');
   const [actors, setActors] = useState<IActor[] | undefined>(undefined);
   const [genre, setGenre] = useState<string[]>([]);
@@ -616,9 +617,14 @@ function Home() {
   };
   const handleActorCard = (actor: IActor) => {
     if (actor.dramas) {
-      const otherDramas = actor.dramas.filter((dramaID) => dramaID !== dramaId);
-      const updatedActor = { ...actor, dramas: otherDramas };
-      setActorCard(updatedActor);
+      setActorCard(actor);
+      const otherDramasIds = actor.dramas.filter(
+        (dramaID) => dramaID !== dramaId
+      );
+      const otherDramas = dramas.filter(
+        (drama) => drama.id && otherDramasIds.includes(drama.id)
+      );
+      setActorAppearedDramas(otherDramas);
     }
   };
 
@@ -1231,8 +1237,8 @@ function Home() {
         </DramaCard>
         <ActorCard style={{ display: actorCard ? 'block' : 'none' }}>
           <div>
-            {actorCard && actorCard.dramas ? (
-              actorCard.dramas?.length > 0 ? (
+            {actorCard && actorAppearedDramas ? (
+              actorAppearedDramas.length > 0 ? (
                 <div
                   style={{
                     display: 'flex',
@@ -1252,9 +1258,47 @@ function Home() {
                     <div style={{ fontSize: '20px' }}>{actorCard.name}</div>
                     <div>還有出演過這些戲劇</div>
                   </div>
-                  <div>
-                    {actorCard.dramas?.map((drama) => (
-                      <> {drama}</>
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    {actorAppearedDramas?.map((drama, index) => (
+                      <Drama
+                        onClick={() => {
+                          handleDramaCard(drama);
+                          setActorCard(undefined);
+                        }}
+                        key={index}
+                        style={{
+                          backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
+                        }}
+                      >
+                        <div style={{ fontSize: '18px' }}>{drama.title}</div>
+                        <div style={{ fontSize: '12px', color: '#bbbbbb' }}>
+                          {drama.eng}
+                        </div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '4px',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <div style={{ fontSize: '10px' }}>{drama.year} |</div>
+                          <div style={{ fontSize: '10px' }}>{drama.type} |</div>
+                          <div style={{ fontSize: '10px' }}>{drama.genre}</div>
+                        </div>
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ fontSize: '18px', fontWeight: '900' }}>
+                            {drama.rating}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '10px',
+                              marginTop: '5px',
+                            }}
+                          >
+                            /5
+                          </div>
+                        </div>
+                      </Drama>
                     ))}
                   </div>
                 </div>
