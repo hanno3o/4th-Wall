@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link, useParams } from 'react-router-dom';
 import { db } from '../../config/firebase.config';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
 import { useAppSelector } from '../../redux/hooks';
 
 const Wrapper = styled.div`
@@ -99,6 +99,7 @@ interface IArticles {
   id?: string;
   drama?: string;
   title?: string;
+  authorId?: string;
   author?: string;
   episodes?: string;
   content?: string;
@@ -163,6 +164,31 @@ function Forum() {
     window.history.replaceState(null, '', url);
   };
 
+  const getArticles = async () => {
+    try {
+      const articlesCollectionRef = collection(db, 'forum', board, 'articles');
+      const articleSnapShot = await getDocs(articlesCollectionRef);
+      const articleArr: IArticles[] = [];
+      for (const singleDoc of articleSnapShot.docs) {
+        const articleData = singleDoc.data();
+        const articleUserId = articleData.authorId;
+        const userDoc = await getDoc(doc(db, 'users', articleUserId));
+        const userData = userDoc.data();
+        const article = {
+          ...articleData,
+          id: singleDoc.id,
+          author: userData?.userName || '',
+        };
+        articleArr.push(article);
+      }
+      setArticles(articleArr);
+      setIsLoading(true);
+    } catch (error) {
+      console.error('Error getting articles: ', error);
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     setSearchWords(keyword ?? '');
     if (boardName === 'TaiwanDrama') {
@@ -177,17 +203,6 @@ function Forum() {
       setSelectedBoard('陸劇版');
     }
     setBoard(boardName ? boardName : 'TaiwanDrama');
-    const articlesCollectionRef = collection(db, 'forum', board, 'articles');
-    const getArticles = async () => {
-      const articleSnapShot = await getDocs(articlesCollectionRef);
-      setArticles(
-        articleSnapShot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        })) as IArticles[]
-      );
-      setIsLoading(true);
-    };
 
     getArticles();
   }, [board]);
@@ -219,12 +234,12 @@ function Forum() {
           return (
             <Board
               key={index}
-              to={`/forum/${board.English}`}
               onClick={() => {
                 setSelectedBoard(board.Chinese);
                 setBoard(board.English);
                 setSearchWords('');
               }}
+              to={`/forum/${board.English}`}
               selectedBoard={selectedBoard}
             >
               {board.Chinese}
@@ -241,7 +256,7 @@ function Forum() {
         </Btn>
       )}
       <Articles>
-        {isLoading &&
+        {isLoading ?
           currentPageArticles.map((article) => {
             return (
               <Article
@@ -320,7 +335,7 @@ function Forum() {
                 </div>
               </Article>
             );
-          })}
+          }) : 'Loading...'}
         <Pagination>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button

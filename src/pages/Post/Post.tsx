@@ -63,7 +63,7 @@ function Post() {
   const [type, setType] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const userName = useAppSelector((state) => state.user.userName);
+  const userId = useAppSelector((state) => state.user.id);
 
   return (
     <Wrapper>
@@ -106,7 +106,7 @@ function Post() {
         onClick={async () => {
           boardName &&
           await addDoc(collection(db, 'forum', boardName, 'articles'), {
-            author: userName,
+            authorId: userId,
             type: type,
             title: title,
             content: content,
