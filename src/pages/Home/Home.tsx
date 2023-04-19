@@ -11,7 +11,7 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import {
   addToDramaList,
@@ -222,6 +222,13 @@ const CloseButton = styled.button`
   font-weight: 900;
 `;
 
+const BackButton = styled.button`
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  font-weight: 900;
+`;
+
 const UserRatingStars = styled.button<UserRatingStarsProps>`
   color: ${({ isFilled }) => (isFilled ? '#fff' : '#8e8e8e')};
   background-color: transparent;
@@ -373,6 +380,7 @@ function Home() {
     '所有影集'
   );
   const [dramaCard, setDramaCard] = useState<IDrama>();
+  const prevDramaCardRef = useRef<IDrama | undefined>();
   const [actorCard, setActorCard] = useState<IActor>();
   const [userReview, setUserReview] = useState<IReview | undefined>(undefined);
   const [allReviews, setAllReviews] = useState<IReview[]>([]);
@@ -509,6 +517,7 @@ function Home() {
   }
 
   function handleDramaCard(drama: IDrama) {
+    prevDramaCardRef.current = drama;
     setDramaCard(drama);
   }
 
@@ -1330,6 +1339,14 @@ function Home() {
               )
             ) : null}
           </div>
+          <BackButton
+            onClick={() => {
+              setDramaCard(prevDramaCardRef.current);
+              setActorCard(undefined);
+            }}
+          >
+            ←
+          </BackButton>
           <CloseButton
             onClick={() => {
               setActorCard(undefined);
