@@ -9,107 +9,134 @@ import {
   removeFromDramaList,
 } from '../../redux/reducers/userSlice';
 import { useState, useEffect } from 'react';
+import { FiUploadCloud } from 'react-icons/fi';
+import { AiOutlineEdit } from 'react-icons/ai';
+import { MdOutlineRemoveCircle } from 'react-icons/md';
+import SearchBar from '../../components/SearchBar';
+import FilterNavBar from '../../components/FilterNavBar';
+import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
+import {
+  XLText,
+  LGText,
+  SMText,
+  MDGreyText,
+  SMGreyText,
+} from '../../style/Text';
 
-const Wrapper = styled.div`
-  width: 80%;
-  padding: 50px 100px;
+const MEDIA_QUERY_TABLET =
+  '@media screen and (min-width: 1281px) and (max-width: 1440px)';
+const MEDIA_QUERY_MOBILE = '@media screen and (max-width: 1280px)';
+
+const ProfilePageWrapper = styled.div`
+  width: 1280px;
+  padding: 50px;
+  gap: 24px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
   margin: 0 auto;
+  ${MEDIA_QUERY_TABLET} {
+    width: 1100px;
+    gap: 16px;
+  }
 `;
 
-const UserProfile = styled.div`
+const UserInfo = styled.div`
   display: flex;
   position: relative;
+  margin-top: 70px;
+  gap: 30px;
+  ${MEDIA_QUERY_TABLET} {
+    gap: 20px;
+  }
+`;
+
+const DividerLine = styled.div`
+  border-bottom: solid 1px ${(props) => props.theme.grey};
 `;
 
 const UserImage = styled.img`
   object-fit: cover;
   background-color: #eee;
-  width: 200px;
-  height: 200px;
+  width: 160px;
+  height: 160px;
   border-radius: 50%;
+  ${MEDIA_QUERY_TABLET} {
+    width: 140px;
+    height: 140px;
+  }
 `;
 
-const UserInfo = styled.div`
-  margin-left: 20px;
-  display: flex;
-  flex-direction: column;
-  padding: 40px;
+const UploadButton = styled.button`
+  color: ${(props) => props.theme.lightGrey};
+  font-size: 24px;
+  position: absolute;
+  bottom: 0px;
+  left: 136px;
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 20px;
+    left: 116px;
+  }
+  &:hover {
+    color: ${(props) => props.theme.white};
+    scale: 1.05;
+    transition: ease-in-out 0.25s;
+  }
+`;
+
+const EditUserNameButton = styled.button`
+  color: ${(props) => props.theme.lightGrey};
+  font-size: 24px;
+  padding: 10px;
+  border-radius: 50%;
+  &:hover {
+    color: ${(props) => props.theme.white};
+    transition: ease-in-out 0.5s;
+  }
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 18px;
+  }
 `;
 
 const UserName = styled.input`
-  padding: 6px;
-  border: solid 1px transparent;
   border-radius: 6px;
-  width: min-content;
-  font-size: 42px;
-  margin-bottom: 30px;
-  width: 240px;
-`;
-
-const Records = styled.div`
-  display: flex;
-  gap: 20px;
-`;
-
-const Record = styled.div`
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-`;
-
-const RecordTitle = styled.div`
-  font-size: 14px;
-  margin-bottom: 10px;
-`;
-
-const RecordData = styled.div`
-  font-size: 30px;
-`;
-
-const SearchBar = styled.input`
-  border-radius: 5px;
-  border: #b6b6b6 solid 1px;
-  height: 36px;
-  width: 200px;
-  padding: 10px;
-`;
-
-const DramaList = styled.div``;
-
-const ListNavBar = styled.div`
-  margin-top: 30px;
-  display: flex;
-  justify-content: space-between;
-`;
-
-const Filters = styled.div`
-  display: flex;
-  gap: 30px;
+  padding: 10px 0;
+  font-size: 32px;
   font-weight: 500;
-  align-items: center;
-`;
-
-const Dramas = styled.div`
-  margin-top: 20px;
-  margin-bottom: 100px;
-  display: flex;
-  gap: 18px;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-`;
-
-const Drama = styled.div`
-  cursor: pointer;
-  width: 15.8em;
-  height: 320px;
-  flex-shrink: 0;
+  margin-right: 10px;
+  width: 300px;
+  padding: 6px 10px;
   border-radius: 5px;
-  font-size: 16px;
-  color: white;
-  font-weight: 700;
+  font-weight: 500;
+  font-weight: 500;
+  background-color: rgba(255, 255, 255, 0.1);
+  &:focus {
+    box-shadow: 0 0 0 5px ${(props) => props.theme.black},
+      0 0 0 6px rgba(255, 255, 255, 0.1);
+    transition: ease-in-out 0.25s;
+  }
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 26px;
+  }
+`;
+
+const DramaCardsWrapper = styled.div`
+  padding: 26px 0 100px 0;
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+
+  ${MEDIA_QUERY_TABLET} {
+    gap: 16px;
+  }
+  ${MEDIA_QUERY_MOBILE} {
+    gap: 16px;
+  }
+`;
+const DramaCard = styled.div`
+  width: 275px;
+  height: 362px;
+  background-color: ${(props) => props.theme.grey};
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -118,21 +145,33 @@ const Drama = styled.div`
   padding: 20px;
   background-size: cover;
   position: relative;
+  ${MEDIA_QUERY_TABLET} {
+    width: 238px;
+    height: 316px;
+    padding: 16px;
+  }
+  ${MEDIA_QUERY_MOBILE} {
+    width: 180px;
+    height: 265px;
+    padding: 12px;
+  }
 `;
 
 const RemoveFromListButton = styled.button`
-  color: #2a2a2a;
-  background-color: #fff;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  font-weight: 900;
-  font-size: 24px;
-  line-height: 20px;
   opacity: 0.5;
+  font-size: 32px;
+  opacity: 0.2;
   position: absolute;
   top: 10px;
   right: 10px;
+  &:hover {
+    scale: 1.05;
+    opacity: 0.7;
+    transition: ease-in-out 0.25s;
+  }
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 28px;
+  }
 `;
 
 function Profile() {
@@ -146,9 +185,10 @@ function Profile() {
   const today = new Date();
   const timeDiff = registrationDate ? today.getTime() - registrationDate : 0;
   const daysSinceRegistration = Math.floor(timeDiff / (1000 * 3600 * 24));
-  const filterData = {
-    type: ['所有影集', '台劇', '韓劇', '動畫', '美劇'],
-  };
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState<string | null>(
+    '所有影集'
+  );
+
   const [searchWords, setSearchWords] = useState('');
   const [editing, setEditing] = useState(false);
   const [updatedUserName, setUpdatedUserName] = useState(userName);
@@ -165,6 +205,10 @@ function Profile() {
       drama.eng?.toLowerCase().includes(searchWords.toLowerCase()) ||
       drama.title?.includes(searchWords)
   );
+  const filteredByTypeDramas =
+    selectedTypeFilter !== '所有影集'
+      ? displayedDramaList.filter((drama) => drama.type === selectedTypeFilter)
+      : displayedDramaList;
 
   useEffect(() => {
     const getDramaList = async () => {
@@ -226,22 +270,21 @@ function Profile() {
     setSearchWords(e.target.value);
   };
 
+  const handleTypeFilter = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    setSelectedTypeFilter(e.currentTarget.textContent);
+  };
+
   return (
-    <Wrapper>
-      <UserProfile>
+    <ProfilePageWrapper>
+      <UserInfo>
         {avatar && <UserImage src={avatar} alt="" />}
-        <label
-          htmlFor="upload-file"
-          style={{
-            position: 'absolute',
-            bottom: '36px',
-            left: '150px',
-            fontSize: '32px',
-            cursor: 'pointer',
-          }}
-        >
-          ⬆️
-        </label>
+        <UploadButton>
+          <label htmlFor="upload-file">
+            <FiUploadCloud style={{ cursor: 'pointer' }} />
+          </label>
+        </UploadButton>
         <input
           id="upload-file"
           type="file"
@@ -249,109 +292,105 @@ function Profile() {
           hidden
           onChange={handleImageUpload}
         />
-        <UserInfo>
+        <ColumnFlexbox width="100%" justifyContent="space-around">
           {userName && (
-            <div style={{ display: 'flex' }}>
-              {editing ? (
-                <UserName
-                  style={{ border: '#a1a1a1 solid 1px' }}
-                  type="text"
-                  onChange={handleInputChange}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSaveUserName();
-                    }
-                  }}
-                />
-              ) : (
-                <UserName
-                  style={{ backgroundColor: 'transparent' }}
-                  type="text"
-                  value={userName}
-                  disabled
-                />
-              )}
-              <button
-                style={{ marginBottom: '14px', marginLeft: '10px' }}
-                onClick={editing ? handleSaveUserName : handleEditUserName}
-              >
-                {editing ? 'Save' : '🖋'}
-              </button>
-            </div>
-          )}
-
-          <Records>
-            {recordData.map((record) => {
-              return (
-                <Record>
-                  <RecordTitle>{record.title}</RecordTitle>
-                  <RecordData>{record.data}</RecordData>
-                </Record>
-              );
-            })}
-          </Records>
-        </UserInfo>
-      </UserProfile>
-      <DramaList>
-        <ListNavBar>
-          <Filters>
-            {filterData.type.map((type) => {
-              return <div>{type}</div>;
-            })}
-          </Filters>
-          <div style={{ position: 'relative' }}>
-            <div
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '10px',
-                transform: 'translate(0, -50%)',
-              }}
-            >
-              🔍
-            </div>
-            <SearchBar
-              style={{ paddingLeft: '40px' }}
-              type="text"
-              placeholder="Search"
-              onChange={handleSearchInput}
-            />
-          </div>
-        </ListNavBar>
-        <hr className="my-4" />
-        <Dramas>
-          {displayedDramaList.map((drama) => (
             <>
-              <Drama
+              <RowFlexbox alignItems="baseline">
+                {editing ? (
+                  <UserName
+                    style={{
+                      outline: 'solid 2px #555',
+                    }}
+                    type="text"
+                    onChange={handleInputChange}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveUserName();
+                      }
+                    }}
+                  />
+                ) : (
+                  <UserName
+                    style={{
+                      backgroundColor: 'transparent',
+                    }}
+                    type="text"
+                    value={userName}
+                    disabled
+                  />
+                )}
+                <EditUserNameButton
+                  onClick={editing ? handleSaveUserName : handleEditUserName}
+                >
+                  {editing ? (
+                    <MDGreyText>儲存</MDGreyText>
+                  ) : (
+                    <AiOutlineEdit style={{ marginBottom: '-4px' }} />
+                  )}
+                </EditUserNameButton>
+              </RowFlexbox>
+              <RowFlexbox gap="18px">
+                {recordData.map((record) => {
+                  return (
+                    <ColumnFlexbox textAlign="center" gap="8px">
+                      <SMText>{record.title}</SMText>
+                      <XLText>{record.data}</XLText>
+                    </ColumnFlexbox>
+                  );
+                })}
+              </RowFlexbox>
+            </>
+          )}
+        </ColumnFlexbox>
+      </UserInfo>
+      <ColumnFlexbox>
+        <RowFlexbox justifyContent="space-between" alignItems="flex-end">
+          <FilterNavBar
+            selectedTypeFilter={selectedTypeFilter}
+            onClick={handleTypeFilter}
+          />
+          <SearchBar placeHolder="在片單中搜尋" onChange={handleSearchInput} />
+        </RowFlexbox>
+        <DividerLine />
+        <DramaCardsWrapper>
+          {filteredByTypeDramas.map((drama) => (
+            <>
+              <DramaCard
                 style={{
-                  backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
+                  backgroundImage: `linear-gradient(to top, #000, rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
                 }}
               >
-                <div style={{ fontSize: '18px' }}>{drama.title}</div>
-                <div style={{ fontSize: '12px', color: '#bbbbbb' }}>
-                  {drama.eng}
-                </div>
-                <div
-                  style={{ display: 'flex', gap: '4px', alignItems: 'center' }}
-                >
-                  <div style={{ fontSize: '10px' }}>{drama.year} |</div>
-                  <div style={{ fontSize: '10px' }}>{drama.type} |</div>
-                  <div style={{ fontSize: '10px' }}>{drama.genre}</div>
-                </div>
+                <LGText>{drama.title}</LGText>
+                <SMGreyText>{drama.eng}</SMGreyText>
+                <RowFlexbox gap="4px" alignItems="center">
+                  <SMText>{drama.year}</SMText>
+                  <SMText>{drama.type}</SMText>
+                  <SMText>{drama.genre}</SMText>
+                </RowFlexbox>
+                <RowFlexbox>
+                  {drama.rating && drama.rating > 0 ? (
+                    <RowFlexbox alignItems="flex-end">
+                      <LGText>{drama?.rating}</LGText>
+                      <SMText margin="0 0 1px 0">/5</SMText>
+                    </RowFlexbox>
+                  ) : (
+                    <SMText>目前尚無評價</SMText>
+                  )}
+                </RowFlexbox>
                 <RemoveFromListButton
                   onClick={() => {
                     alert(`確定要從片單中移除 ${drama.title} 嗎？`);
                     handleRemoveFromList(drama.id);
                   }}
                 >
-                  -
+                  <MdOutlineRemoveCircle />
                 </RemoveFromListButton>
-              </Drama>
+              </DramaCard>
             </>
           ))}
-        </Dramas>
-      </DramaList>
-    </Wrapper>
+        </DramaCardsWrapper>
+      </ColumnFlexbox>
+    </ProfilePageWrapper>
   );
 }
 
