@@ -39,7 +39,7 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
             userName: user.displayName,
             avatar: user.photoURL,
             registrationDate: Date.now(),
-            dramaList: []
+            dramaList: [],
           };
           await setDoc(userRef, userData);
           dispatch(setUserInfo(userData));
@@ -55,7 +55,6 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
   }, [auth]);
 
   if (isLoading) return <p>loading...</p>;
-
   return <>{children}</>;
 };
 

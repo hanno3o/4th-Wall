@@ -1,98 +1,186 @@
 import { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { Link, useParams } from 'react-router-dom';
 import { db } from '../../config/firebase.config';
 import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
 import { useAppSelector } from '../../redux/hooks';
+import { FaPen } from 'react-icons/fa';
+import SearchBar from '../../components/SearchBar';
+import {
+  XLText,
+  MDText,
+  MDGreyText,
+  SMGreyText,
+  XSGreyText,
+  LGText,
+} from '../../style/Text';
+import { ColumnFlexbox, RowFlexbox } from '../../style/Flexbox';
 
-const Wrapper = styled.div`
-  width: 75%;
+const MEDIA_QUERY_TABLET =
+  '@media screen and (min-width: 1281px) and (max-width: 1440px)';
+const MEDIA_QUERY_MOBILE = '@media screen and (max-width: 1280px)';
+
+const ForumPageWrapper = styled.div`
+  width: 1280px;
   padding: 50px;
   display: flex;
   flex-direction: column;
   margin: 0 auto;
+  padding-top: 140px;
+
+  ${MEDIA_QUERY_TABLET} {
+    width: 65%;
+  }
+
+  ${MEDIA_QUERY_MOBILE} {
+    width: 480px;
+  }
 `;
 
-const WelcomeMessage = styled.div`
-  font-size: 22px;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 10px;
-`;
-
-const SearchBar = styled.input`
-  border-radius: 5px;
-  border: #b6b6b6 solid 1px;
-  height: 36px;
-  width: 100%;
-  padding: 10px;
-`;
-
-const Boards = styled.div`
-  cursor: pointer;
+const BoardsWrapper = styled.div`
+  margin: 42px auto 0;
   display: flex;
-  margin-top: 30px;
-  font-weight: 500;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  ${MEDIA_QUERY_TABLET} {
+    margin: 30px auto 0;
+  }
 `;
 
 const Board = styled(Link)<ISelectedBoardProps>`
+  cursor: pointer;
   font-weight: 500;
-  height: 30px;
-  padding: 0 8px 8px;
+  font-size: 16px;
+  padding: 8px 10px;
+  letter-spacing: 0.5px;
   ${(props) =>
     props.selectedBoard &&
     props.selectedBoard.includes(props.children as string) &&
     `
-    border-bottom: #3f3a3a 4px solid;
+    border-bottom: white 4px solid;
     `}
-`;
-
-const Articles = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 105px;
+  ${MEDIA_QUERY_TABLET} {
+    padding: 8px 12px;
+    font-size: 14px;
+    ${(props) =>
+      props.selectedBoard &&
+      props.selectedBoard.includes(props.children as string) &&
+      `
+  border-bottom: #fff 3px solid;
+  `}
+  }
+  ${MEDIA_QUERY_MOBILE} {
+    padding: 6px 8px;
+    ${(props) =>
+      props.selectedBoard &&
+      props.selectedBoard.includes(props.children as string) &&
+      `
+    border-bottom: white 2.5px solid;
+    `}
+  }
 `;
 
 const Article = styled(Link)`
-  border: #d4d4d4 solid 1px;
-  border-radius: 5px;
-  box-shadow: 1px 1px 4px #bdbdbd;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 40px 30px;
+  padding: 50px 8px;
   height: 70px;
-`;
-
-const Title = styled.div`
-  text-align: left;
-  font-weight: 700;
+  ${MEDIA_QUERY_MOBILE} {
+    padding: 1px 0px 2px 10px;
+  }
 `;
 
 const Pagination = styled.div`
   display: flex;
-  gap: 4px;
   position: absolute;
-  bottom: 110px;
+  bottom: 130px;
   left: 50%;
   transform: translate(-50%, 0);
+  gap: 4px;
 `;
 
-const Btn = styled(Link)`
-  background-color: #000;
-  color: #fff;
+const PaginationButton = styled.button`
+  font-size: 14px;
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  width: 26px;
+  height: 26px;
+  font-weight: 500;
+  color: ${(props) => props.theme.lightGrey};
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: ${(props) => props.theme.white};
+    transition: ease-in-out 0.25s;
+    font-weight: 500;
+  }
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 12px;
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+const fade = keyframes`
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+`;
+
+const MdTextSkeleton = styled(MDText)`
+  width: 220px;
+  height: 16px;
+  border-radius: 20px;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
+`;
+
+const SmGreyTextSkeleton = styled(SMGreyText)`
+  width: 600px;
+  height: 14px;
+  border-radius: 20px;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
+`;
+
+const XsGreyTextSkeleton = styled(XSGreyText)`
+  width: 50px;
+  height: 12px;
+  border-radius: 20px;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
+`;
+
+const PostButton = styled(Link)`
+  background-color: rgba(255, 255, 255, 0.25);
   display: flex;
   justify-content: center;
   align-items: center;
   height: 50px;
   width: 50px;
   border-radius: 50%;
-  position: absolute;
-  bottom: 100px;
-  right: 30px;
+  position: fixed;
+  bottom: 120px;
+  right: 40px;
+  font-size: 16px;
+  &:hover {
+    color: ${(props) => props.theme.black};
+    background-color: ${(props) => props.theme.white};
+    scale: 1.05;
+    transition: ease-in-out 0.25s;
+    font-size: 18px;
+  }
+`;
+
+const DividerLine = styled.div`
+  border-bottom: solid 1px ${(props) => props.theme.grey};
 `;
 
 interface IArticles {
@@ -131,10 +219,11 @@ function Forum() {
   const [board, setBoard] = useState<string>('TaiwanDrama');
   const userName = useAppSelector((state) => state.user.userName);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 15;
   const totalPages = Math.ceil(articles.length / PAGE_SIZE);
   const urlSearchParams = new URLSearchParams(window.location.search);
   const keyword = urlSearchParams.get('keyword');
+  const currentDate = new Date();
 
   const displayedArticles = articles.filter((article) =>
     article.title?.includes(searchWords)
@@ -182,7 +271,9 @@ function Forum() {
         articleArr.push(article);
       }
       setArticles(articleArr);
-      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(true);
+      }, 1000);
     } catch (error) {
       console.error('Error getting articles: ', error);
       setIsLoading(false);
@@ -208,156 +299,162 @@ function Forum() {
   }, [board]);
 
   return (
-    <Wrapper>
-      <WelcomeMessage>歡迎來到 4th forum 一起討論戲劇！</WelcomeMessage>
-      <div style={{ position: 'relative' }}>
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '10px',
-            transform: 'translate(0, -50%)',
-          }}
-        >
-          🔍
-        </div>
-        <SearchBar
-          style={{ paddingLeft: '40px' }}
-          type="text"
-          placeholder="請輸入想要查找的文章標題"
-          value={searchWords}
-          onChange={handleSearchInput}
-        />
-      </div>
-      <Boards>
-        {BoardsData.boards.map((board, index) => {
-          return (
-            <Board
-              key={index}
-              onClick={() => {
-                setSelectedBoard(board.Chinese);
-                setBoard(board.English);
-                setSearchWords('');
-              }}
-              to={`/forum/${board.English}`}
-              selectedBoard={selectedBoard}
-            >
-              {board.Chinese}
-            </Board>
-          );
-        })}
-      </Boards>
-      <hr className="mb-3" />
-      {userName ? (
-        <Btn to={`/forum/${board}/post`}>Post</Btn>
-      ) : (
-        <Btn to="" onClick={() => alert('要先登入才能發布文章喔！')}>
-          Post
-        </Btn>
-      )}
-      <Articles>
-        {isLoading ?
-          currentPageArticles.map((article) => {
+    <ForumPageWrapper>
+      <XLText margin="0 auto 26px">歡迎來到 4th forum 一起討論戲劇！</XLText>
+      <SearchBar
+        width="60%"
+        margin="0 auto"
+        value={searchWords}
+        placeHolder="請輸入想要查找的文章標題"
+        onChange={handleSearchInput}
+      />
+      <BoardsWrapper>
+        <RowFlexbox mobileJustifyContent="space-between">
+          {BoardsData.boards.map((board, index) => {
             return (
-              <Article
-                to={`/forum/${boardName}/article/${article.id}`}
-                key={article.id}
+              <Board
+                key={index}
+                onClick={() => {
+                  setSelectedBoard(board.Chinese);
+                  setBoard(board.English);
+                  setSearchWords('');
+                }}
+                to={`/forum/${board.English}`}
+                selectedBoard={selectedBoard}
               >
-                <div>
-                  {!!article.commentsNum ? (
-                    <div
-                      style={{
-                        flexGrow: '1',
-                        fontWeight: '900',
-                        fontSize: '24px',
-                        width: '40px',
-
-                        color:
-                          article.commentsNum <= 10
-                            ? '#a2c548'
-                            : article.commentsNum <= 99
-                            ? '#ecba5c'
-                            : '#cb322c',
-                      }}
-                    >
-                      {article.commentsNum >= 100 ? '爆' : article.commentsNum}
-                    </div>
-                  ) : (
-                    <div
-                      style={{
-                        fontWeight: '900',
-                        fontSize: '24px',
-                        width: '40px',
-                        color: 'transparent',
-                      }}
-                    ></div>
-                  )}
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flexGrow: '2',
-                    marginLeft: '20px',
-                  }}
-                >
-                  <Title>
-                    [{article.type}] {article.title}
-                  </Title>
-                  <div
-                    style={{
-                      width: '50px',
-                      flexGrow: '1',
-                      fontSize: '14px',
-                      marginTop: '10px',
-                      textAlign: 'left',
-                      color: '#a3a3a3',
-                      fontWeight: '700',
-                    }}
-                  >
-                    {article.author}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: '400',
-                  }}
-                >
-                  {article.date &&
-                    new Date(article.date).toLocaleString(undefined, {
-                      year: 'numeric',
-                      month: 'numeric',
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: 'numeric',
-                    })}
-                </div>
-              </Article>
+                {board.Chinese}
+              </Board>
             );
-          }) : 'Loading...'}
+          })}
+        </RowFlexbox>
+      </BoardsWrapper>
+      <DividerLine />
+      {userName ? (
+        <PostButton to={`/forum/${board}/post`}>
+          <FaPen />
+        </PostButton>
+      ) : (
+        <PostButton to="" onClick={() => alert('要先登入才能發布文章喔！')}>
+          <FaPen />
+        </PostButton>
+      )}
+      <ColumnFlexbox gap="10px" margin="10px 0 125px 0">
+        {isLoading
+          ? currentPageArticles.map((article) => {
+              return (
+                <>
+                  <Article
+                    to={`/forum/${boardName}/article/${article.id}`}
+                    key={article.id}
+                  >
+                    <RowFlexbox>
+                      {!!article.commentsNum ? (
+                        <LGText
+                          style={{
+                            flexGrow: '1',
+                            width: '50px',
+                            color:
+                              article.commentsNum <= 10
+                                ? '#a2c548'
+                                : article.commentsNum <= 99
+                                ? '#ecba5c'
+                                : '#cb322c',
+                          }}
+                        >
+                          {article.commentsNum >= 100
+                            ? '爆'
+                            : article.commentsNum}
+                        </LGText>
+                      ) : (
+                        <LGText
+                          style={{
+                            fontWeight: '100',
+                            width: '50px',
+                          }}
+                        >
+                          {' '}
+                          -{' '}
+                        </LGText>
+                      )}
+                    </RowFlexbox>
+                    <ColumnFlexbox gap="8px" style={{ flexGrow: '2' }}>
+                      <MDText>
+                        [{article.type}] {article.title}
+                      </MDText>
+                      <MDGreyText>
+                        {article.content
+                          ?.replace(/(<([^>]+)>)/gi, '')
+                          .replace(/&lt;/g, '<')
+                          .replace(/&gt;/g, '>')
+                          .slice(0, 45)}
+                        ...
+                      </MDGreyText>
+                      <XSGreyText>{article.author}</XSGreyText>
+                    </ColumnFlexbox>
+                    <SMGreyText margin="40px 0 0 0">
+                      {article.date
+                        ? new Date(article.date).getFullYear() !==
+                          currentDate.getFullYear()
+                          ? new Date(article.date).toLocaleDateString()
+                          : new Date(article.date).toLocaleDateString(
+                              undefined,
+                              {
+                                month: 'numeric',
+                                day: 'numeric',
+                              }
+                            )
+                        : null}
+                    </SMGreyText>
+                  </Article>
+                  <DividerLine />
+                </>
+              );
+            })
+          : currentPageArticles.map(() => {
+              return (
+                <>
+                  <Article to="">
+                    <ColumnFlexbox
+                      gap="10px"
+                      margin="0 0 0 50px"
+                      justifyContent="space-between"
+                      style={{ flexGrow: '2' }}
+                    >
+                      <MdTextSkeleton />
+                      <SmGreyTextSkeleton />
+                      <XsGreyTextSkeleton />
+                    </ColumnFlexbox>
+                    <XsGreyTextSkeleton
+                      margin="40px 0 0 0"
+                      style={{ width: '40px' }}
+                    />
+                  </Article>
+                  <DividerLine />
+                </>
+              );
+            })}
         <Pagination>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              style={{
-                cursor: 'pointer',
-                backgroundColor: '#000',
-                color: '#fff',
-                width: '30px',
-                height: '30px',
-                fontWeight: '700',
-                borderRadius: '5px',
-              }}
+            <PaginationButton
               key={page}
               onClick={() => handlePageChange(page)}
               disabled={page === currentPage}
+              style={
+                page === currentPage
+                  ? {
+                      backgroundColor: '#fff',
+                      color: '#181818',
+                      fontWeight: 500,
+                    }
+                  : {}
+              }
             >
               {page}
-            </button>
+            </PaginationButton>
           ))}
         </Pagination>
-      </Articles>
-    </Wrapper>
+      </ColumnFlexbox>
+    </ForumPageWrapper>
   );
 }
 

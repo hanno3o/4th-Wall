@@ -2,94 +2,103 @@ import styled from 'styled-components';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { FaUser } from 'react-icons/fa';
+import { BsGoogle } from 'react-icons/bs';
+import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
+import {
+  XXLText,
+  SMText,
+  SMGreyText,
+  LGText,
+} from '../../style/Text';
 
-const Wrapper = styled.div`
+const MEDIA_QUERY_TABLET =
+  '@media screen and (min-width: 1281px) and (max-width: 1440px)';
+
+const LoginPageWrapper = styled.div`
   width: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 160px;
   justify-content: center;
   align-items: center;
 `;
 
-const LogButton = styled.button`
-  margin-top: 24px;
-  width: 100%;
+const DividerLine = styled.div`
+  border-bottom: solid 0.5px ${(props) => props.theme.white};
+  margin: 10px 4px;
+`;
+
+const LoginButton = styled.button`
+  padding: 10px 20px;
   height: 40px;
-  font-size: 16px;
-  color: #3f3a3a;
   font-weight: 500;
-  background: #ececec;
-  border-radius: 5px;
+  border: solid 1px ${(props) => props.theme.white};
+  border-radius: 20px;
   cursor: pointer;
-`;
-
-const GoogleButton = styled(LogButton)`
-  border: solid 1px #b0b0b0;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  align-items: center;
   background: transparent;
+  &:hover {
+    scale: 1.05;
+    transition: ease-in-out 0.25s;
+    background-color: rgba(255, 255, 255, 0.25);
+    border: solid 1px rgba(255, 255, 255, 0.25);
+  }
 `;
 
-const FbButton = styled(LogButton)`
-  background-color: #3b5998;
-  color: #fff;
+const GoogleButton = styled(LoginButton)`
+  color: ${(props) => props.theme.white};
 `;
 
-const LoginWrap = styled.div`
+const LoginCard = styled.div`
+  gap: 16px;
   display: flex;
   flex-direction: column;
-  width: 420px;
+  width: 465px;
   border-radius: 5px;
-
-  border: solid 1px #979797;
+  border: solid 0.5px ${(props) => props.theme.lightGrey};
   padding: 40px 30px;
-  margin-top: -70px;
-`;
-
-const SectionTitle = styled.h1`
-  font-weight: 700;
-  font-size: 24px;
-  color: ${(props) => props.theme.textColor};
-  margin-bottom: 32px;
-`;
-
-const Form = styled.div`
-  height: 40px;
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
+  z-index: 0;
+  position: relative;
+  backdrop-filter: blur(3px);
+  background-color: rgba(255, 255, 255, 0.1);
 `;
 
 const Input = styled.input`
   height: 40px;
-  width: 576px;
-  border-radius: 5px;
-  border: 1px solid #979797;
+  border-radius: 20px;
   padding-left: 12px;
   font-size: 14px;
   line-height: 32px;
-  color: #3f3a3a;
-  ::placeholder {
-    color: #d3d3d3;
+  color: ${(props) => props.theme.darkGrey};
+  outline: solid 1px rgba(255, 255, 255, 0.1);
+  &:focus {
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.1),
+      0 0 0 6px rgba(255, 255, 255, 0.1);
+    transition: ease-in-out 0.25s;
   }
 `;
 
-const HaveAccountAlready = styled.a`
-  margin-top: 20px;
-  display: flex;
+const SignUpButton = styled.button`
+  text-align: left;
   font-size: 14px;
   cursor: pointer;
   text-decoration: underline;
-`;
-
-const Text = styled.p`
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 19px;
-  margin-bottom: 5px;
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 12px;
+  }
+  &:hover {
+    font-weight: 700;
+    transition: ease-in-out 0.25s;
+  }
 `;
 
 function Login() {
+  const bannerImageURL =
+    'https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Ffinalbanner.png?alt=media&token=5613b7b7-a3f2-446a-8184-b60bab7a8f02';
   const auth = getAuth();
   const navigate = useNavigate();
   const [authing, setAuthing] = useState(false);
@@ -107,25 +116,40 @@ function Login() {
   };
 
   return (
-    <Wrapper>
-      <LoginWrap>
-        <SectionTitle>Log in</SectionTitle>
-        <Text>Email</Text>
-        <Form>
-          <Input type="text" required name="email" />
-        </Form>
-        <Text>密碼</Text>
-        <Form>
-          <Input type="password" required name="password" />
-        </Form>
-        <LogButton>登入</LogButton>
+    <LoginPageWrapper
+      style={{
+        backgroundImage: `linear-gradient(to top, rgb(0, 0, 0), rgb(255, 255, 255, 0) 100%), url(${bannerImageURL})`,
+      }}
+    >
+      <LoginCard>
+        <XXLText style={{ marginBottom: '10px' }}>Login</XXLText>
         <GoogleButton onClick={() => signInWithGoogle()} disabled={authing}>
-          以 Google 登入
+          <BsGoogle />
+          <LGText>Google登入</LGText>
         </GoogleButton>
-        <FbButton>以 Facebook 登入</FbButton>
-        <HaveAccountAlready>還沒有帳號嗎？</HaveAccountAlready>
-      </LoginWrap>
-    </Wrapper>
+        <RowFlexbox alignItems="center" justifyContent="space-between">
+          <DividerLine style={{ width: '45%' }} />
+          <SMText>or</SMText>
+          <DividerLine style={{ width: '45%' }} />
+        </RowFlexbox>
+        <ColumnFlexbox gap="8px" tabletGap="6px">
+          <SMText>Email</SMText>
+          <Input type="text" required name="email" />
+        </ColumnFlexbox>
+        <ColumnFlexbox gap="8px" tabletGap="6px">
+          <SMText>密碼</SMText>
+          <Input type="password" required name="password" />
+        </ColumnFlexbox>
+        <LoginButton>
+          <FaUser style={{ fontSize: '16px' }} />
+          <LGText>會員登入</LGText>
+        </LoginButton>
+        <RowFlexbox>
+          <SMGreyText>還沒有帳號嗎？</SMGreyText>
+          <SignUpButton>註冊</SignUpButton>
+        </RowFlexbox>
+      </LoginCard>
+    </LoginPageWrapper>
   );
 }
 

@@ -12,36 +12,56 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { useAppSelector } from '../../redux/hooks';
+import { FaColumns, FaUser } from 'react-icons/fa';
+import { IoIosTime } from 'react-icons/io';
+import { XLText, LGText, MDText, SMText, SMGreyText } from '../../style/Text';
+import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
+import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
 
-const Wrapper = styled.div`
-  width: 100%;
+const MEDIA_QUERY_TABLET =
+  '@media screen and (min-width: 1281px) and (max-width: 1440px)';
+
+const ArticleWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding-top: 70px;
 `;
 
 const ArticleHeader = styled.div`
-  background-color: #4e4d4d;
-  color: #fff;
-  padding: 30px 330px;
-  height: 90px;
+  background-color: ${(props) => props.theme.darkGrey};
+  height: 180px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
+  padding-top: 20px;
 `;
 
-const Title = styled.h1`
-  font-size: 24px;
-  font-weight: 700;
+const ArticleContent = styled.div`
+  line-height: 36px;
+  width: 1280px;
+  ${MEDIA_QUERY_TABLET} {
+    width: 65%;
+    line-height: 32px;
+  }
 `;
 
-const Info = styled.div`
+const ReplyButton = styled.button`
+  border-radius: 20px;
+  box-shadow: 0 0 0 3px ${(props) => props.theme.black}, 0 0 0 5px transparent;
+  &:hover {
+    box-shadow: 0 0 0 3px ${(props) => props.theme.black},
+      0 0 0 5px rgba(255, 255, 255, 0.1);
+    transition: ease-in-out 0.25s;
+  }
+`;
+
+const MoreButton = styled.button`
+  height: 30px;
+  width: 30px;
   display: flex;
-  gap: 30px;
-`;
-
-const MoreButton = styled.div`
-  cursor: pointer;
+  justify-content: center;
+  align-items: center;
   font-size: 20px;
   position: absolute;
   top: 4px;
@@ -49,54 +69,90 @@ const MoreButton = styled.div`
   border-radius: 50%;
   padding: 0 5px 10px;
   color: transparent;
-
   &:hover {
-    background-color: #f5f5f5;
+    color: ${(props) => props.theme.white};
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: ease-in-out 0.25s;
   }
 `;
 
 const Comment = styled.div`
-  padding: 20px 12px;
+  padding: 20px;
   width: 100%;
   display: flex;
   justify-content: space-between;
-  border: #dcdcdc solid 1px;
-  margin: 10px 0;
-  border-radius: 5px;
+  border: 0.5px solid ${(props) => props.theme.grey};
+  border-radius: 20px;
   position: relative;
 
   &:hover {
     ${MoreButton} {
-      color: #2a2a2a;
+      color: ${(props) => props.theme.white};
     }
   }
 `;
 
 const CommentOptions = styled.div`
   cursor: pointer;
+  width: 80px;
   flex-direction: column;
   font-size: 14px;
-  background-color: #fff;
-  border: solid 1px #eee;
-  border-radius: 4px;
-  width: 80px;
-  /* padding: 16px; */
-  box-shadow: 2px 2px 4px #bdbdbd;
+  background-color: ${(props) => props.theme.white};
+  border: solid 1px ${(props) => props.theme.lightGrey};
+  border-radius: 5px;
   position: absolute;
-  top: 4px;
+  top: 6px;
   right: 50px;
+  color: ${(props) => props.theme.grey};
 `;
 
 const CommentOption = styled.div`
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
   height: 42px;
   line-height: 42px;
-  padding-left: 12px;
 
   &:hover {
-    background-color: #f5f5f5;
+    background-color: #e8e8e8;
   }
 `;
 
+const ReplyTo = styled.div`
+  font-size: 14px;
+  color: ${(props) => props.theme.lightGrey};
+  display: flex;
+  gap: 6px;
+`;
+
+const CommentDate = styled.div`
+  font-size: 14px;
+  position: absolute;
+  right: 16px;
+  bottom: 20px;
+
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 12px;
+  }
+`;
+
+const Input = styled.input`
+  cursor: text;
+  width: 100%;
+  border-radius: 20px;
+  padding: 10px 16px;
+  margin: 10px 0 200px 5px;
+  outline: solid 2px ${(props) => props.theme.grey};
+  color: ${(props) => props.theme.white};
+  font-weight: 500;
+  background-color: rgba(255, 255, 255, 0.1);
+  &:focus {
+    box-shadow: 0 0 0 5px ${(props) => props.theme.black},
+      0 0 0 6px rgba(255, 255, 255, 0.1);
+    transition: ease-in-out 0.25s;
+  }
+`;
 interface IArticle {
   drama?: string;
   title?: string;
@@ -117,7 +173,6 @@ interface IComments {
 
 function Article() {
   const userName = useAppSelector((state) => state.user.userName);
-  const avatar = useAppSelector((state) => state.user.avatar);
   const userId = useAppSelector((state) => state.user.id);
   const { boardName, id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
@@ -233,239 +288,213 @@ function Article() {
   };
 
   return (
-    <Wrapper
-      style={{
-        overflowY: 'scroll',
-        height: '100vh',
-      }}
-    >
+    <ArticleWrapper>
       {isLoading && <p>loading...</p>}
       {!isLoading && article && (
-        <div>
+        <ColumnFlexbox>
           <ArticleHeader>
-            <Title>{`[${article.type}] ${article.title}`}</Title>
-            <Info>
-              <p>{article.author}</p>
-              <p>{article.date && new Date(article.date).toLocaleString()}</p>
-            </Info>
+            <RowFlexbox
+              width="1100px"
+              margin="0 auto"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <XLText>{`[${article.type}] ${article.title}`}</XLText>
+              <ColumnFlexbox gap="14px">
+                <div>{article.author}</div>
+                <RowFlexbox gap="8px">
+                  <MDText>
+                    <FaColumns />
+                  </MDText>
+                  <MDText>韓劇版</MDText>
+                </RowFlexbox>
+                <RowFlexbox gap="8px">
+                  <MDText>
+                    <FaUser />
+                  </MDText>
+                  <MDText>melody_6_9</MDText>
+                </RowFlexbox>
+                <RowFlexbox gap="8px">
+                  <MDText>
+                    <IoIosTime />
+                  </MDText>
+                  <MDText>
+                    {article.date &&
+                      new Date(article.date).toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: 'numeric',
+                      })}
+                  </MDText>
+                </RowFlexbox>
+              </ColumnFlexbox>
+            </RowFlexbox>
           </ArticleHeader>
-          <div style={{ width: '70%', margin: '0 auto' }}>
-            <div
-              style={{ fontSize: '18px', lineHeight: '32px' }}
+          <ColumnFlexbox width="1100px" margin="40px auto">
+            <ArticleContent
               dangerouslySetInnerHTML={{ __html: article.content }}
-              className="p-4 mt-8 mx-6"
             />
-            <div className="p-4 mt-4 mx-6 h-96">
-              <div style={{ display: 'flex' }}>
-                <div
-                  style={{
-                    fontSize: '22px',
-                    fontWeight: '700',
-                    marginBottom: '10px',
-                  }}
-                >
-                  留言區
-                </div>
-                <div style={{ fontSize: '14px', marginTop: '7px' }}>
-                  （共有 {comments.length} 則留言）
-                </div>
-              </div>
-              <div>
-                {comments &&
-                  comments
-                    .sort((a, b) => {
-                      if (a.date && b.date) {
-                        return (
-                          new Date(a.date).getTime() -
-                          new Date(b.date).getTime()
-                        );
-                      } else {
-                        return 0;
-                      }
-                    })
-                    .map((comment, index) => {
+            <RowFlexbox alignItems="flex-end" margin="60px 0 0 0">
+              <LGText>留言區</LGText>
+              <SMGreyText>（共有 {comments.length} 則留言）</SMGreyText>
+            </RowFlexbox>
+            <ColumnFlexbox gap="8px" margin="20px 0 0 0 ">
+              {comments &&
+                comments
+                  .sort((a, b) => {
+                    if (a.date && b.date) {
                       return (
-                        <>
-                          <Comment key={index}>
-                            <div>
-                              <div
-                                style={{
-                                  fontSize: '14px',
-                                  paddingLeft: '4px',
-                                  fontWeight: '500',
-                                  marginBottom: '4px',
-                                }}
-                              >
-                                {comment.userName}
-                              </div>
-                              <div>
-                                {editingCommentId === comment.id ? (
-                                  <input
-                                    style={{
-                                      border: '#a1a1a1 solid 1px',
-                                      padding: '4px 4px',
-                                      borderRadius: '5px',
-                                      width: '1060px',
-                                      marginBottom: '4px',
-                                    }}
-                                    type="text"
-                                    onChange={handleUpdatedCommentInputChange}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        handleUpdateComment(comment.id);
-                                      }
-                                    }}
-                                  />
-                                ) : (
-                                  <input
-                                    style={{
-                                      backgroundColor: 'transparent',
-                                      padding: '4px 4px',
-                                      borderRadius: '5px',
-                                      width: '1190px',
-                                      marginBottom: '4px',
-                                    }}
-                                    type="text"
-                                    value={comment.comment}
-                                    disabled
-                                  />
-                                )}
-                              </div>
-                              <div
-                                style={{
-                                  paddingLeft: '4px',
-                                  fontSize: '14px',
-                                  color: '#585858',
-                                  display: 'flex',
-                                  gap: '6px',
-                                }}
-                              >
-                                <div>B{index + 1}</div>
-                                {comment.userId !== userId && (
-                                  <>
-                                    <div> · </div>
-                                    <button
-                                      onClick={() =>
-                                        handleReply(comment.id, index)
-                                      }
-                                    >
-                                      回覆
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <div
-                              style={{
-                                marginTop: '24px',
-                                position: 'absolute',
-                                right: '10px',
+                        new Date(a.date).getTime() - new Date(b.date).getTime()
+                      );
+                    } else {
+                      return 0;
+                    }
+                  })
+                  .map((comment, index) => {
+                    return (
+                      <>
+                        <Comment key={index}>
+                          <ColumnFlexbox gap="8px" mobileGap="4px">
+                            <MDText>{comment.userName}</MDText>
+                            <>
+                              {editingCommentId === comment.id ? (
+                                <input
+                                  style={{
+                                    border: '#a1a1a1 solid 1px',
+                                    backgroundColor: '#4b4b4b',
+                                    width: '900px',
+                                  }}
+                                  type="text"
+                                  onChange={handleUpdatedCommentInputChange}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      handleUpdateComment(comment.id);
+                                    }
+                                  }}
+                                />
+                              ) : (
+                                <input
+                                  style={{
+                                    backgroundColor: 'transparent',
+                                    width: '900px',
+                                  }}
+                                  type="text"
+                                  value={comment.comment}
+                                  disabled
+                                />
+                              )}
+                            </>
+                            <ReplyTo>
+                              <SMGreyText>B{index + 1}</SMGreyText>
+                              {comment.userId !== userId && (
+                                <>
+                                  <SMGreyText> · </SMGreyText>
+                                  <ReplyButton
+                                    onClick={() =>
+                                      handleReply(comment.id, index)
+                                    }
+                                  >
+                                    <SMGreyText>回覆</SMGreyText>
+                                  </ReplyButton>
+                                </>
+                              )}
+                            </ReplyTo>
+                          </ColumnFlexbox>
+                          <CommentDate>
+                            {comment.date
+                              ? new Date(comment.date).toLocaleString(
+                                  undefined,
+                                  {
+                                    year: 'numeric',
+                                    month: 'numeric',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: 'numeric',
+                                  }
+                                )
+                              : null}
+                          </CommentDate>
+                          {comment.userId === userId && (
+                            <RowFlexbox
+                              onClick={() => {
+                                if (commentOptionWindow === comment.id) {
+                                  setCommentOptionWindow(null);
+                                }
                               }}
                             >
-                              {comment.date
-                                ? new Date(comment.date).toLocaleString()
-                                : null}
-                            </div>
-                            {comment.userId === userId && (
-                              <div
-                                onClick={() => {
-                                  if (commentOptionWindow === comment.id) {
-                                    setCommentOptionWindow(null);
-                                  }
+                              <MoreButton
+                                onClick={() => showCommentOptions(comment.id)}
+                              >
+                                ...
+                              </MoreButton>
+                              <CommentOptions
+                                style={{
+                                  display:
+                                    commentOptionWindow === comment.id
+                                      ? 'flex'
+                                      : 'none',
                                 }}
                               >
-                                <MoreButton
-                                  onClick={() => showCommentOptions(comment.id)}
-                                >
-                                  …
-                                </MoreButton>
-                                <CommentOptions
-                                  style={{
-                                    display:
-                                      commentOptionWindow === comment.id
-                                        ? 'flex'
-                                        : 'none',
+                                <CommentOption
+                                  onClick={() => {
+                                    handleEditComment(comment.id);
+                                    setCommentOptionWindow(null);
                                   }}
                                 >
-                                  <CommentOption
-                                    onClick={() =>
-                                      handleEditComment(comment.id)
-                                    }
-                                  >
-                                    🖋 編輯
-                                  </CommentOption>
-                                  <CommentOption
-                                    onClick={() =>
-                                      handleRemoveComment(comment.id)
-                                    }
-                                  >
-                                    🗑 刪除
-                                  </CommentOption>
-                                </CommentOptions>
-                              </div>
-                            )}
-                          </Comment>
-                        </>
-                      );
-                    })}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '10px',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  padding: '10px 0',
-                  marginTop: '10px',
-                }}
-              >
-                {avatar && (
-                  <img
-                    src={avatar}
-                    alt=""
-                    style={{
-                      borderRadius: '50%',
-                      width: '40px',
-                      height: '40px',
-                      objectFit: 'cover',
-                      marginBottom: '200px',
-                    }}
-                  />
-                )}
-                <input
-                  type="text"
-                  value={writtenComment}
-                  placeholder={
-                    userName
-                      ? '留言.......'
-                      : '要先登入才能使用論壇的討論功能喔！'
+                                  <AiOutlineEdit
+                                    style={{
+                                      fontSize: '18px',
+                                      color: '#bbb',
+                                    }}
+                                  />
+                                  <SMText>編輯</SMText>
+                                </CommentOption>
+                                <CommentOption
+                                  onClick={() => {
+                                    handleRemoveComment(comment.id);
+                                    setCommentOptionWindow(null);
+                                  }}
+                                >
+                                  <AiOutlineDelete
+                                    style={{
+                                      fontSize: '18px',
+                                      color: '#bbb',
+                                    }}
+                                  />
+                                  <SMText>刪除</SMText>
+                                </CommentOption>
+                              </CommentOptions>
+                            </RowFlexbox>
+                          )}
+                        </Comment>
+                      </>
+                    );
+                  })}
+            </ColumnFlexbox>
+            <RowFlexbox alignItems="center" gap="8px" margin="10px 0 0 0">
+              <Input
+                type="text"
+                value={writtenComment}
+                placeholder={
+                  userName
+                    ? '留言.......'
+                    : '要先登入才能使用論壇的討論功能喔！'
+                }
+                onChange={handleCommentInput}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleUploadComment();
                   }
-                  style={{
-                    cursor: 'text',
-                    height: '65px',
-                    width: '100%',
-                    color: '#2a2a2a',
-                    padding: '8px',
-                    border: '#898989 solid 1px',
-                    borderRadius: '5px',
-                    marginTop: '10px',
-                    marginBottom: '200px',
-                    fontSize: '18px',
-                  }}
-                  onChange={handleCommentInput}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleUploadComment();
-                    }
-                  }}
-                  disabled={!userName}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+                }}
+                disabled={!userName}
+              />
+            </RowFlexbox>
+          </ColumnFlexbox>
+        </ColumnFlexbox>
       )}
-    </Wrapper>
+    </ArticleWrapper>
   );
 }
 

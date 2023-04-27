@@ -1,10 +1,21 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { createGlobalStyle } from 'styled-components';
+import { createGlobalStyle, ThemeProvider } from 'styled-components';
 import { Reset } from 'styled-reset';
 import AuthRoute from './components/AuthRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
+
+const theme = {
+  primaryColor: '#fc3344',
+  secondaryColor: '#4538e6',
+  darkBlack: '#080808',
+  black: '#181818',
+  white: '#fff',
+  lightGrey: '#bbb',
+  grey: '#555',
+  darkGrey: '#2a2a2a',
+};
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -12,8 +23,10 @@ const GlobalStyle = createGlobalStyle`
   }
 
   body {
-    font-family: 'Noto Sans TC', sans-serif;
+    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
     font-weight: 400;
+    background-color:#181818;
+    color: #fff;
   }
 
   #root {
@@ -31,9 +44,11 @@ function App() {
       <Reset />
       <GlobalStyle />
       <AuthRoute>
-        <Header />
-        <Outlet />
-        <Footer />
+        <ThemeProvider theme={theme}>
+          <Header />
+          <Outlet />
+          <Footer />
+        </ThemeProvider>
       </AuthRoute>
     </>
   );
