@@ -34,6 +34,7 @@ const ArticleWrapper = styled.div`
   flex-direction: column;
   gap: 4px;
   padding-top: 70px;
+  padding-bottom: 200px;
 `;
 
 const ArticleHeader = styled.div`
@@ -134,6 +135,35 @@ const ReplyTo = styled.div`
   gap: 6px;
 `;
 
+const CancelButton = styled.button`
+  color: ${(props) => props.theme.lightGrey};
+  font-size: 16px;
+  border: solid 1px transparent;
+  padding: 8px 12px;
+  border-radius: 20px;
+  filter: brightness(0.9);
+  &:hover {
+    filter: brightness(1.05);
+    scale: 1.05;
+    transition: ease-in-out 0.5s;
+  }
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 14px;
+  }
+`;
+const ConfirmButton = styled(CancelButton)`
+  background-color: ${(props) => props.theme.white};
+  color: ${(props) => props.theme.darkGrey};
+  font-weight: 550;
+  &:hover {
+    background-color: ${(props) => props.theme.white};
+    color: ${(props) => props.theme.black};
+  }
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 14px;
+  }
+`;
+
 const CommentDate = styled.div`
   font-size: 14px;
   position: absolute;
@@ -148,7 +178,7 @@ const CommentTextArea = styled.textarea`
   width: 100%;
   border-radius: 20px;
   padding: 18px 16px;
-  margin: 10px 0 200px 0px;
+  margin: 10px 0;
   outline: solid 2px transparent;
   font-weight: 500;
   background-color: rgba(255, 255, 255, 0.1);
@@ -467,7 +497,7 @@ function Article() {
                     );
                   })}
             </ColumnFlexbox>
-            <RowFlexbox alignItems="center" gap="8px" margin="10px 0 0 0">
+            <ColumnFlexbox alignItems="center" gap="8px" margin="10px 0 0 0">
               <CommentTextArea
                 value={writtenComment}
                 placeholder={
@@ -483,7 +513,27 @@ function Article() {
                 }}
                 disabled={!userName}
               />
-            </RowFlexbox>
+              <RowFlexbox gap="4px" justifyContent="flex-end">
+                <CancelButton
+                  onClick={() => {
+                    setWrittenComment('');
+                  }}
+                >
+                  取消
+                </CancelButton>
+                <ConfirmButton
+                  onClick={() => {
+                    if (writtenComment) {
+                      handleUploadComment();
+                    } else {
+                      alert('要先留言才可以送出喔！');
+                    }
+                  }}
+                >
+                  送出
+                </ConfirmButton>
+              </RowFlexbox>
+            </ColumnFlexbox>
           </ColumnFlexbox>
         </ColumnFlexbox>
       )}
