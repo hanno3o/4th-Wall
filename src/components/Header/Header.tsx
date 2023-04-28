@@ -126,7 +126,11 @@ function Header() {
   const [settingsMenu, setSettingsMenu] = useState(false);
 
   return (
-    <HeaderWrapper>
+    <HeaderWrapper
+      onClick={() => {
+        settingsMenu && setSettingsMenu(false);
+      }}
+    >
       <Link to="/home">
         <LogoImage
           src="https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Flogo.png?alt=media&token=c662b230-56af-4667-a245-0dd57d2f7ad5"

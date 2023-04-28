@@ -321,7 +321,7 @@ function Article() {
   };
 
   return (
-    <ArticleWrapper>
+    <ArticleWrapper onClick={() => commentOptionWindow && setCommentOptionWindow(null)}>
       {isLoading && <p>loading...</p>}
       {!isLoading && article && (
         <ColumnFlexbox>
