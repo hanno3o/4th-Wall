@@ -14,7 +14,15 @@ import {
 import { useAppSelector } from '../../redux/hooks';
 import { FaColumns, FaUser } from 'react-icons/fa';
 import { IoIosTime } from 'react-icons/io';
-import { XLText, LGText, MDText, SMText, SMGreyText } from '../../style/Text';
+import {
+  XLText,
+  LGText,
+  MDText,
+  NMText,
+  SMText,
+  MDGreyText,
+  SMGreyText,
+} from '../../style/Text';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
 
@@ -131,20 +139,17 @@ const CommentDate = styled.div`
   position: absolute;
   right: 16px;
   bottom: 20px;
-
-  ${MEDIA_QUERY_TABLET} {
-    font-size: 12px;
-  }
 `;
 
-const Input = styled.input`
+const CommentTextArea = styled.textarea`
   cursor: text;
+  resize: none;
+  line-height: 22px;
   width: 100%;
   border-radius: 20px;
-  padding: 10px 16px;
-  margin: 10px 0 200px 5px;
-  outline: solid 2px ${(props) => props.theme.grey};
-  color: ${(props) => props.theme.white};
+  padding: 18px 16px;
+  margin: 10px 0 200px 0px;
+  outline: solid 2px transparent;
   font-weight: 500;
   background-color: rgba(255, 255, 255, 0.1);
   &:focus {
@@ -152,6 +157,16 @@ const Input = styled.input`
       0 0 0 6px rgba(255, 255, 255, 0.1);
     transition: ease-in-out 0.25s;
   }
+`;
+
+const CommentEditTextArea = styled.textarea`
+  line-height: 20px;
+  border-radius: 5px;
+  resize: none;
+  outline: ${(props) => props.theme.grey};
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+  width: 100%;
 `;
 interface IArticle {
   drama?: string;
@@ -216,13 +231,6 @@ function Article() {
     }
   };
 
-  const handleCommentInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setWrittenComment(e.target.value);
-    if (articleRef) {
-      await updateDoc(articleRef, { commentsNum: comments.length + 1 });
-    }
-  };
-
   const handleUploadComment = async () => {
     try {
       if (articleRef && id && writtenComment) {
@@ -231,6 +239,7 @@ function Article() {
           userId: userId,
           comment: writtenComment,
         });
+        await updateDoc(articleRef, { commentsNum: comments.length + 1 });
         setWrittenComment('');
         getArticleAndComments();
       }
@@ -245,12 +254,6 @@ function Article() {
 
   const handleEditComment = (commentId: string | undefined) => {
     if (commentId) setEditingCommentId(commentId);
-  };
-
-  const handleUpdatedCommentInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setUpdatedComment(e.target.value);
   };
 
   const handleUpdateComment = async (commentId: string | undefined) => {
@@ -356,18 +359,15 @@ function Article() {
                     return (
                       <>
                         <Comment key={index}>
-                          <ColumnFlexbox gap="8px" mobileGap="4px">
+                          <ColumnFlexbox gap="8px" mobileGap="4px" width="100%">
                             <MDText>{comment.userName}</MDText>
                             <>
                               {editingCommentId === comment.id ? (
-                                <input
-                                  style={{
-                                    border: '#a1a1a1 solid 1px',
-                                    backgroundColor: '#4b4b4b',
-                                    width: '900px',
+                                <CommentEditTextArea
+                                  defaultValue={comment.comment}
+                                  onChange={(e) => {
+                                    setUpdatedComment(e.target.value);
                                   }}
-                                  type="text"
-                                  onChange={handleUpdatedCommentInputChange}
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                       handleUpdateComment(comment.id);
@@ -375,28 +375,22 @@ function Article() {
                                   }}
                                 />
                               ) : (
-                                <input
-                                  style={{
-                                    backgroundColor: 'transparent',
-                                    width: '900px',
-                                  }}
-                                  type="text"
-                                  value={comment.comment}
-                                  disabled
-                                />
+                                <NMText LineHeight="20px">
+                                  {comment.comment}
+                                </NMText>
                               )}
                             </>
                             <ReplyTo>
-                              <SMGreyText>B{index + 1}</SMGreyText>
+                              <MDGreyText>B{index + 1}</MDGreyText>
                               {comment.userId !== userId && (
                                 <>
-                                  <SMGreyText> · </SMGreyText>
+                                  <MDGreyText> · </MDGreyText>
                                   <ReplyButton
                                     onClick={() =>
                                       handleReply(comment.id, index)
                                     }
                                   >
-                                    <SMGreyText>回覆</SMGreyText>
+                                    <MDGreyText>回覆</MDGreyText>
                                   </ReplyButton>
                                 </>
                               )}
@@ -474,15 +468,14 @@ function Article() {
                   })}
             </ColumnFlexbox>
             <RowFlexbox alignItems="center" gap="8px" margin="10px 0 0 0">
-              <Input
-                type="text"
+              <CommentTextArea
                 value={writtenComment}
                 placeholder={
                   userName
                     ? '留言.......'
                     : '要先登入才能使用論壇的討論功能喔！'
                 }
-                onChange={handleCommentInput}
+                onChange={(e) => setWrittenComment(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     handleUploadComment();

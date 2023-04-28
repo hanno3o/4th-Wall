@@ -61,6 +61,12 @@ export const MDText = styled.div<TextProps>`
   }
 `;
 
+export const NMText = styled.div<TextProps>`
+  font-size: 16px;
+  line-height: ${(props) => props.LineHeight || ''};
+  margin: ${(props) => props.margin || ''};
+`;
+
 export const SMText = styled.div<TextProps>`
   font-size: 14px;
   font-weight: 500;
@@ -74,7 +80,7 @@ export const SMText = styled.div<TextProps>`
 `;
 
 export const XSText = styled.div<TextProps>`
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};

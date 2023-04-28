@@ -31,6 +31,7 @@ import {
   SMText,
   XSText,
   LGGreyText,
+  MDGreyText,
   SMGreyText,
   XSGreyText,
 } from '../../style/Text';
@@ -79,6 +80,7 @@ const Overlay = styled.div`
 `;
 
 const DividerLine = styled.div`
+  margin: 0 auto;
   border-bottom: solid 1px ${(props) => props.theme.grey};
 `;
 
@@ -209,7 +211,7 @@ const DramaInfo = styled.div`
   z-index: 1;
 
   ${MEDIA_QUERY_TABLET} {
-    width: 65vw;
+    width: 67.5vw;
     height: 760px;
     padding: 30px 20px;
   }
@@ -292,7 +294,6 @@ const TextButton = styled(IconButton)`
   font-size: 14px;
   border-radius: 20px;
   ${MEDIA_QUERY_TABLET} {
-    font-size: 12px;
     padding: 2px 6px;
   }
 `;
@@ -344,26 +345,38 @@ const UserRatingStars = styled.button<UserRatingStarsProps>`
   }
 `;
 
-const ReviewInputField = styled.input`
-  color: ${(props) => props.theme.black};
+const ReviewTextArea = styled.textarea`
+  resize: none;
+  outline: ${(props) => props.theme.grey};
+  background-color: ${(props) => props.theme.grey};
+  box-shadow: 0 0 0 3px ${(props) => props.theme.grey};
   font-size: 14px;
-  padding: 0 20px;
-  border-radius: 20px;
+  font-weight: 500;
+  border-radius: 5px;
+  padding: 14px;
   height: 60px;
   ${MEDIA_QUERY_TABLET} {
     height: 42px;
-    font-size: 12px;
+    width: 90%;
+    margin: 0 auto;
+    padding: 10px;
   }
 `;
 
-const EditingReviewInputField = styled.input`
-  width: 215px;
-  border-radius: 20px;
+const ReviewTextEditArea = styled.textarea`
+  width: 216px;
   font-weight: 500;
-  padding: 10px;
-  font-size: 12px;
-  background-color: transparent;
-  border: solid 1px ${(props) => props.theme.grey};
+  line-height: 20px;
+  resize: none;
+  font-size: 14px;
+  border-radius: 5px;
+  outline: ${(props) => props.theme.grey};
+  background-color: ${(props) => props.theme.grey};
+  box-shadow: 0 0 0 6px ${(props) => props.theme.grey};
+  margin-top: 4px;
+  ${MEDIA_QUERY_TABLET} {
+    width: 206px;
+  }
 `;
 
 const ActorLink = styled.div`
@@ -392,7 +405,6 @@ const ActorsButton = styled.button`
   }
 `;
 
-// actor card
 const ActorInfo = styled.div`
   width: 1102px;
   height: 934px;
@@ -727,10 +739,6 @@ function Home() {
     setEditing(true);
   };
 
-  const handleReviewInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUpdatedUserReview(e.target.value);
-  };
-
   const handleSaveReview = async () => {
     setEditing(false);
     if (dramaId && userId) {
@@ -824,12 +832,9 @@ function Home() {
             );
           })}
         </ColumnFlexbox>
-
-        {/* 畫面上所有戲劇Wrapper */}
         <DramaCardsWrapper>
           {isLoading
             ? filteredAndQueriedDramas.map((drama, index) => {
-                // 畫面上所有戲劇
                 return (
                   <DramaCard
                     onClick={() => handleDramaCard(drama)}
@@ -878,7 +883,7 @@ function Home() {
               <RowFlexbox gap="20px">
                 <ColumnFlexbox gap="20px">
                   {userReview ? null : (
-                    <ColumnFlexbox gap="8px" padding="10px 0 0 0">
+                    <ColumnFlexbox gap="10px" padding="10px 0 0 0">
                       <RowFlexbox justifyContent="center">
                         {[...Array(5)].map((_, index) => {
                           index += 1;
@@ -901,18 +906,14 @@ function Home() {
                           );
                         })}
                       </RowFlexbox>
-                      <ReviewInputField
-                        type="text"
-                        value={writtenReview}
+                      <ReviewTextArea
                         placeholder={
                           userName
                             ? `留下對 ${dramaCard?.title} 的評論`
                             : '要先登入才能使用評論功能喔！'
                         }
-                        disabled={!userName}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          setWrittenReview(e.target.value);
-                        }}
+                        defaultValue={writtenReview}
+                        onChange={(e) => setWrittenReview(e.target.value)}
                         onKeyPress={(e) => {
                           if (userRating) {
                             if (e.key === 'Enter') {
@@ -946,11 +947,12 @@ function Home() {
                       </RowFlexbox>
                     </ColumnFlexbox>
                   )}
-                  <ColumnFlexbox width="300px" tabletWidth="240px">
+                  <ColumnFlexbox width="300px" tabletWidth="280px">
                     <MDText style={{ paddingLeft: '10px' }}>評論</MDText>
                     <ColumnFlexbox
                       style={{ overflowY: 'scroll' }}
                       height={userReview ? '775px' : '635px'}
+                      tabletHeight={userReview ? '675px' : '560px'}
                     >
                       {userReview && (
                         <RowFlexbox
@@ -1015,22 +1017,26 @@ function Home() {
                                       { length: 5 - userReview?.rating },
                                       (_, index) => (
                                         <span key={userReview?.rating! + index}>
-                                          <FaRegStar />
+                                          <FaRegStar
+                                            style={{ fontSize: '14px' }}
+                                          />
                                         </span>
                                       )
                                     )}
                                   </RowFlexbox>
                                 )
                               )}
-                              <div>
-                                <RiPushpinLine style={{ fontSize: '16px' }} />
-                              </div>
+                              <MDGreyText>
+                                <RiPushpinLine />
+                              </MDGreyText>
                             </RowFlexbox>
                             <RowFlexbox margin="10px 0">
                               {editing ? (
-                                <EditingReviewInputField
-                                  type="text"
-                                  onChange={handleReviewInputChange}
+                                <ReviewTextEditArea
+                                  defaultValue={userReview?.writtenReview}
+                                  onChange={(e) =>
+                                    setUpdatedUserReview(e.target.value)
+                                  }
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                       if (userRating) {
@@ -1042,19 +1048,12 @@ function Home() {
                                   }}
                                 />
                               ) : (
-                                <EditingReviewInputField
-                                  type="text"
-                                  value={userReview?.writtenReview}
-                                  style={{
-                                    border: 'transparent',
-                                    margin: '0',
-                                    borderRadius: '0',
-                                  }}
-                                  disabled
-                                />
+                                <XSText LineHeight="20px">
+                                  {userReview?.writtenReview}
+                                </XSText>
                               )}
                             </RowFlexbox>
-                            <RowFlexbox>
+                            <RowFlexbox margin="0 0 0 -6px">
                               <TextButton
                                 onClick={
                                   editing && userRating
@@ -1064,7 +1063,12 @@ function Home() {
                               >
                                 {editing ? '儲存' : <AiOutlineEdit />}
                               </TextButton>
-                              <IconButton onClick={handleRemoveReview}>
+                              <IconButton
+                                onClick={() => {
+                                  handleRemoveReview();
+                                  setUpdatedUserReview('');
+                                }}
+                              >
                                 <AiOutlineDelete />
                               </IconButton>
                             </RowFlexbox>
@@ -1132,12 +1136,14 @@ function Home() {
                                       </RowFlexbox>
                                     )}
                                   </RowFlexbox>
-                                  <XSText LineHeight="22px">
+                                  <XSText LineHeight="20px">
                                     {review.writtenReview}
                                   </XSText>
                                 </ColumnFlexbox>
                               </RowFlexbox>
-                              {filteredReviews.length > 1 && <DividerLine />}
+                              {filteredReviews.length > 1 && (
+                                <DividerLine style={{ width: '95%' }} />
+                              )}
                             </ColumnFlexbox>
                           );
                         })}
