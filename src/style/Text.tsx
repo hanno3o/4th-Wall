@@ -56,8 +56,8 @@ export const MDText = styled.div<TextProps>`
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET},${MEDIA_QUERY_MOBILE} {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 600;
   }
 `;
 
@@ -109,24 +109,24 @@ export const MDGreyText = styled.div<TextProps>`
 `;
 
 export const SMGreyText = styled.div<TextProps>`
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: ${(props) => props.theme.lightGrey};
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET}, ${MEDIA_QUERY_MOBILE} {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 400;
   }
 `;
 
 export const XSGreyText = styled.div<TextProps>`
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: ${(props) => props.theme.lightGrey};
   line-height: 18px;
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET}, ${MEDIA_QUERY_MOBILE} {
-    line-height: 17px;
+    font-size: 13px;
   }
 `;

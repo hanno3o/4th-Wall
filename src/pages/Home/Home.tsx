@@ -907,6 +907,7 @@ function Home() {
                         })}
                       </RowFlexbox>
                       <ReviewTextArea
+                        disabled={!userName}
                         placeholder={
                           userName
                             ? `留下對 ${dramaCard?.title} 的評論`
@@ -949,21 +950,26 @@ function Home() {
                   )}
                   <ColumnFlexbox width="300px" tabletWidth="280px">
                     <MDText style={{ paddingLeft: '10px' }}>評論</MDText>
+                    {!allReviews.length && (
+                      <ColumnFlexbox margin="14px 0 0 10px">
+                        <MDGreyText
+                          style={{ color: 'rgba(255, 255, 255, 0.5)' }}
+                        >
+                          \ 歡迎留下第一則評論 દ ᵕ̈ ૩ /
+                        </MDGreyText>
+                      </ColumnFlexbox>
+                    )}
                     <ColumnFlexbox
                       style={{ overflowY: 'scroll' }}
                       height={userReview ? '775px' : '635px'}
                       tabletHeight={userReview ? '675px' : '560px'}
                     >
                       {userReview && (
-                        <RowFlexbox
-                          gap="10px"
-                          margin="12px 0 0 0"
-                          padding="14px 10px"
-                        >
+                        <RowFlexbox gap="10px" padding="14px 10px">
                           <Avatar src={userReview?.avatar} alt="" />
                           <ColumnFlexbox>
-                            <RowFlexbox gap="6px" alignItems="flex-end">
-                              <SMGreyText>
+                            <RowFlexbox gap="6px">
+                              <XSGreyText>
                                 {userReview.date
                                   ? new Date(userReview.date).getFullYear() !==
                                     currentDate.getFullYear()
@@ -977,7 +983,7 @@ function Home() {
                                         day: 'numeric',
                                       })
                                   : null}
-                              </SMGreyText>
+                              </XSGreyText>
                               {editing ? (
                                 <RowFlexbox>
                                   {[...Array(5)].map((_, index) => {
@@ -1030,7 +1036,7 @@ function Home() {
                                 <RiPushpinLine />
                               </MDGreyText>
                             </RowFlexbox>
-                            <RowFlexbox margin="10px 0">
+                            <RowFlexbox margin="6px 0">
                               {editing ? (
                                 <ReviewTextEditArea
                                   defaultValue={userReview?.writtenReview}
@@ -1093,8 +1099,8 @@ function Home() {
                                 <Avatar src={review.avatar} alt="" />
                                 <ColumnFlexbox gap="4px">
                                   <XSText>{review.userName}</XSText>
-                                  <RowFlexbox alignItems="flex-end" gap="8px">
-                                    <SMGreyText>
+                                  <RowFlexbox alignItems="center" gap="4px">
+                                    <XSGreyText>
                                       {review.date
                                         ? new Date(
                                             review.date
@@ -1110,7 +1116,7 @@ function Home() {
                                               day: 'numeric',
                                             })
                                         : null}
-                                    </SMGreyText>
+                                    </XSGreyText>
                                     {review.rating && (
                                       <RowFlexbox>
                                         {Array.from(
@@ -1184,15 +1190,15 @@ function Home() {
                         textAlign="left"
                         tabletGap="8px"
                       >
-                        <ColumnFlexbox gap="4px" tabletGap="4px">
+                        <ColumnFlexbox gap="4px">
                           <XSText>編劇</XSText>
                           <SMText>{dramaCard?.screenwriter}</SMText>
                         </ColumnFlexbox>
-                        <ColumnFlexbox gap="4px" tabletGap="4px">
+                        <ColumnFlexbox gap="4px">
                           <XSText>導演</XSText>
                           <SMText>{dramaCard?.director}</SMText>
                         </ColumnFlexbox>
-                        <ColumnFlexbox gap="4px" tabletGap="4px">
+                        <ColumnFlexbox gap="4px">
                           <XSText>演員</XSText>
                           <ActorLink>
                             {actors &&
@@ -1274,21 +1280,20 @@ function Home() {
                       width="400px"
                       tabletWidth="385px"
                     >
-                      <ColumnFlexbox gap="4px" tabletGap="4px">
+                      <ColumnFlexbox gap="6px" tabletGap="4px">
                         <XSText>劇情大綱</XSText>
                         <XSGreyText>{dramaCard?.story}</XSGreyText>
                       </ColumnFlexbox>
-                      <ColumnFlexbox gap="4px" tabletGap="4px">
+                      <ColumnFlexbox gap="6px" tabletGap="4px">
                         <XSText>上架日期</XSText>
                         <SMText>{dramaCard?.releaseDate}</SMText>
                       </ColumnFlexbox>
-                      <ColumnFlexbox gap="4px" tabletGap="4px">
+                      <ColumnFlexbox gap="6px" tabletGap="6px">
                         <XSText>相關影片</XSText>
-                        <div
+                        <RowFlexbox
+                          gap="8px"
                           style={{
-                            display: 'flex',
                             overflowX: 'scroll',
-                            gap: '8px',
                           }}
                         >
                           {dramaCard &&
@@ -1296,16 +1301,18 @@ function Home() {
                             dramaCard.relatedVideos.map((video, index) => (
                               <iframe
                                 key={index}
-                                style={{ borderRadius: '20px' }}
-                                width="420"
-                                height="225"
+                                style={{
+                                  borderRadius: '20px',
+                                }}
+                                width="100%"
+                                height="195"
                                 src={video}
                                 title="YouTube video player"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                 allowFullScreen
                               />
                             ))}
-                        </div>
+                        </RowFlexbox>
                       </ColumnFlexbox>
                     </ColumnFlexbox>
                   </RowFlexbox>
@@ -1340,7 +1347,7 @@ function Home() {
                       >
                         <LGText>{drama.title}</LGText>
                         <SMGreyText>{drama.eng}</SMGreyText>
-                        <RowFlexbox gap="4px" alignItems="center">
+                        <RowFlexbox alignItems="center" gap="4px">
                           <SMText>{drama.year} |</SMText>
                           <SMText>{drama.type} |</SMText>
                           <SMText>{drama.genre}</SMText>
