@@ -94,9 +94,10 @@ export const LGGreyText = styled.div<TextProps>`
   font-weight: 700;
   color: ${(props) => props.theme.lightGrey};
   line-height: ${(props) => props.LineHeight || ''};
-  ${MEDIA_QUERY_TABLET} {
-    font-size: 14px;
-  }
+`;
+
+export const LGDarkGreyText = styled(LGGreyText)`
+  color: ${(props) => props.theme.grey};
 `;
 
 export const MDGreyText = styled.div<TextProps>`

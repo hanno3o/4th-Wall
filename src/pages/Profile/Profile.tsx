@@ -7,11 +7,13 @@ import { updateAvatar, updateUserName } from '../../redux/reducers/userSlice';
 import { useState, useEffect } from 'react';
 import { FiUploadCloud } from 'react-icons/fi';
 import { AiOutlineEdit } from 'react-icons/ai';
+import { HiOutlineArrowLongRight } from 'react-icons/hi2';
 import SearchBar from '../../components/SearchBar';
 import FilterNavBar from '../../components/FilterNavBar';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
-import { XLText, SMText, MDGreyText } from '../../style/Text';
+import { XLText, SMText, LGDarkGreyText, MDGreyText } from '../../style/Text';
 import Dramas from '../../components/Dramas';
+import { Link } from 'react-router-dom';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -105,6 +107,23 @@ const UserName = styled.input`
   }
   ${MEDIA_QUERY_TABLET} {
     font-size: 26px;
+  }
+`;
+
+const HomepageLink = styled(Link)`
+  margin: -36px auto;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  padding: 8px 20px;
+  z-index: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  &:hover {
+    color: ${(props) => props.theme.white};
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: ease-in-out 0.25s;
   }
 `;
 
@@ -282,6 +301,22 @@ function Profile() {
           <SearchBar placeHolder="在片單中搜尋" onChange={handleSearchInput} />
         </RowFlexbox>
         <DividerLine />
+        {!filteredByTypeDramas.length && (
+          <ColumnFlexbox>
+            <RowFlexbox margin="50px auto" textAlign="center">
+              <LGDarkGreyText LineHeight="28px">
+                空空如也的片單有點寂寞嗎？
+                <br />
+                快來挑選你熱愛的戲劇，設計獨一無二的觀影清單吧！
+              </LGDarkGreyText>
+            </RowFlexbox>
+            <HomepageLink to="/home">
+              <RowFlexbox>
+                挑劇去 <HiOutlineArrowLongRight />
+              </RowFlexbox>
+            </HomepageLink>
+          </ColumnFlexbox>
+        )}
         <Dramas dramasData={filteredByTypeDramas} isRemoveButton={true} />
       </ColumnFlexbox>
     </ProfilePageWrapper>
