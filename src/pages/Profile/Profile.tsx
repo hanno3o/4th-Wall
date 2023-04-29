@@ -3,29 +3,18 @@ import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../config/firebase.config';
 import { doc, updateDoc, collection, getDoc } from 'firebase/firestore';
-import {
-  updateAvatar,
-  updateUserName,
-  removeFromDramaList,
-} from '../../redux/reducers/userSlice';
+import { updateAvatar, updateUserName } from '../../redux/reducers/userSlice';
 import { useState, useEffect } from 'react';
 import { FiUploadCloud } from 'react-icons/fi';
 import { AiOutlineEdit } from 'react-icons/ai';
-import { MdOutlineRemoveCircle } from 'react-icons/md';
 import SearchBar from '../../components/SearchBar';
 import FilterNavBar from '../../components/FilterNavBar';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
-import {
-  XLText,
-  LGText,
-  SMText,
-  MDGreyText,
-  SMGreyText,
-} from '../../style/Text';
+import { XLText, SMText, MDGreyText } from '../../style/Text';
+import Dramas from '../../components/Dramas';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
-const MEDIA_QUERY_MOBILE = '@media screen and (max-width: 1280px)';
 
 const ProfilePageWrapper = styled.div`
   width: 1280px;
@@ -119,61 +108,6 @@ const UserName = styled.input`
   }
 `;
 
-const DramaCardsWrapper = styled.div`
-  padding: 26px 0 100px 0;
-  display: flex;
-  gap: 26px;
-  flex-wrap: wrap;
-
-  ${MEDIA_QUERY_TABLET} {
-    gap: 16px;
-  }
-  ${MEDIA_QUERY_MOBILE} {
-    gap: 16px;
-  }
-`;
-const DramaCard = styled.div`
-  width: 275px;
-  height: 362px;
-  background-color: ${(props) => props.theme.grey};
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  justify-content: flex-end;
-  align-items: flex-start;
-  padding: 20px;
-  background-size: cover;
-  position: relative;
-  ${MEDIA_QUERY_TABLET} {
-    width: 238px;
-    height: 316px;
-    padding: 16px;
-  }
-  ${MEDIA_QUERY_MOBILE} {
-    width: 180px;
-    height: 265px;
-    padding: 12px;
-  }
-`;
-
-const RemoveFromListButton = styled.button`
-  opacity: 0.5;
-  font-size: 32px;
-  opacity: 0.2;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  &:hover {
-    scale: 1.05;
-    opacity: 0.7;
-    transition: ease-in-out 0.25s;
-  }
-  ${MEDIA_QUERY_TABLET} {
-    font-size: 28px;
-  }
-`;
-
 function Profile() {
   const id = useAppSelector((state) => state.user.id);
   const userName = useAppSelector((state) => state.user.userName);
@@ -262,10 +196,6 @@ function Profile() {
     }
   };
 
-  const handleRemoveFromList = (dramaIdToRemove: string) => {
-    dispatch(removeFromDramaList(dramaIdToRemove));
-  };
-
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchWords(e.target.value);
   };
@@ -352,43 +282,7 @@ function Profile() {
           <SearchBar placeHolder="在片單中搜尋" onChange={handleSearchInput} />
         </RowFlexbox>
         <DividerLine />
-        <DramaCardsWrapper>
-          {filteredByTypeDramas.map((drama) => (
-            <>
-              <DramaCard
-                style={{
-                  backgroundImage: `linear-gradient(to top, #000, rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
-                }}
-              >
-                <LGText>{drama.title}</LGText>
-                <SMGreyText>{drama.eng}</SMGreyText>
-                <RowFlexbox gap="4px" alignItems="center">
-                  <SMText>{drama.year}</SMText>
-                  <SMText>{drama.type}</SMText>
-                  <SMText>{drama.genre}</SMText>
-                </RowFlexbox>
-                <RowFlexbox>
-                  {drama.rating && drama.rating > 0 ? (
-                    <RowFlexbox alignItems="flex-end">
-                      <LGText>{drama?.rating}</LGText>
-                      <SMText margin="0 0 1px 0">/5</SMText>
-                    </RowFlexbox>
-                  ) : (
-                    <SMText>目前尚無評價</SMText>
-                  )}
-                </RowFlexbox>
-                <RemoveFromListButton
-                  onClick={() => {
-                    alert(`確定要從片單中移除 ${drama.title} 嗎？`);
-                    handleRemoveFromList(drama.id);
-                  }}
-                >
-                  <MdOutlineRemoveCircle />
-                </RemoveFromListButton>
-              </DramaCard>
-            </>
-          ))}
-        </DramaCardsWrapper>
+        <Dramas dramasData={filteredByTypeDramas} isRemoveButton={true} />
       </ColumnFlexbox>
     </ProfilePageWrapper>
   );
