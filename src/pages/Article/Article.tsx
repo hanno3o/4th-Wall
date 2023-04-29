@@ -294,6 +294,7 @@ function Article() {
         await updateDoc(commentRef, { comment: updatedComment });
         handleEditComment('Other word instead of comment id');
         getArticleAndComments();
+        setUpdatedComment('');
       }
     } catch (err) {
       console.error('Error updating comment:', err);
@@ -321,7 +322,9 @@ function Article() {
   };
 
   return (
-    <ArticleWrapper onClick={() => commentOptionWindow && setCommentOptionWindow(null)}>
+    <ArticleWrapper
+      onClick={() => commentOptionWindow && setCommentOptionWindow(null)}
+    >
       {isLoading && <p>loading...</p>}
       {!isLoading && article && (
         <ColumnFlexbox>
@@ -389,8 +392,13 @@ function Article() {
                     return (
                       <>
                         <Comment key={index}>
-                          <ColumnFlexbox gap="8px" mobileGap="4px" width="100%">
-                            <MDText>{comment.userName}</MDText>
+                          <ColumnFlexbox gap="8px" width="100%">
+                            <RowFlexbox gap="8px" tabletGap="6px">
+                              <MDText>{comment.userName}</MDText>
+                              <SMGreyText>
+                                {comment.userId === userId && '(Me)'}
+                              </SMGreyText>
+                            </RowFlexbox>
                             <>
                               {editingCommentId === comment.id ? (
                                 <CommentEditTextArea
