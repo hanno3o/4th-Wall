@@ -321,6 +321,17 @@ const ActorInfo = styled.div`
   }
 `;
 
+const PlatformIcon = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  ${MEDIA_QUERY_TABLET} {
+    width: 30px;
+    height: 30px;
+  }
+`;
+
 interface IDrama {
   id?: string | undefined;
   title?: string;
@@ -329,6 +340,7 @@ interface IDrama {
   image?: string;
   eng?: string;
   genre?: string;
+  platform?: string[];
   type?: string;
   story?: string;
   director?: string;
@@ -433,7 +445,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
     );
     setTimeout(() => {
       setIsLoading(true);
-    }, 1000);
+    }, 500);
     const actorsQuery = await query(
       actorsRef,
       where('dramas', 'array-contains', dramaId)
@@ -1009,10 +1021,59 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                       <XSText>劇情大綱</XSText>
                       <XSGreyText>{dramaCard?.story}</XSGreyText>
                     </ColumnFlexbox>
+
                     <ColumnFlexbox gap="6px" tabletGap="4px">
                       <XSText>上架日期</XSText>
                       <SMText>{dramaCard?.releaseDate}</SMText>
                     </ColumnFlexbox>
+                    <RowFlexbox gap="6px" tabletGap="4px">
+                      {dramaCard?.platform &&
+                        dramaCard.platform.map((platform) => {
+                          if (platform.includes('Netflix')) {
+                            return (
+                              <PlatformIcon
+                                src="https://cdn.vox-cdn.com/thumbor/sW5h16et1R3au8ZLVjkcAbcXNi8=/0x0:3151x2048/2000x1333/filters:focal(1575x1024:1576x1025)/cdn.vox-cdn.com/uploads/chorus_asset/file/15844974/netflixlogo.0.0.1466448626.png"
+                                alt=""
+                              />
+                            );
+                          } else if (platform.includes('Disney+')) {
+                            return (
+                              <PlatformIcon
+                                src="https://resize.indiatvnews.com/en/resize/newbucket/1200_-/2019/04/disney-plus-1555068793.jpg"
+                                alt=""
+                              />
+                            );
+                          } else if (platform.includes('LINE TV')) {
+                            return (
+                              <PlatformIcon
+                                src="https://vos.line-scdn.net/strapi-cluster-instance-bucket-84/1_efe99e669c.jpeg"
+                                alt=""
+                              />
+                            );
+                          } else if (platform.includes('愛奇藝')) {
+                            return (
+                              <PlatformIcon
+                                src="https://m.media-amazon.com/images/I/31doO2MnBGL.png"
+                                alt=""
+                              />
+                            );
+                          } else if (platform.includes('Friday影音')) {
+                            return (
+                              <PlatformIcon
+                                src="https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Ffriday%E5%BD%B1%E9%9F%B3.png?alt=media&token=250d543c-3b82-49fe-b56f-17571de8bf82"
+                                alt=""
+                              />
+                            );
+                          } else if (platform === 'KKTV') {
+                            return (
+                              <PlatformIcon
+                                src="https://play-lh.googleusercontent.com/AguMKDjtbikobVooTJsD7MbAdGYZVs1UbZcvjWql4Vo_3EchgOEn9qV1ltxx0ymVEw"
+                                alt=""
+                              />
+                            );
+                          }
+                        })}
+                    </RowFlexbox>
                     <ColumnFlexbox gap="6px" tabletGap="6px">
                       <XSText>相關影片</XSText>
                       <RowFlexbox

@@ -70,6 +70,15 @@ const MultiFilterOption = styled.div<MultiFilterOptionProps>`
     `}
 
   ${(props) =>
+    props.platform &&
+    props.platform.length > 0 &&
+    props.platform.includes(props.children as string) &&
+    `
+    color: #181818;
+    background-color: #fff;
+    `}
+
+  ${(props) =>
     props.year &&
     props.year.length > 0 &&
     props.year.includes(props.children as number) &&
@@ -94,6 +103,7 @@ interface MultiFilterOptionProps {
   genre?: string[];
   year?: number[];
   order?: string;
+  platform?: string[];
 }
 interface IDrama {
   id?: string | undefined;
@@ -103,6 +113,7 @@ interface IDrama {
   image?: string;
   eng?: string;
   genre?: string;
+  platform?: string[];
   type?: string;
   story?: string;
   director?: string;
@@ -123,6 +134,7 @@ function Home() {
         filter: [
           '愛情',
           '喜劇',
+          '劇情',
           '奇幻',
           '懸疑',
           '刑偵犯罪',
@@ -145,6 +157,17 @@ function Home() {
           2012,
         ],
       },
+      {
+        title: '平台',
+        filter: [
+          'Netflix',
+          'Disney+',
+          'LINE TV',
+          '愛奇藝',
+          'Friday影音',
+          'KKTV',
+        ],
+      },
     ],
   };
   const dramasRef = collection(db, 'dramas');
@@ -155,6 +178,7 @@ function Home() {
   const [genre, setGenre] = useState<string[]>([]);
   const [order, setOrder] = useState('');
   const [year, setYear] = useState<number[]>([]);
+  const [platform, setPlatform] = useState<string[]>([]);
   const [dramas, setDramas] = useState<IDrama[]>([]);
 
   const bannerImageURL =
@@ -212,6 +236,16 @@ function Home() {
           selectedValue ? Number(selectedValue) : NaN,
         ]);
       }
+    } else if (title === '平台') {
+      if (platform.includes(selectedValue ? selectedValue : '')) {
+        const newPlatform = platform.filter((value) => value !== selectedValue);
+        setPlatform(newPlatform);
+      } else {
+        setPlatform((prevPlatforms) => [
+          ...prevPlatforms,
+          selectedValue ? selectedValue : '',
+        ]);
+      }
     }
   };
 
@@ -233,7 +267,11 @@ function Home() {
         genre.length > 0
           ? genre.some((genre) => drama.genre?.includes(genre))
           : true;
-      return yearFilter && genreFilter && newest;
+      const platformFilter =
+        platform.length > 0
+          ? platform.some((platform) => drama.platform?.includes(platform))
+          : true;
+      return yearFilter && genreFilter && newest && platformFilter;
     })
     .sort((a, b) => {
       if (a.year && b.year) {
@@ -291,6 +329,7 @@ function Home() {
                         year={year}
                         genre={genre}
                         order={order}
+                        platform={platform}
                         onClick={(e) => handleMultiFilter(e, filter.title)}
                       >
                         {item}
