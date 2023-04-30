@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { Link, useParams } from 'react-router-dom';
 import { db } from '../../config/firebase.config';
-import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, setDoc } from 'firebase/firestore';
 import { useAppSelector } from '../../redux/hooks';
 import { FaPen } from 'react-icons/fa';
 import SearchBar from '../../components/SearchBar';
@@ -257,6 +257,7 @@ function Forum() {
     try {
       const articlesCollectionRef = collection(db, 'forum', board, 'articles');
       const articleSnapShot = await getDocs(articlesCollectionRef);
+      const updatePromises: Promise<void>[] = [];
       const articleArr: IArticles[] = [];
       for (const singleDoc of articleSnapShot.docs) {
         const articleData = singleDoc.data();
@@ -269,8 +270,18 @@ function Forum() {
           author: userData?.userName || '',
         };
         articleArr.push(article);
+        const articleDocRef = doc(articlesCollectionRef, singleDoc.id);
+        const updatePromise = setDoc(
+          articleDocRef,
+          {
+            author: userData?.userName || '',
+          },
+          { merge: true }
+        );
+        updatePromises.push(updatePromise);
       }
       setArticles(articleArr);
+      await Promise.all(updatePromises);
       setTimeout(() => {
         setIsLoading(true);
       }, 500);

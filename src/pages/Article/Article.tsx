@@ -220,6 +220,7 @@ interface IArticle {
   drama?: string;
   title?: string;
   author?: string;
+  authorId?: string;
   content: string;
   episode?: string;
   type?: string;
@@ -261,7 +262,6 @@ function Article() {
       const articleSnapshot = await getDoc(articleRef);
       setArticle(articleSnapshot.data() as IArticle);
       setIsLoading(false);
-
       const commentsSnapshot = await getDocs(commentsRef);
       const commentsArr: any = [];
       for (const singleDoc of commentsSnapshot.docs) {
@@ -348,9 +348,9 @@ function Article() {
       {!isLoading && article && (
         <ColumnFlexbox>
           <ArticleHeader>
-          <BackButton onClick={()=> navigate(`/forum/${boardName}`)}>
-            <IoChevronBackCircle style={{ fontSize: '32px' }} />
-          </BackButton>
+            <BackButton onClick={() => navigate(`/forum/${boardName}`)}>
+              <IoChevronBackCircle style={{ fontSize: '32px' }} />
+            </BackButton>
             <RowFlexbox
               width="1100px"
               margin="0 auto"
@@ -359,18 +359,34 @@ function Article() {
             >
               <XLText>{`[${article.type}] ${article.title}`}</XLText>
               <ColumnFlexbox gap="14px">
-                <div>{article.author}</div>
                 <RowFlexbox gap="8px">
                   <MDText>
                     <FaColumns />
                   </MDText>
-                  <MDText>韓劇版</MDText>
+                  <MDText>
+                    {(() => {
+                      switch (boardName) {
+                        case 'TaiwanDrama':
+                          return '台劇版';
+                        case 'KoreanDrama':
+                          return '韓劇版';
+                        case 'AmericanDrama':
+                          return '美劇版';
+                        case 'JapaneseDrama':
+                          return '日劇版';
+                        case 'ChinaDrama':
+                          return '陸劇版';
+                        default:
+                          return boardName;
+                      }
+                    })()}
+                  </MDText>
                 </RowFlexbox>
                 <RowFlexbox gap="8px">
                   <MDText>
                     <FaUser />
                   </MDText>
-                  <MDText>melody_6_9</MDText>
+                  <MDText>{article.author}</MDText>
                 </RowFlexbox>
                 <RowFlexbox gap="8px">
                   <MDText>
