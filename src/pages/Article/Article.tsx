@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { db } from '../../config/firebase.config';
 import {
@@ -25,6 +25,7 @@ import {
 } from '../../style/Text';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
+import { IoChevronBackCircle } from 'react-icons/io5';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -44,6 +45,23 @@ const ArticleHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding-top: 20px;
+  position: relative;
+`;
+
+const BackButton = styled.button`
+  color: ${(props) => props.theme.lightGrey};
+  opacity: 0.5;
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  font-weight: 900;
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 14px;
+  }
+  &:hover {
+    opacity: 1;
+    transition: ease-in-out 0.25s;
+  }
 `;
 
 const ArticleContent = styled.div`
@@ -217,6 +235,7 @@ interface IComments {
 }
 
 function Article() {
+  let navigate = useNavigate();
   const userName = useAppSelector((state) => state.user.userName);
   const userId = useAppSelector((state) => state.user.id);
   const { boardName, id } = useParams();
@@ -329,6 +348,9 @@ function Article() {
       {!isLoading && article && (
         <ColumnFlexbox>
           <ArticleHeader>
+          <BackButton onClick={()=> navigate(`/forum/${boardName}`)}>
+            <IoChevronBackCircle style={{ fontSize: '32px' }} />
+          </BackButton>
             <RowFlexbox
               width="1100px"
               margin="0 auto"
