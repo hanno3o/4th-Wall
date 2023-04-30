@@ -273,7 +273,7 @@ function Forum() {
       setArticles(articleArr);
       setTimeout(() => {
         setIsLoading(true);
-      }, 1000);
+      }, 500);
     } catch (error) {
       console.error('Error getting articles: ', error);
       setIsLoading(false);
