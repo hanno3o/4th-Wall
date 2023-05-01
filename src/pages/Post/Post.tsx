@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { db } from '../../config/firebase.config';
 import { collection, addDoc } from 'firebase/firestore';
@@ -7,8 +7,10 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useAppSelector } from '../../redux/hooks';
 import { FaPen } from 'react-icons/fa';
-import { RowFlexbox } from '../../style/Flexbox';
-import { MDText } from '../../style/Text';
+import { ColumnFlexbox, RowFlexbox } from '../../style/Flexbox';
+import { MDText, XSText } from '../../style/Text';
+import { IoChevronBackCircle } from 'react-icons/io5';
+import { AiOutlineInfoCircle } from 'react-icons/ai';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -39,6 +41,9 @@ const quillStyle = `
   }
   .ql-editor p {
     font-size: 16px;
+    ${MEDIA_QUERY_TABLET} {
+      font-size: 14px;
+    }
   }
   .ql-editor h1 {
     font-size: 26px;
@@ -112,8 +117,8 @@ const Input = styled.input`
 `;
 
 const PostButton = styled(Link)`
-  color: ${(props) => props.theme.lightGrey};
-  background-color: rgba(255, 255, 255, 0.25);
+  color: ${(props) => props.theme.white};
+  background-color: rgba(255, 255, 255, 0.3);
   margin: 40px auto 0;
   padding: 10px 20px;
   text-align: center;
@@ -129,10 +134,76 @@ const PostButton = styled(Link)`
   }
 `;
 
+const DisabledPostButton = styled.button`
+  cursor: no-drop;
+  color: ${(props) => props.theme.grey};
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 40px auto 0;
+  padding: 10px 20px;
+  text-align: center;
+  border-radius: 20px;
+  ${MEDIA_QUERY_TABLET} {
+    padding: 8px 16px;
+  }
+`;
+
+const BackButton = styled.button`
+  color: ${(props) => props.theme.lightGrey};
+  opacity: 0.5;
+  position: absolute;
+  left: 35px;
+  top: 90px;
+  font-weight: 900;
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 14px;
+  }
+  &:hover {
+    opacity: 1;
+    transition: ease-in-out 0.25s;
+  }
+`;
+
+const InfoButton = styled.button`
+  font-size: 18px;
+  color: ${(props) => props.theme.lightGrey};
+  opacity: 0.5;
+  font-weight: 900;
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 14px;
+  }
+  &:hover {
+    opacity: 1;
+    transition: ease-in-out 0.25s;
+  }
+`;
+
+const InfoCard = styled.div`
+  background: transparent;
+  backdrop-filter: blur(3px);
+  background-color: rgba(255, 255, 255, 0.1);
+  border: ${(props) => props.theme.grey} 1px solid;
+  position: fixed;
+  left: 47.5vw;
+  top: 14vh;
+  transform: translate(-50%, -50%);
+  border-radius: 5px;
+  padding: 20px;
+  display: flex;
+  z-index: 1;
+
+  ${MEDIA_QUERY_TABLET} {
+    left: 52vw;
+    top: 14.5vh;
+    padding: 14px;
+  }
+`;
+
 function Post() {
+  let navigate = useNavigate();
   const { boardName } = useParams();
   const [type, setType] = useState('');
   const [title, setTitle] = useState('');
+  const [infoCard, setInfoCard] = useState(false);
   const [content, setContent] = useState('');
   const userId = useAppSelector((state) => state.user.id);
   const modules = {
@@ -144,9 +215,13 @@ function Post() {
   };
 
   return (
-    <PostPageWrapper>
+    <PostPageWrapper onClick={() => infoCard && setInfoCard(false)}>
+      <BackButton onClick={() => navigate(`/forum/${boardName}`)}>
+        <IoChevronBackCircle style={{ fontSize: '32px' }} />
+      </BackButton>
       <RowFlexbox gap="10px">
         <Select
+          defaultValue={boardName}
           name="type"
           onChange={(e) =>
             window.history.replaceState(
@@ -156,7 +231,7 @@ function Post() {
             )
           }
         >
-          <option value="none" selected disabled hidden>
+          <option value="none" disabled>
             選擇看板
           </option>
           <option value="TaiwanDrama">台劇版</option>
@@ -166,7 +241,7 @@ function Post() {
           <option value="ChinaDrama">陸劇版</option>
         </Select>
         <Select name="type" onChange={(e) => setType(e.currentTarget.value)}>
-          <option value="none" selected disabled hidden>
+          <option value="none" disabled selected>
             發文類別
           </option>
           <option>心得</option>
@@ -175,6 +250,9 @@ function Post() {
           <option>閒聊</option>
           <option>問題</option>
         </Select>
+        <InfoButton onClick={() => setInfoCard(!infoCard)}>
+          <AiOutlineInfoCircle />
+        </InfoButton>
       </RowFlexbox>
       <Input
         placeholder="請輸入文章標題"
@@ -188,25 +266,52 @@ function Post() {
         style={{ height: '50vh' }}
         modules={modules}
       />
-      <PostButton
-        to={`/forum/${boardName}`}
-        onClick={async () => {
-          boardName &&
-            (await addDoc(collection(db, 'forum', boardName, 'articles'), {
-              authorId: userId,
-              type: type,
-              title: title,
-              content: content,
-              date: Date.now(),
-              commentsNum: 0,
-            }));
-        }}
-      >
-        <RowFlexbox gap="4px" justifyContent="center" alignItems="center">
-          <FaPen />
-          <MDText>發布文章</MDText>
-        </RowFlexbox>
-      </PostButton>
+      {type &&
+      title &&
+      content
+        ?.replace(/(<([^>]+)>)/gi, '')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>').length > 50 ? (
+        <PostButton
+          to={`/forum/${boardName}`}
+          onClick={async () => {
+            boardName &&
+              (await addDoc(collection(db, 'forum', boardName, 'articles'), {
+                authorId: userId,
+                type: type,
+                title: title,
+                content: content,
+                date: Date.now(),
+                commentsNum: 0,
+              }));
+          }}
+        >
+          <RowFlexbox gap="4px" justifyContent="center" alignItems="center">
+            <FaPen />
+            <MDText>發布文章</MDText>
+          </RowFlexbox>
+        </PostButton>
+      ) : (
+        <DisabledPostButton disabled>
+          <RowFlexbox gap="4px" justifyContent="center" alignItems="center">
+            <FaPen />
+            <MDText>發布文章</MDText>
+          </RowFlexbox>
+        </DisabledPostButton>
+      )}
+      <RowFlexbox>
+        <InfoCard style={{ display: infoCard ? 'block' : 'none' }}>
+          <ColumnFlexbox>
+            <MDText style={{ marginBottom: '6px' }}>發文注意事項</MDText>
+            <XSText LineHeight="24px">
+              ※ 如果暴雷請註明於標題，如：[心得]黑暗榮耀觀後心得（有雷）
+            </XSText>
+            <XSText>
+              ※ 需選擇發文看板、類別，輸入標題及至少50字以上內文才可發布文章
+            </XSText>
+          </ColumnFlexbox>
+        </InfoCard>
+      </RowFlexbox>
     </PostPageWrapper>
   );
 }

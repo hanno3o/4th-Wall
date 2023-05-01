@@ -52,7 +52,7 @@ const BackButton = styled.button`
   color: ${(props) => props.theme.lightGrey};
   opacity: 0.5;
   position: absolute;
-  left: 20px;
+  left: 35px;
   top: 20px;
   font-weight: 900;
   ${MEDIA_QUERY_TABLET} {
