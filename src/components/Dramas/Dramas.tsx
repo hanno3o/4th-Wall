@@ -403,6 +403,10 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   const dispatch = useAppDispatch();
   const dramaId = dramaCard?.id;
   const currentDate = new Date();
+  const PAGE_SIZE = 12;
+  const [page, setPage] = useState(1);
+  const start = (page - 1) * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
 
   const getReviews = async () => {
     if (dramaId) {
@@ -445,7 +449,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
     );
     setTimeout(() => {
       setIsLoading(true);
-    }, 500);
+    }, 300);
     const actorsQuery = await query(
       actorsRef,
       where('dramas', 'array-contains', dramaId)
@@ -482,6 +486,11 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   useEffect(() => {
     getAverageRatings();
   }, [filteredReviews]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleDramaCard = (drama: IDrama) => {
     prevDramaCardRef.current = drama;
@@ -537,6 +546,12 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
     }
   };
 
+  const handleScroll = () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+      setPage((prevPage) => prevPage + 1);
+    }
+  };
+
   const handleRemoveReview = async () => {
     if (dramaId) {
       try {
@@ -574,7 +589,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
     <>
       <DramaCardsWrapper>
         {isLoading
-          ? dramasData.map((drama, index) => {
+          ? dramasData.slice(0, end).map((drama, index) => {
               return (
                 <DramaCard
                   onClick={() => handleDramaCard(drama)}
