@@ -255,36 +255,43 @@ function Forum() {
 
   const getArticles = async () => {
     try {
-      const articlesCollectionRef = collection(db, 'forum', board, 'articles');
-      const articleSnapShot = await getDocs(articlesCollectionRef);
-      const updatePromises: Promise<void>[] = [];
-      const articleArr: IArticles[] = [];
-      for (const singleDoc of articleSnapShot.docs) {
-        const articleData = singleDoc.data();
-        const articleUserId = articleData.authorId;
-        const userDoc = await getDoc(doc(db, 'users', articleUserId));
-        const userData = userDoc.data();
-        const article = {
-          ...articleData,
-          id: singleDoc.id,
-          author: userData?.userName || '',
-        };
-        articleArr.push(article);
-        const articleDocRef = doc(articlesCollectionRef, singleDoc.id);
-        const updatePromise = setDoc(
-          articleDocRef,
-          {
-            author: userData?.userName || '',
-          },
-          { merge: true }
+      if (boardName) {
+        const articlesCollectionRef = collection(
+          db,
+          'forum',
+          boardName,
+          'articles'
         );
-        updatePromises.push(updatePromise);
+        const articleSnapShot = await getDocs(articlesCollectionRef);
+        const updatePromises: Promise<void>[] = [];
+        const articleArr: IArticles[] = [];
+        for (const singleDoc of articleSnapShot.docs) {
+          const articleData = singleDoc.data();
+          const articleUserId = articleData.authorId;
+          const userDoc = await getDoc(doc(db, 'users', articleUserId));
+          const userData = userDoc.data();
+          const article = {
+            ...articleData,
+            id: singleDoc.id,
+            author: userData?.userName || '',
+          };
+          articleArr.push(article);
+          const articleDocRef = doc(articlesCollectionRef, singleDoc.id);
+          const updatePromise = setDoc(
+            articleDocRef,
+            {
+              author: userData?.userName || '',
+            },
+            { merge: true }
+          );
+          updatePromises.push(updatePromise);
+        }
+        setArticles(articleArr);
+        await Promise.all(updatePromises);
+        setTimeout(() => {
+          setIsLoading(true);
+        }, 300);
       }
-      setArticles(articleArr);
-      await Promise.all(updatePromises);
-      setTimeout(() => {
-        setIsLoading(true);
-      }, 500);
     } catch (error) {
       console.error('Error getting articles: ', error);
       setIsLoading(false);
@@ -305,7 +312,6 @@ function Forum() {
       setSelectedBoard('陸劇版');
     }
     setBoard(boardName ? boardName : 'TaiwanDrama');
-
     getArticles();
   }, [board]);
 
