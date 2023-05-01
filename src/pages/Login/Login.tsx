@@ -97,8 +97,8 @@ const SignUpButton = styled.button`
 `;
 
 function Login() {
-  const bannerImageURL =
-    'https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Ffinalbanner.png?alt=media&token=5613b7b7-a3f2-446a-8184-b60bab7a8f02';
+  const backgroundImageURL =
+    'https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Floginpage%20image.png?alt=media&token=5c4136f3-dd81-4188-bd00-3791b69f0d38';
   const auth = getAuth();
   const navigate = useNavigate();
   const [authing, setAuthing] = useState(false);
@@ -118,7 +118,8 @@ function Login() {
   return (
     <LoginPageWrapper
       style={{
-        backgroundImage: `linear-gradient(to top, rgb(0, 0, 0), rgb(255, 255, 255, 0) 100%), url(${bannerImageURL})`,
+        backgroundSize: 'cover',
+        backgroundImage: `linear-gradient(to top, rgb(0, 0, 0), rgb(255, 255, 255, 0) 100%), url(${backgroundImageURL})`,
       }}
     >
       <LoginCard>
