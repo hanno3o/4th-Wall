@@ -252,7 +252,7 @@ function Article() {
   }, []);
 
   const getArticleAndComments = async () => {
-    if (articleRef && commentsRef && userId) {
+    if (articleRef && commentsRef) {
       const articleSnapshot = await getDoc(articleRef);
       setArticle(articleSnapshot.data() as IArticle);
       setIsLoading(false);
@@ -568,6 +568,7 @@ function Article() {
                   取消
                 </CancelButton>
                 <ConfirmButton
+                  disabled={!userName}
                   onClick={() => {
                     if (writtenComment) {
                       handleUploadComment();

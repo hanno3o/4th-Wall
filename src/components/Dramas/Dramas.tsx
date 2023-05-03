@@ -229,11 +229,11 @@ const RemoveFromListButton = styled.button`
 `;
 
 const UserRatingStars = styled.button<IUserRating>`
+  cursor: ${({ userName }) => (userName ? 'pointer' : 'default')};
   display: flex;
   gap: 4px;
   color: ${({ isFilled }) => (isFilled ? '#fff' : '#555')};
   background-color: transparent;
-  cursor: pointer;
   font-size: 18px;
   ${MEDIA_QUERY_TABLET} {
     font-size: 16px;
@@ -374,6 +374,7 @@ interface IUserRating {
   key: number;
   className: string;
   isFilled: boolean;
+  userName: string;
 }
 
 interface IDramas {
@@ -660,7 +661,8 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                             key={index}
                             className={index <= userRating ? 'on' : 'off'}
                             isFilled={index <= userRating}
-                            onMouseOver={() => setUserRating(index)}
+                            userName={userName || ''}
+                            onMouseOver={() => userName && setUserRating(index)}
                             onKeyPress={(e) => {
                               if (userRating) {
                                 if (e.key === 'Enter') {
@@ -708,7 +710,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                           if (userRating) {
                             handleUploadReview();
                           } else {
-                            alert('要先選擇星星數才能送出評論喔～');
+                            userName && alert('要先選擇星星數才能送出評論喔～');
                           }
                         }}
                       >
@@ -763,6 +765,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                                       }
                                       isFilled={index <= userRating}
                                       onMouseOver={() => setUserRating(index)}
+                                      userName={userName || ''}
                                     >
                                       <span>
                                         <FaStar style={{ fontSize: '14px' }} />

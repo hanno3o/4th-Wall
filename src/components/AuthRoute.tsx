@@ -47,7 +47,6 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
         setIsLoading(false);
       } else {
         console.log('unauthorized');
-        navigate('/login');
       }
     });
 

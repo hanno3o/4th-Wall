@@ -361,7 +361,7 @@ function Forum() {
               return (
                 <>
                   <Article
-                    to={`/forum/${boardName}/article/${article.id}`}
+                    to={`/forum/${boardName}/${article.id}`}
                     key={article.id}
                   >
                     <RowFlexbox>
