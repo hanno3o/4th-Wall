@@ -51,9 +51,9 @@ const ArticleHeader = styled.div`
 const BackButton = styled.button`
   color: ${(props) => props.theme.lightGrey};
   opacity: 0.5;
-  position: absolute;
+  position: fixed;
   left: 35px;
-  top: 20px;
+  top: 90px;
   font-weight: 900;
   ${MEDIA_QUERY_TABLET} {
     font-size: 14px;
@@ -65,12 +65,7 @@ const BackButton = styled.button`
 `;
 
 const ArticleContent = styled.div`
-  line-height: 36px;
-  width: 1280px;
-  ${MEDIA_QUERY_TABLET} {
-    width: 65%;
-    line-height: 32px;
-  }
+  line-height: 32px;
 `;
 
 const ReplyButton = styled.button`

@@ -93,7 +93,7 @@ const Select = styled.select`
   }
 `;
 
-const Input = styled.input`
+const TitleInputField = styled.input`
   padding: 6px 10px;
   border-radius: 5px;
   font-weight: 500;
@@ -103,8 +103,6 @@ const Input = styled.input`
   font-weight: 500;
   background-color: rgba(255, 255, 255, 0.1);
   &:focus {
-    box-shadow: 0 0 0 3px ${(props) => props.theme.black},
-      0 0 0 5px rgba(255, 255, 255, 0.1);
     background-color: rgba(255, 255, 255, 0.2);
     transition: ease-in-out 0.25s;
     &::placeholder {
@@ -150,7 +148,7 @@ const DisabledPostButton = styled.button`
 const BackButton = styled.button`
   color: ${(props) => props.theme.lightGrey};
   opacity: 0.5;
-  position: absolute;
+  position: fixed;
   left: 35px;
   top: 90px;
   font-weight: 900;
@@ -205,6 +203,7 @@ function Post() {
   const [title, setTitle] = useState('');
   const [infoCard, setInfoCard] = useState(false);
   const [content, setContent] = useState('');
+  const [boardToPost, setBoardToPost] = useState('');
   const userId = useAppSelector((state) => state.user.id);
   const modules = {
     toolbar: [
@@ -216,20 +215,21 @@ function Post() {
 
   return (
     <PostPageWrapper onClick={() => infoCard && setInfoCard(false)}>
-      <BackButton onClick={() => navigate(`/forum/${boardName}`)}>
+      <BackButton onClick={() => navigate(-1)}>
         <IoChevronBackCircle style={{ fontSize: '32px' }} />
       </BackButton>
       <RowFlexbox gap="10px">
         <Select
           defaultValue={boardName}
           name="type"
-          onChange={(e) =>
+          onChange={(e) => {
+            setBoardToPost(e.currentTarget.value);
             window.history.replaceState(
               null,
               '',
               `/forum/${e.currentTarget.value}/post`
-            )
-          }
+            );
+          }}
         >
           <option value="none" disabled>
             選擇看板
@@ -254,7 +254,7 @@ function Post() {
           <AiOutlineInfoCircle />
         </InfoButton>
       </RowFlexbox>
-      <Input
+      <TitleInputField
         placeholder="請輸入文章標題"
         onChange={(e) => setTitle(e.currentTarget.value)}
       />
@@ -273,10 +273,10 @@ function Post() {
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>').length > 50 ? (
         <PostButton
-          to={`/forum/${boardName}`}
+          to={`/forum/${boardToPost}`}
           onClick={async () => {
             boardName &&
-              (await addDoc(collection(db, 'forum', boardName, 'articles'), {
+              (await addDoc(collection(db, 'forum', boardToPost, 'articles'), {
                 authorId: userId,
                 type: type,
                 title: title,
@@ -301,13 +301,14 @@ function Post() {
       )}
       <RowFlexbox>
         <InfoCard style={{ display: infoCard ? 'block' : 'none' }}>
-          <ColumnFlexbox>
+          <ColumnFlexbox gap="8px">
             <MDText style={{ marginBottom: '6px' }}>發文注意事項</MDText>
-            <XSText LineHeight="24px">
-              ※ 如果暴雷請註明於標題，如：[心得]黑暗榮耀觀後心得（有雷）
-            </XSText>
             <XSText>
-              ※ 需選擇發文看板、類別，輸入標題及至少50字以上內文才可發布文章
+              ※ 如有暴雷內容請註明於標題，如：黑暗榮耀觀後心得（有雷）
+            </XSText>
+            <XSText>※ 發文類別選擇後會呈現於標題，不須於標題重複輸入</XSText>
+            <XSText>
+              ※ 須選擇發文看板、類別，輸入標題及至少50字以內內文才可發布文章
             </XSText>
           </ColumnFlexbox>
         </InfoCard>
