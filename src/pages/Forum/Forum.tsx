@@ -158,6 +158,16 @@ const XsGreyTextSkeleton = styled(XSGreyText)`
   animation: ${fade} 1s linear infinite;
 `;
 
+const Spoiler = styled.div`
+  width: 600px;
+  height: 18px;
+  background-color: rgba(255, 255, 255, 0.25);
+  ${MEDIA_QUERY_TABLET} {
+    width: 400px;
+    height: 16px;
+  }
+`;
+
 const PostButton = styled(Link)`
   background-color: rgba(255, 255, 255, 0.25);
   display: flex;
@@ -398,14 +408,19 @@ function Forum() {
                       <MDText>
                         [{article.type}] {article.title}
                       </MDText>
-                      <MDGreyText>
-                        {article.content
-                          ?.replace(/(<([^>]+)>)/gi, '')
-                          .replace(/&lt;/g, '<')
-                          .replace(/&gt;/g, '>')
-                          .slice(0, 45)}
-                        ...
-                      </MDGreyText>
+                      {article?.title?.includes('雷') ||
+                      article.content?.includes('雷') ? (
+                        <Spoiler />
+                      ) : (
+                        <MDGreyText>
+                          {article.content
+                            ?.replace(/(<([^>]+)>)/gi, '')
+                            .replace(/&lt;/g, '<')
+                            .replace(/&gt;/g, '>')
+                            .slice(0, 45)}
+                          ...
+                        </MDGreyText>
+                      )}
                       <XSGreyText>{article.author}</XSGreyText>
                     </ColumnFlexbox>
                     <SMGreyText margin="40px 0 0 0">
