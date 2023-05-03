@@ -8,12 +8,12 @@ import { useState, useEffect } from 'react';
 import { FiUploadCloud } from 'react-icons/fi';
 import { AiOutlineEdit } from 'react-icons/ai';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
-import SearchBar from '../../components/SearchBar';
 import FilterNavBar from '../../components/FilterNavBar';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { XLText, SMText, LGDarkGreyText, MDGreyText } from '../../style/Text';
 import Dramas from '../../components/Dramas';
 import { Link } from 'react-router-dom';
+import { FaSearch } from 'react-icons/fa';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -89,20 +89,19 @@ const EditUserNameButton = styled.button`
 `;
 
 const UserName = styled.input`
-  border-radius: 6px;
   padding: 10px 0;
   font-size: 32px;
   font-weight: 500;
-  margin-right: 10px;
-  width: 300px;
+  margin-left: -10px;
+  width: 240px;
   padding: 6px 10px;
   border-radius: 5px;
   font-weight: 500;
   font-weight: 500;
   background-color: rgba(255, 255, 255, 0.1);
   &:focus {
-    box-shadow: 0 0 0 5px ${(props) => props.theme.black},
-      0 0 0 6px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 5px transparent,
+      0 0 0 6px transparent;
     transition: ease-in-out 0.25s;
   }
   ${MEDIA_QUERY_TABLET} {
@@ -125,6 +124,31 @@ const HomepageLink = styled(Link)`
     background-color: rgba(255, 255, 255, 0.2);
     transition: ease-in-out 0.25s;
   }
+`;
+
+const SearchbarWrapper = styled.div`
+  position: relative;
+`;
+
+const SearchbarIcon = styled.div`
+  position: absolute;
+  top: 25%;
+  transform: translate(0, -25%);
+  font-size: 20px;
+  padding: 10px 10px;
+  &:hover {
+    transition: ease-in-out 0.25s;
+  }
+`;
+
+const SearchbarInput = styled.input`
+  outline: solid 2px transparent;
+  color: ${(props) => props.theme.white};
+  height: 40px;
+  width: 100%;
+  padding-left: 50px;
+  font-weight: 500;
+  background-color: transparent;
 `;
 
 function Profile() {
@@ -151,7 +175,7 @@ function Profile() {
   const recordData = [
     { title: '使用天數', data: daysSinceRegistration },
     { title: '已收藏的劇', data: userDramaList.length },
-    { title: '發文數', data: 36 },
+    { title: '發文數', data: 0 },
   ];
   const displayedDramaList = userDramaList.filter(
     (drama) =>
@@ -216,6 +240,7 @@ function Profile() {
   };
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.value);
     setSearchWords(e.target.value);
   };
 
@@ -248,7 +273,7 @@ function Profile() {
                 {editing ? (
                   <UserName
                     style={{
-                      outline: 'solid 2px #555',
+                      outline: 'solid 2px transparent',
                     }}
                     type="text"
                     onChange={handleInputChange}
@@ -298,7 +323,15 @@ function Profile() {
             selectedTypeFilter={selectedTypeFilter}
             onClick={handleTypeFilter}
           />
-          <SearchBar placeHolder="在片單中搜尋" onChange={handleSearchInput} />
+          <SearchbarWrapper>
+            <SearchbarIcon>
+              <FaSearch />
+            </SearchbarIcon>
+            <SearchbarInput
+              placeholder="在片單中搜尋"
+              onChange={handleSearchInput}
+            />
+          </SearchbarWrapper>
         </RowFlexbox>
         <DividerLine />
         {!filteredByTypeDramas.length && (

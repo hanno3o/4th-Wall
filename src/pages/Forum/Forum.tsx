@@ -459,7 +459,7 @@ function Forum() {
               style={
                 page === currentPage
                   ? {
-                      backgroundColor: '#fff',
+                      backgroundColor: '#bbb',
                       color: '#181818',
                       fontWeight: 500,
                     }

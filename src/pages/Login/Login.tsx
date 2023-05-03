@@ -84,11 +84,11 @@ const Input = styled.input`
 
 const SignUpButton = styled.button`
   text-align: left;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   text-decoration: underline;
   ${MEDIA_QUERY_TABLET} {
-    font-size: 12px;
+    font-size: 14px;
   }
   &:hover {
     font-weight: 700;
