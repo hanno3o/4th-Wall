@@ -250,6 +250,7 @@ const ReviewTextArea = styled.textarea`
   border-radius: 5px;
   padding: 14px;
   height: 60px;
+  line-height: 20px;
   ${MEDIA_QUERY_TABLET} {
     height: 42px;
     width: 90%;
@@ -675,6 +676,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     </RowFlexbox>
                     <ReviewTextArea
                       disabled={!userName}
+                      maxLength={50}
                       placeholder={
                         userName
                           ? `留下對 ${dramaCard?.title} 的評論`
@@ -800,6 +802,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                           <RowFlexbox margin="6px 0">
                             {editing ? (
                               <ReviewTextEditArea
+                                maxLength={50}
                                 defaultValue={userReview?.writtenReview}
                                 onChange={(e) =>
                                   setUpdatedUserReview(e.target.value)
@@ -815,7 +818,10 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                                 }}
                               />
                             ) : (
-                              <XSText LineHeight="20px">
+                              <XSText
+                                LineHeight="20px"
+                                style={{ wordBreak: 'break-word' }}
+                              >
                                 {userReview?.writtenReview}
                               </XSText>
                             )}
@@ -901,7 +907,10 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                                     </RowFlexbox>
                                   )}
                                 </RowFlexbox>
-                                <XSText LineHeight="20px">
+                                <XSText
+                                  LineHeight="20px"
+                                  style={{ wordBreak: 'break-word' }}
+                                >
                                   {review.writtenReview}
                                 </XSText>
                               </ColumnFlexbox>

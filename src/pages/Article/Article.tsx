@@ -159,12 +159,6 @@ const CancelButton = styled.button`
   border: solid 1px transparent;
   padding: 8px 12px;
   border-radius: 20px;
-  filter: brightness(0.9);
-  &:hover {
-    filter: brightness(1.05);
-    scale: 1.05;
-    transition: ease-in-out 0.5s;
-  }
   ${MEDIA_QUERY_TABLET} {
     font-size: 14px;
   }
@@ -441,6 +435,7 @@ function Article() {
                               {editingCommentId === comment.id ? (
                                 <CommentEditTextArea
                                   defaultValue={comment.comment}
+                                  maxLength={100}
                                   onChange={(e) => {
                                     setUpdatedComment(e.target.value);
                                   }}
@@ -451,7 +446,10 @@ function Article() {
                                   }}
                                 />
                               ) : (
-                                <NMText LineHeight="20px">
+                                <NMText
+                                  LineHeight="20px"
+                                  style={{ wordBreak: 'break-word' }}
+                                >
                                   {comment.comment}
                                 </NMText>
                               )}
@@ -551,6 +549,7 @@ function Article() {
                     ? '留言.......'
                     : '要先登入才能使用論壇的討論功能喔！'
                 }
+                maxLength={100}
                 onChange={(e) => setWrittenComment(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -561,6 +560,7 @@ function Article() {
               />
               <RowFlexbox gap="4px" justifyContent="flex-end">
                 <CancelButton
+                  disabled={!writtenComment}
                   onClick={() => {
                     setWrittenComment('');
                   }}
