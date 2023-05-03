@@ -6,11 +6,10 @@ import { doc, updateDoc, collection, getDoc } from 'firebase/firestore';
 import { updateAvatar, updateUserName } from '../../redux/reducers/userSlice';
 import { useState, useEffect } from 'react';
 import { FiUploadCloud } from 'react-icons/fi';
-import { AiOutlineEdit } from 'react-icons/ai';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
 import FilterNavBar from '../../components/FilterNavBar';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
-import { XLText, SMText, LGDarkGreyText, MDGreyText } from '../../style/Text';
+import { XLText, SMText, LGDarkGreyText } from '../../style/Text';
 import Dramas from '../../components/Dramas';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
@@ -58,7 +57,6 @@ const UserImage = styled.img`
 `;
 
 const UploadButton = styled.button`
-  color: ${(props) => props.theme.lightGrey};
   font-size: 24px;
   position: absolute;
   bottom: 0px;
@@ -68,44 +66,37 @@ const UploadButton = styled.button`
     left: 116px;
   }
   &:hover {
-    color: ${(props) => props.theme.white};
     scale: 1.05;
     transition: ease-in-out 0.25s;
   }
 `;
 
-const EditUserNameButton = styled.button`
-  color: ${(props) => props.theme.lightGrey};
-  font-size: 24px;
-  padding: 10px;
-  border-radius: 50%;
-  &:hover {
-    color: ${(props) => props.theme.white};
-    transition: ease-in-out 0.5s;
-  }
-  ${MEDIA_QUERY_TABLET} {
-    font-size: 18px;
-  }
-`;
-
-const UserName = styled.input`
-  padding: 10px 0;
+const UserName = styled.div`
+  cursor: pointer;
   font-size: 32px;
   font-weight: 500;
   margin-left: -10px;
-  width: 240px;
   padding: 6px 10px;
   border-radius: 5px;
   font-weight: 500;
-  font-weight: 500;
-  background-color: rgba(255, 255, 255, 0.1);
-  &:focus {
-    box-shadow: 0 0 0 5px transparent,
-      0 0 0 6px transparent;
-    transition: ease-in-out 0.25s;
-  }
+  outline: solid 2px transparent;
   ${MEDIA_QUERY_TABLET} {
     font-size: 26px;
+  }
+`;
+
+const EditUserName = styled.input`
+  font-size: 32px;
+  font-weight: 500;
+  margin-left: -10px;
+  padding: 2px 10px;
+  border-radius: 5px;
+  font-weight: 500;
+  outline: solid 2px transparent;
+  background-color: rgba(255, 255, 255, 0.1);
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 26px;
+    padding: 3.5px 10px;
   }
 `;
 
@@ -225,8 +216,8 @@ function Profile() {
   const handleEditUserName = () => {
     setEditing(true);
   };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+ 
+  const handleUserNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUpdatedUserName(e.target.value);
   };
 
@@ -240,7 +231,6 @@ function Profile() {
   };
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
     setSearchWords(e.target.value);
   };
 
@@ -269,14 +259,13 @@ function Profile() {
         <ColumnFlexbox width="100%" justifyContent="space-around">
           {userName && (
             <>
-              <RowFlexbox alignItems="baseline">
+              <RowFlexbox alignItems="center">
                 {editing ? (
-                  <UserName
-                    style={{
-                      outline: 'solid 2px transparent',
-                    }}
+                  <EditUserName
                     type="text"
-                    onChange={handleInputChange}
+                    maxLength={15}
+                    defaultValue={userName}
+                    onChange={handleUserNameInput}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         handleSaveUserName();
@@ -285,23 +274,11 @@ function Profile() {
                   />
                 ) : (
                   <UserName
-                    style={{
-                      backgroundColor: 'transparent',
-                    }}
-                    type="text"
-                    value={userName}
-                    disabled
-                  />
+                    onClick={editing ? handleSaveUserName : handleEditUserName}
+                  >
+                    {userName}
+                  </UserName>
                 )}
-                <EditUserNameButton
-                  onClick={editing ? handleSaveUserName : handleEditUserName}
-                >
-                  {editing ? (
-                    <MDGreyText>儲存</MDGreyText>
-                  ) : (
-                    <AiOutlineEdit style={{ marginBottom: '-4px' }} />
-                  )}
-                </EditUserNameButton>
               </RowFlexbox>
               <RowFlexbox gap="18px">
                 {recordData.map((record) => {
