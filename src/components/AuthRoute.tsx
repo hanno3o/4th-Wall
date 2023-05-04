@@ -14,6 +14,12 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
   const auth = getAuth();
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
+  const defaultAvatar = [
+    'https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Fdefault_avatar_1.png?alt=media&token=475a94dc-bb66-47a7-a5bc-b82bc48391c8',
+    'https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Fdefault_avatar_2.png?alt=media&token=292fb337-c689-48a3-8945-2075e0d26dda',
+    'https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Fdefault_avatar_3.png?alt=media&token=b5ac0066-6f9a-4846-ba0a-d7679d7a9a9d',
+    'https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Fdefault_avatar_4.png?alt=media&token=cfd64c72-6985-4c26-8c3d-d863c2c8f44d',
+  ];
 
   useEffect(() => {
     const AuthCheck = onAuthStateChanged(auth, async (user) => {
@@ -34,8 +40,15 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
           const userData = {
             id: user.uid,
             email: user.email,
-            userName: user.displayName,
-            avatar: user.photoURL,
+            userName:
+              user.displayName && user.email
+                ? user.displayName
+                : user.email
+                ? user.email.split('@')[0]
+                : '',
+            avatar: user.photoURL
+              ? user.photoURL
+              : defaultAvatar[Math.floor(Math.random() * defaultAvatar.length)],
             registrationDate: Date.now(),
             dramaList: [],
           };
@@ -43,7 +56,7 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
           dispatch(setUserInfo(userData));
         }
         setIsLoading(false);
-        localStorage.setItem('isLoggedIn', 'true')
+        localStorage.setItem('isLoggedIn', 'true');
       } else {
         console.log('unauthorized');
       }

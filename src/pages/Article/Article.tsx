@@ -226,7 +226,7 @@ interface IComments {
 
 function Article() {
   let navigate = useNavigate();
-  const userName = useAppSelector((state) => state.user.userName);
+  const email = useAppSelector((state) => state.user.email);
   const userId = useAppSelector((state) => state.user.id);
   const { boardName, id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
@@ -455,7 +455,7 @@ function Article() {
                                   <MDGreyText> · </MDGreyText>
                                   <ReplyButton
                                     onClick={() =>
-                                      userName && handleReply(comment.id, index)
+                                      email && handleReply(comment.id, index)
                                     }
                                   >
                                     <MDGreyText>回覆</MDGreyText>
@@ -559,7 +559,7 @@ function Article() {
               <CommentTextArea
                 value={writtenComment}
                 placeholder={
-                  userName
+                  email
                     ? '留言.......'
                     : '要先登入才能使用論壇的討論及回覆功能喔！'
                 }
@@ -570,7 +570,7 @@ function Article() {
                     handleUploadComment();
                   }
                 }}
-                disabled={!userName}
+                disabled={!email}
               />
               <RowFlexbox gap="4px" justifyContent="flex-end">
                 <CancelButton
@@ -582,7 +582,7 @@ function Article() {
                   取消
                 </CancelButton>
                 <ConfirmButton
-                  disabled={!userName || !writtenComment}
+                  disabled={!email || !writtenComment}
                   onClick={() => {
                     writtenComment && handleUploadComment();
                   }}

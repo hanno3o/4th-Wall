@@ -230,7 +230,7 @@ const RemoveFromListButton = styled.button`
 `;
 
 const UserRatingStars = styled.button<IUserRating>`
-  cursor: ${({ userName }) => (userName ? 'pointer' : 'default')};
+  cursor: ${({ email }) => (email ? 'pointer' : 'default')};
   display: flex;
   gap: 4px;
   color: ${({ isFilled }) => (isFilled ? '#fff' : '#555')};
@@ -375,7 +375,7 @@ interface IUserRating {
   key: number;
   className: string;
   isFilled: boolean;
-  userName: string;
+  email: string;
 }
 
 interface IDramas {
@@ -400,7 +400,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   const [userRating, setUserRating] = useState(0);
   const [editing, setEditing] = useState(false);
   const [updatedUserReview, setUpdatedUserReview] = useState('');
-  const userName = useAppSelector((state) => state.user.userName);
+  const email = useAppSelector((state) => state.user.email);
   const userId = useAppSelector((state) => state.user.id);
   const dramaList = useAppSelector((state) => state.user.dramaList);
   const dispatch = useAppDispatch();
@@ -681,8 +681,8 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                             key={index}
                             className={index <= userRating ? 'on' : 'off'}
                             isFilled={index <= userRating}
-                            userName={userName || ''}
-                            onMouseOver={() => userName && setUserRating(index)}
+                            email={email || ''}
+                            onMouseOver={() => email && setUserRating(index)}
                             onKeyPress={(e) => {
                               if (userRating) {
                                 if (e.key === 'Enter') {
@@ -697,10 +697,10 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                       })}
                     </RowFlexbox>
                     <ReviewTextArea
-                      disabled={!userName}
+                      disabled={!email}
                       maxLength={50}
                       placeholder={
-                        userName
+                        email
                           ? `留下對 ${dramaCard?.title} 的評論`
                           : '要先登入才能使用評論功能喔！'
                       }
@@ -730,7 +730,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                           if (userRating) {
                             handleUploadReview();
                           } else {
-                            userName && alert('要先選擇星星數才能送出評論喔～');
+                            email && alert('要先選擇星星數才能送出評論喔～');
                           }
                         }}
                       >
@@ -785,7 +785,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                                       }
                                       isFilled={index <= userRating}
                                       onMouseOver={() => setUserRating(index)}
-                                      userName={userName || ''}
+                                      email={email || ''}
                                     >
                                       <span>
                                         <FaStar style={{ fontSize: '14px' }} />
@@ -1035,7 +1035,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                           dramaList.includes(dramaId)
                         ) {
                           handleRemoveFromList(dramaId);
-                        } else if (userName) {
+                        } else if (email) {
                           handleAddToDramaList();
                         } else {
                           handleAlert();

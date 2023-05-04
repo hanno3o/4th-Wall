@@ -64,6 +64,7 @@ const Avatar = styled.img`
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
+  background-color: ${(props) => props.theme.lightGrey};
   &:hover {
     box-shadow: 0 0 0 5px ${(props) => props.theme.darkBlack},
       0 0 0 6px rgba(255, 255, 255, 0.25);
@@ -123,7 +124,7 @@ function Header() {
   let navigate = useNavigate();
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const auth = getAuth();
-  const userName = useAppSelector((state) => state.user.userName);
+  const email = useAppSelector((state) => state.user.email);
   const avatar = useAppSelector((state) => state.user.avatar);
   const dispatch = useAppDispatch();
   const [settingsMenu, setSettingsMenu] = useState(false);
@@ -151,7 +152,7 @@ function Header() {
             <Avatar src={avatar} alt="" />
           </Link>
         )}
-        {userName && isLoggedIn ? (
+        {email && isLoggedIn ? (
           <>
             <MoreButton onClick={() => setSettingsMenu((prev) => !prev)}>
               ...

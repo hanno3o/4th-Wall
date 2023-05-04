@@ -228,7 +228,7 @@ function Forum() {
   const [selectedBoard, setSelectedBoard] = useState<string | undefined>('');
   const [searchWords, setSearchWords] = useState('');
   const [board, setBoard] = useState<string>('TaiwanDrama');
-  const userName = useAppSelector((state) => state.user.userName);
+  const email = useAppSelector((state) => state.user.email);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 15;
   const totalPages = Math.ceil(articles.length / PAGE_SIZE);
@@ -359,7 +359,7 @@ function Forum() {
         </RowFlexbox>
       </BoardsWrapper>
       <DividerLine />
-      {userName ? (
+      {email ? (
         <PostButton to={`/forum/${board}/post`}>
           <FaPen />
         </PostButton>
