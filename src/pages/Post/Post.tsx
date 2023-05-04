@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '../../config/firebase.config';
 import { collection, addDoc } from 'firebase/firestore';
 import ReactQuill from 'react-quill';
@@ -212,6 +212,10 @@ function Post() {
       ['link', 'image'],
     ],
   };
+
+  useEffect(() => {
+    boardName && setBoardToPost(boardName);
+  }, []);
 
   return (
     <PostPageWrapper onClick={() => infoCard && setInfoCard(false)}>
