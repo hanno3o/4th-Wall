@@ -8,6 +8,7 @@ import { FaUser } from 'react-icons/fa';
 import { HiOutlineCog8Tooth } from 'react-icons/hi2';
 import { VscSignOut } from 'react-icons/vsc';
 import { BsWechat } from 'react-icons/bs';
+import Swal from 'sweetalert2';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -171,21 +172,39 @@ function Header() {
               </SettingOption>
               <SettingOption
                 onClick={() => {
-                  navigate('/login');
-                  setSettingsMenu((prev) => !prev);
-                  localStorage.setItem('isLoggedIn', 'false');
-                  window.location.reload();
-                  signOut(auth);
-                  dispatch(
-                    setUserInfo({
-                      id: null,
-                      avatar: null,
-                      email: null,
-                      userName: null,
-                      registrationDate: null,
-                      dramaList: null,
-                    })
-                  );
+                  Swal.fire({
+                    text: '確定要登出嗎？',
+                    icon: 'warning',
+                    reverseButtons: true,
+                    showCancelButton: true,
+                    cancelButtonText: '取消',
+                    confirmButtonText: '確定',
+                    iconColor: '#bbb',
+                    confirmButtonColor: '#555',
+                    cancelButtonColor: '#b0b0b0',
+                  }).then((res) => {
+                    if (res.isConfirmed) {
+                      navigate('/login');
+                      localStorage.setItem('isLoggedIn', 'false');
+                      signOut(auth);
+                      dispatch(
+                        setUserInfo({
+                          id: null,
+                          avatar: null,
+                          email: null,
+                          userName: null,
+                          registrationDate: null,
+                          dramaList: null,
+                        })
+                      );
+                      Swal.fire({
+                        title: '已登出',
+                        icon: 'success',
+                        iconColor: '#bbb',
+                        confirmButtonColor: '#555',
+                      });
+                    }
+                  });
                 }}
               >
                 <VscSignOut

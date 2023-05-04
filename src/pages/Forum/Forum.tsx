@@ -15,6 +15,7 @@ import {
   LGText,
 } from '../../style/Text';
 import { ColumnFlexbox, RowFlexbox } from '../../style/Flexbox';
+import Swal from 'sweetalert2';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -363,7 +364,17 @@ function Forum() {
           <FaPen />
         </PostButton>
       ) : (
-        <PostButton to="" onClick={() => alert('要先登入才能發布文章喔！')}>
+        <PostButton
+          to=""
+          onClick={() =>
+            Swal.fire({
+              title: '要先登入才能發布文章喔！',
+              icon: 'warning',
+              iconColor: '#bbb',
+              confirmButtonColor: '#555',
+            })
+          }
+        >
           <FaPen />
         </PostButton>
       )}
@@ -410,7 +421,11 @@ function Forum() {
                       <MDText>
                         [{article.type}] {article.title}
                       </MDText>
-                      {spoilerKeywords.some(keyword => article?.title?.includes(keyword) || article?.content?.includes(keyword))? (
+                      {spoilerKeywords.some(
+                        (keyword) =>
+                          article?.title?.includes(keyword) ||
+                          article?.content?.includes(keyword)
+                      ) ? (
                         <Spoiler />
                       ) : (
                         <MDGreyText>

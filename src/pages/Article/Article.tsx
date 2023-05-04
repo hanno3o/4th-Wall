@@ -26,6 +26,7 @@ import {
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
 import { IoChevronBackCircle } from 'react-icons/io5';
+import Swal from 'sweetalert2';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -71,11 +72,6 @@ const ArticleContent = styled.div`
 const ReplyButton = styled.button`
   border-radius: 20px;
   box-shadow: 0 0 0 3px ${(props) => props.theme.black}, 0 0 0 5px transparent;
-  &:hover {
-    box-shadow: 0 0 0 3px ${(props) => props.theme.black},
-      0 0 0 5px rgba(255, 255, 255, 0.1);
-    transition: ease-in-out 0.25s;
-  }
 `;
 
 const MoreButton = styled.button`
@@ -152,19 +148,24 @@ const CancelButton = styled.button`
   color: ${(props) => props.theme.lightGrey};
   font-size: 16px;
   border: solid 1px transparent;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 20px;
   ${MEDIA_QUERY_TABLET} {
     font-size: 14px;
   }
 `;
 const ConfirmButton = styled(CancelButton)`
-  background-color: ${(props) => props.theme.white};
+  background-color: ${(props) => props.theme.lightGrey};
   color: ${(props) => props.theme.darkGrey};
   font-weight: 550;
   &:hover {
     background-color: ${(props) => props.theme.white};
     color: ${(props) => props.theme.black};
+    transition: ease-in-out 0.25s;
+  }
+  &:disabled {
+    background-color: ${(props) => props.theme.grey};
+    color: ${(props) => props.theme.darkGrey};
   }
   ${MEDIA_QUERY_TABLET} {
     font-size: 14px;
@@ -190,9 +191,8 @@ const CommentTextArea = styled.textarea`
   font-weight: 500;
   background-color: rgba(255, 255, 255, 0.1);
   &:focus {
-    box-shadow: 0 0 0 5px ${(props) => props.theme.black},
-      0 0 0 6px rgba(255, 255, 255, 0.1);
     transition: ease-in-out 0.25s;
+    background-color: rgba(255, 255, 255, 0.15);
   }
 `;
 
@@ -314,7 +314,6 @@ function Article() {
       if (commentsRef) {
         const commentRef = doc(commentsRef, commentId);
         await deleteDoc(commentRef);
-        alert('已刪除留言');
         getArticleAndComments();
         await updateDoc(articleRef, { commentsNum: comments.length - 1 });
       }
@@ -456,7 +455,7 @@ function Article() {
                                   <MDGreyText> · </MDGreyText>
                                   <ReplyButton
                                     onClick={() =>
-                                      handleReply(comment.id, index)
+                                      userName && handleReply(comment.id, index)
                                     }
                                   >
                                     <MDGreyText>回覆</MDGreyText>
@@ -516,8 +515,28 @@ function Article() {
                                 </CommentOption>
                                 <CommentOption
                                   onClick={() => {
-                                    handleRemoveComment(comment.id);
-                                    setCommentOptionWindow(null);
+                                    Swal.fire({
+                                      text: '確定要刪除這則留言嗎？',
+                                      icon: 'warning',
+                                      reverseButtons: true,
+                                      showCancelButton: true,
+                                      cancelButtonText: '取消',
+                                      confirmButtonText: '刪除',
+                                      iconColor: '#bbb',
+                                      confirmButtonColor: '#555',
+                                      cancelButtonColor: '#b0b0b0',
+                                    }).then((res) => {
+                                      if (res.isConfirmed) {
+                                        handleRemoveComment(comment.id);
+                                        setCommentOptionWindow(null);
+                                        Swal.fire({
+                                          text: '已刪除留言',
+                                          icon: 'success',
+                                          iconColor: '#bbb',
+                                          confirmButtonColor: '#555',
+                                        });
+                                      }
+                                    });
                                   }}
                                 >
                                   <AiOutlineDelete
@@ -542,7 +561,7 @@ function Article() {
                 placeholder={
                   userName
                     ? '留言.......'
-                    : '要先登入才能使用論壇的討論功能喔！'
+                    : '要先登入才能使用論壇的討論及回覆功能喔！'
                 }
                 maxLength={100}
                 onChange={(e) => setWrittenComment(e.target.value)}
@@ -563,13 +582,9 @@ function Article() {
                   取消
                 </CancelButton>
                 <ConfirmButton
-                  disabled={!userName}
+                  disabled={!userName || !writtenComment}
                   onClick={() => {
-                    if (writtenComment) {
-                      handleUploadComment();
-                    } else {
-                      alert('要先留言才可以送出喔！');
-                    }
+                    writtenComment && handleUploadComment();
                   }}
                 >
                   送出

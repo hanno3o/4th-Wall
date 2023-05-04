@@ -37,6 +37,7 @@ import {
 } from '../../style/Text';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { DramaCardsWrapper, DramaCard } from '../../style/DramaCard';
+import Swal from 'sweetalert2';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -622,10 +623,29 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     <RemoveFromListButton
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (drama.id) {
-                          alert(`確定要從片單中移除 ${drama.title} 嗎？`);
-                          handleRemoveFromList(drama.id);
-                        }
+                        Swal.fire({
+                          text: `確定要從片單中移除 ${drama.title} 嗎？`,
+                          icon: 'warning',
+                          reverseButtons: true,
+                          showCancelButton: true,
+                          cancelButtonText: '取消',
+                          confirmButtonText: '刪除',
+                          iconColor: '#bbb',
+                          confirmButtonColor: '#555',
+                          cancelButtonColor: '#b0b0b0',
+                        }).then((res) => {
+                          if (res.isConfirmed) {
+                            if (drama.id) {
+                              handleRemoveFromList(drama.id);
+                              Swal.fire({
+                                text: '已移除',
+                                icon: 'success',
+                                iconColor: '#bbb',
+                                confirmButtonColor: '#555',
+                              });
+                            }
+                          }
+                        });
                       }}
                     >
                       <MdOutlineRemoveCircle />
@@ -841,8 +861,28 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                             </TextButton>
                             <IconButton
                               onClick={() => {
-                                handleRemoveReview();
-                                setUpdatedUserReview('');
+                                Swal.fire({
+                                  text: '確定要刪除這筆評論嗎？',
+                                  icon: 'warning',
+                                  reverseButtons: true,
+                                  showCancelButton: true,
+                                  cancelButtonText: '取消',
+                                  confirmButtonText: '刪除',
+                                  iconColor: '#bbb',
+                                  confirmButtonColor: '#555',
+                                  cancelButtonColor: '#b0b0b0',
+                                }).then((res) => {
+                                  if (res.isConfirmed) {
+                                    handleRemoveReview();
+                                    setUpdatedUserReview('');
+                                    Swal.fire({
+                                      text: '已刪除評論',
+                                      icon: 'success',
+                                      iconColor: '#bbb',
+                                      confirmButtonColor: '#555',
+                                    });
+                                  }
+                                });
                               }}
                             >
                               <AiOutlineDelete />

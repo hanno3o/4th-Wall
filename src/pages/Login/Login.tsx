@@ -5,12 +5,8 @@ import { useState } from 'react';
 import { FaUser } from 'react-icons/fa';
 import { BsGoogle } from 'react-icons/bs';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
-import {
-  XXLText,
-  SMText,
-  SMGreyText,
-  LGText,
-} from '../../style/Text';
+import { XXLText, SMText, SMGreyText, LGText } from '../../style/Text';
+import Swal from 'sweetalert2';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -108,6 +104,23 @@ function Login() {
       .then((res) => {
         console.log(res.user.uid);
         navigate('/');
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+          },
+        });
+        Toast.fire({
+          icon: 'success',
+          title: '登入成功！',
+          iconColor: '#bbb',
+          confirmButtonColor: '#555',
+        });
       })
       .catch((err) => {
         console.log(err);
