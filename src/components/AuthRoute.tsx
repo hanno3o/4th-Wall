@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebase.config';
-import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../redux/hooks';
 import { setUserInfo } from '../redux/reducers/userSlice';
 
@@ -13,7 +12,6 @@ export interface AuthRouteProps {
 const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
   const { children } = props;
   const auth = getAuth();
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
 
@@ -45,6 +43,7 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
           dispatch(setUserInfo(userData));
         }
         setIsLoading(false);
+        localStorage.setItem('isLoggedIn', 'true')
       } else {
         console.log('unauthorized');
       }

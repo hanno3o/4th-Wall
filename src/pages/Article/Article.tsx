@@ -337,7 +337,7 @@ function Article() {
       {!isLoading && article && (
         <ColumnFlexbox>
           <ArticleHeader>
-            <BackButton onClick={() => navigate(`/forum/${boardName}`)}>
+            <BackButton onClick={() => navigate(-1)}>
               <IoChevronBackCircle style={{ fontSize: '32px' }} />
             </BackButton>
             <RowFlexbox

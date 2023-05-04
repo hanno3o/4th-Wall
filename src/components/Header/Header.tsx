@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signOut } from 'firebase/auth';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { setUserInfo } from '../../redux/reducers/userSlice';
@@ -119,6 +119,8 @@ const SettingOption = styled.button`
 `;
 
 function Header() {
+  let navigate = useNavigate();
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const auth = getAuth();
   const userName = useAppSelector((state) => state.user.userName);
   const avatar = useAppSelector((state) => state.user.avatar);
@@ -148,7 +150,7 @@ function Header() {
             <Avatar src={avatar} alt="" />
           </Link>
         )}
-        {userName ? (
+        {userName && isLoggedIn ? (
           <>
             <MoreButton onClick={() => setSettingsMenu((prev) => !prev)}>
               ...
@@ -169,7 +171,10 @@ function Header() {
               </SettingOption>
               <SettingOption
                 onClick={() => {
+                  navigate('/login');
                   setSettingsMenu((prev) => !prev);
+                  localStorage.setItem('isLoggedIn', 'false');
+                  window.location.reload();
                   signOut(auth);
                   dispatch(
                     setUserInfo({
@@ -194,11 +199,9 @@ function Header() {
             </SettingOptions>
           </>
         ) : (
-          <Link to="/login">
-            <NavIconButton>
-              <FaUser style={{ fontSize: '24px' }} />
-            </NavIconButton>
-          </Link>
+          <NavIconButton onClick={() => navigate('/login')}>
+            <FaUser style={{ fontSize: '24px' }} />
+          </NavIconButton>
         )}
       </NavBar>
     </HeaderWrapper>
