@@ -234,6 +234,7 @@ function Forum() {
   const urlSearchParams = new URLSearchParams(window.location.search);
   const keyword = urlSearchParams.get('keyword');
   const currentDate = new Date();
+  const spoilerKeywords = ['雷', '劇透'];
 
   const displayedArticles = articles.filter((article) =>
     article.title?.includes(searchWords)
@@ -409,8 +410,7 @@ function Forum() {
                       <MDText>
                         [{article.type}] {article.title}
                       </MDText>
-                      {article?.title?.includes('雷') ||
-                      article.content?.includes('雷') ? (
+                      {spoilerKeywords.some(keyword => article?.title?.includes(keyword) || article?.content?.includes(keyword))? (
                         <Spoiler />
                       ) : (
                         <MDGreyText>
