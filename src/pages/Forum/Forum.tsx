@@ -60,12 +60,12 @@ const Board = styled(Link)<ISelectedBoardProps>`
     `}
   ${MEDIA_QUERY_TABLET} {
     padding: 8px 12px;
-    font-size: 14px;
+    font-size: 16px;
     ${(props) =>
       props.selectedBoard &&
       props.selectedBoard.includes(props.children as string) &&
       `
-  border-bottom: #fff 3px solid;
+  border-bottom: #fff 3.5px solid;
   `}
   }
   ${MEDIA_QUERY_MOBILE} {
@@ -342,9 +342,10 @@ function Forum() {
               <Board
                 key={index}
                 onClick={() => {
-                  setSelectedBoard(board.Chinese);
                   setBoard(board.English);
+                  setSelectedBoard(board.Chinese);
                   setSearchWords('');
+                  handlePageChange(1);
                 }}
                 to={`/forum/${board.English}`}
                 selectedBoard={selectedBoard}
