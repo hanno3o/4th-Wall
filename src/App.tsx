@@ -18,6 +18,66 @@ const theme = {
 };
 
 const GlobalStyle = createGlobalStyle`
+  a {
+  text-decoration: none;
+  color: inherit;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  strong {
+    font-weight: 900;
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    outline: none;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+  }
+
+  input[type="text"],
+  [type="email"],
+  [type="password"]
+  {
+    border: none;
+    outline: none;
+    text-align: left;
+    text-decoration: none;
+    vertical-align: middle;
+  }
+
+  textarea {
+    resize: none;
+    text-align: left;
+    text-decoration: none;
+    vertical-align: middle;
+    overflow: auto;
+  }
+
+  select {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    outline: none;
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -32,7 +92,6 @@ const GlobalStyle = createGlobalStyle`
   #root {
     min-height: 100vh;
     position: relative;
-
     @media screen and (max-width: 768px) {
     }
   }

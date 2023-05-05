@@ -216,7 +216,7 @@ function Profile() {
   const handleEditUserName = () => {
     setEditing(true);
   };
- 
+
   const handleUserNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUpdatedUserName(e.target.value);
   };
@@ -305,6 +305,7 @@ function Profile() {
               <FaSearch />
             </SearchbarIcon>
             <SearchbarInput
+              type="text"
               placeholder="在片單中搜尋"
               onChange={handleSearchInput}
             />

@@ -56,7 +56,7 @@ export const MDText = styled.div<TextProps>`
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET},${MEDIA_QUERY_MOBILE} {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
   }
 `;
@@ -69,7 +69,7 @@ export const NMText = styled.div<TextProps>`
 
 export const SMText = styled.div<TextProps>`
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 550;
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET} {
@@ -116,7 +116,7 @@ export const SMGreyText = styled.div<TextProps>`
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET}, ${MEDIA_QUERY_MOBILE} {
-    font-size: 14px;
+    font-size: 15.5px;
     font-weight: 400;
   }
 `;

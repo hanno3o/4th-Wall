@@ -46,11 +46,11 @@ const quillStyle = `
     }
   }
   .ql-editor h1 {
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 700;
   }
   .ql-editor h2 {
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 700;
   }
   .ql-editor strong {
@@ -259,6 +259,7 @@ function Post() {
         </InfoButton>
       </RowFlexbox>
       <TitleInputField
+        type="text"
         placeholder="請輸入文章標題"
         onChange={(e) => setTitle(e.currentTarget.value)}
       />

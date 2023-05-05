@@ -38,6 +38,7 @@ import {
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { DramaCardsWrapper, DramaCard } from '../../style/DramaCard';
 import Swal from 'sweetalert2';
+import { useMediaQuery } from 'react-responsive';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -79,7 +80,6 @@ const DramaCardSkeleton = styled(DramaCard)`
 
 const DramaInfo = styled.div`
   background: ${(props) => props.theme.black};
-  border: ${(props) => props.theme.grey} 1px solid;
   position: fixed;
   left: 50vw;
   top: 50vh;
@@ -88,10 +88,12 @@ const DramaInfo = styled.div`
   padding: 60px 40px;
   display: flex;
   z-index: 1;
+  height: 950px;
+  width: 1100px;
 
   ${MEDIA_QUERY_TABLET} {
-    width: 67.5vw;
-    height: 760px;
+    height: 772px;
+    width: 980px;
     padding: 30px 20px;
   }
 
@@ -106,6 +108,7 @@ const DramaInfoImage = styled.img`
   width: 280px;
   height: 400px;
   border-radius: 20px;
+  flex-shrink: 0;
 
   ${MEDIA_QUERY_TABLET} {
     width: 224px;
@@ -120,8 +123,8 @@ const Avatar = styled.img`
   object-fit: cover;
 
   ${MEDIA_QUERY_TABLET} {
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
   }
 `;
 
@@ -129,28 +132,32 @@ const SpotifyIframe = styled.iframe`
   border-radius: 20px;
   margin-top: 8px;
   width: 280px;
-  height: 372px;
+  height: 380px;
   ${MEDIA_QUERY_TABLET} {
-    height: ${372 * 0.95}px;
+    height: 352px;
     width: ${280 * 0.8}px;
     margin-top: 4px;
   }
 `;
 
-const HandleListButton = styled.button`
+const DramaCardButton = styled.button`
   font-size: 14px;
   color: ${(props) => props.theme.white};
   border: solid 1px ${(props) => props.theme.grey};
-  padding: 6px 10px;
-  margin-top: 10px;
-  width: 200px;
+  padding: 6px 20px;
+  margin-top: -16px;
   font-weight: 700;
   border-radius: 20px;
-  background-color: rgba(255, 255, 255, 0.25);
+  align-items: center;
   transition: ease-in-out 0.2s;
   ${MEDIA_QUERY_TABLET} {
-    font-size: 12px;
-    padding: 6px 8px;
+    margin-top: -6px;
+    font-size: 13.5px;
+    padding: 4px 18px;
+  }
+  &:hover {
+    scale: 1.05;
+    transition: ease-in-out 0.25s;
   }
 `;
 
@@ -252,6 +259,9 @@ const ReviewTextArea = styled.textarea`
   padding: 14px;
   height: 60px;
   line-height: 20px;
+  &::placeholder {
+    color: ${(props) => props.theme.lightGrey};
+  }
   ${MEDIA_QUERY_TABLET} {
     height: 42px;
     width: 90%;
@@ -277,18 +287,19 @@ const ReviewTextEditArea = styled.textarea`
 `;
 
 const ActorLink = styled.div`
-  width: 600px;
-  display: flex;
-  gap: 12px;
+  width: 100%;
   overflow-x: scroll;
+  display: flex;
+  gap: 16px;
   ${MEDIA_QUERY_TABLET} {
-    gap: 8px;
+    gap: 10px;
   }
 `;
 
 const ActorsButton = styled.button`
+  flex-shrink: 0;
   border-radius: 20px;
-  gap: 8px;
+  gap: 6px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -410,6 +421,9 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   const [page, setPage] = useState(1);
   const start = (page - 1) * PAGE_SIZE;
   const end = start + PAGE_SIZE;
+  const isTablet = useMediaQuery({
+    query: '(min-width: 1281px) and (max-width: 1440px)',
+  });
 
   const getReviews = async () => {
     if (dramaId) {
@@ -498,10 +512,6 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   const handleDramaCard = (drama: IDrama) => {
     prevDramaCardRef.current = drama;
     setDramaCard(drama);
-  };
-
-  const handleAlert = () => {
-    alert('要先登入才能加入喜愛的戲劇到自己的片單喔！');
   };
 
   const handleAddToDramaList = async () => {
@@ -669,10 +679,10 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
         )}
         <DramaInfo style={{ display: dramaCard ? 'block' : 'none' }}>
           {isLoading && (
-            <RowFlexbox gap="20px">
-              <ColumnFlexbox gap="20px">
+            <RowFlexbox gap="20px" height="100%" width="100%">
+              <ColumnFlexbox height="100%">
                 {userReview ? null : (
-                  <ColumnFlexbox gap="10px" padding="10px 0 0 0">
+                  <ColumnFlexbox height="20%" gap="10px" padding="10px 0 0 0">
                     <RowFlexbox justifyContent="center">
                       {[...Array(5)].map((_, index) => {
                         index += 1;
@@ -739,22 +749,24 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     </RowFlexbox>
                   </ColumnFlexbox>
                 )}
-                <ColumnFlexbox width="300px" tabletWidth="280px">
-                  <MDText style={{ paddingLeft: '10px' }}>評論</MDText>
+                <ColumnFlexbox
+                  width="300px"
+                  tabletWidth="280px"
+                  height={userReview ? '100%' : '80%'}
+                >
+                  <MDText margin="4px 10px" tabletMargin="2px 6px">
+                    評論
+                  </MDText>
                   {!allReviews.length && (
-                    <ColumnFlexbox margin="14px 0 0 10px">
+                    <ColumnFlexbox margin="10px 0 0 10px">
                       <MDGreyText style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
                         \ 歡迎留下第一則評論 દ ᵕ̈ ૩ /
                       </MDGreyText>
                     </ColumnFlexbox>
                   )}
-                  <ColumnFlexbox
-                    style={{ overflowY: 'scroll' }}
-                    height={userReview ? '775px' : '635px'}
-                    tabletHeight={userReview ? '675px' : '560px'}
-                  >
+                  <ColumnFlexbox style={{ overflowY: 'scroll' }}>
                     {userReview && (
-                      <RowFlexbox gap="10px" padding="14px 10px">
+                      <RowFlexbox gap="8px" padding="14px 10px">
                         <Avatar src={userReview?.avatar} alt="" />
                         <ColumnFlexbox>
                           <RowFlexbox gap="6px">
@@ -904,8 +916,12 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                       })
                       .map((review) => {
                         return (
-                          <ColumnFlexbox>
-                            <RowFlexbox padding="18px 10px" gap="8px">
+                          <ColumnFlexbox
+                            style={{
+                              flexShrink: '0',
+                            }}
+                          >
+                            <RowFlexbox padding="16px 10px" gap="8px">
                               <Avatar src={review.avatar} alt="" />
                               <ColumnFlexbox gap="4px">
                                 <XSText>{review.userName}</XSText>
@@ -951,7 +967,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                                   )}
                                 </RowFlexbox>
                                 <XSText
-                                  LineHeight="20px"
+                                  LineHeight="18px"
                                   style={{ wordBreak: 'break-word' }}
                                 >
                                   {review.writtenReview}
@@ -967,42 +983,60 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                   </ColumnFlexbox>
                 </ColumnFlexbox>
               </ColumnFlexbox>
-              <ColumnFlexbox gap="20px" tabletGap="14px">
+              <ColumnFlexbox
+                gap="20px"
+                tabletGap="14px"
+                width="100%"
+                height="100%"
+              >
                 <RowFlexbox gap="20px">
                   <DramaInfoImage src={dramaCard?.image} alt="" />
-                  <ColumnFlexbox justifyContent="space-between">
-                    <XLText>{dramaCard?.title}</XLText>
-                    <SMGreyText>{dramaCard?.eng}</SMGreyText>
-                    <SMText>
-                      {dramaCard?.year} | {dramaCard?.type} | {dramaCard?.genre}
-                    </SMText>
-                    <SMText>全 {dramaCard?.episodes} 集</SMText>
-                    <Link
-                      to={`/forum/${dramaCard?.engType}?keyword=${dramaCard?.title}`}
-                      style={{ textAlign: 'left', width: '22px' }}
-                    >
-                      <HiOutlineChat style={{ fontSize: '22px' }} />
-                    </Link>
+                  <ColumnFlexbox justifyContent="space-between" width="100%">
+                    <ColumnFlexbox gap="6px">
+                      <XLText>{dramaCard?.title}</XLText>
+                      <SMGreyText>{dramaCard?.eng}</SMGreyText>
+                      {isTablet ? (
+                        <>
+                          <MDText>
+                            {dramaCard?.year} | {dramaCard?.type} |{' '}
+                            {dramaCard?.genre} · 全 {dramaCard?.episodes} 集
+                          </MDText>
+                        </>
+                      ) : (
+                        <>
+                          <MDText>
+                            {dramaCard?.year} | {dramaCard?.type} |{' '}
+                            {dramaCard?.genre}
+                          </MDText>
+                          <MDText>全 {dramaCard?.episodes} 集</MDText>
+                        </>
+                      )}
+                    </ColumnFlexbox>
                     {allReviews.length > 0 ? (
-                      <ColumnFlexbox gap="4px">
-                        <LGText>{dramaCard?.rating}/5</LGText>
-                        <XSGreyText margin="0 0 12px 0">
+                      <ColumnFlexbox gap="6px" tabletGap="2px">
+                        <RowFlexbox alignItems="flex-end">
+                          <XLText>{dramaCard?.rating}</XLText>
+                          <XSText>/5</XSText>
+                        </RowFlexbox>
+                        <XSGreyText>
                           已有 {allReviews.length} 人留下評價
                         </XSGreyText>
                       </ColumnFlexbox>
                     ) : (
-                      <SMGreyText margin="0 0 28px 0">目前尚無評價</SMGreyText>
+                      <ColumnFlexbox height="48px" tabletHeight="40px">
+                        <SMGreyText>目前尚無評價</SMGreyText>
+                      </ColumnFlexbox>
                     )}
-                    <ColumnFlexbox gap="12px" textAlign="left" tabletGap="8px">
-                      <ColumnFlexbox gap="4px">
+                    <ColumnFlexbox gap="14px" textAlign="left" tabletGap="12px">
+                      <ColumnFlexbox gap="5px">
                         <XSText>編劇</XSText>
-                        <SMText>{dramaCard?.screenwriter}</SMText>
+                        <MDText>{dramaCard?.screenwriter}</MDText>
                       </ColumnFlexbox>
-                      <ColumnFlexbox gap="4px">
+                      <ColumnFlexbox gap="5px">
                         <XSText>導演</XSText>
-                        <SMText>{dramaCard?.director}</SMText>
+                        <MDText>{dramaCard?.director}</MDText>
                       </ColumnFlexbox>
-                      <ColumnFlexbox gap="4px">
+                      <ColumnFlexbox gap="5px" width="100%">
                         <XSText>演員</XSText>
                         <ActorLink>
                           {actors &&
@@ -1018,7 +1052,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                                 <Avatar src={actor.avatar} alt="" />
                                 <span>
                                   <ColumnFlexbox textAlign="left">
-                                    <SMText>{actor.name}</SMText>
+                                    <MDText>{actor.name}</MDText>
                                     <XSGreyText>{actor.eng}</XSGreyText>
                                   </ColumnFlexbox>
                                 </span>
@@ -1027,35 +1061,57 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                         </ActorLink>
                       </ColumnFlexbox>
                     </ColumnFlexbox>
-                    <HandleListButton
-                      onClick={() => {
-                        if (
-                          dramaList &&
-                          dramaId &&
-                          dramaList.includes(dramaId)
-                        ) {
-                          handleRemoveFromList(dramaId);
-                        } else if (email) {
-                          handleAddToDramaList();
-                        } else {
-                          handleAlert();
-                        }
-                      }}
-                      style={{
-                        color:
-                          dramaList && dramaId && dramaList.includes(dramaId)
-                            ? '#2a2a2a'
-                            : '#fff',
-                        backgroundColor:
-                          dramaList && dramaId && dramaList.includes(dramaId)
-                            ? '#fff'
-                            : '#2a2a2a',
-                      }}
-                    >
-                      {dramaList && dramaId && dramaList.includes(dramaId)
-                        ? '✓ 已加入片單'
-                        : '＋ 加入片單'}
-                    </HandleListButton>
+                    <RowFlexbox gap="6px">
+                      <DramaCardButton
+                        onClick={() => {
+                          if (
+                            dramaList &&
+                            dramaId &&
+                            dramaList.includes(dramaId)
+                          ) {
+                            handleRemoveFromList(dramaId);
+                          } else if (email) {
+                            handleAddToDramaList();
+                          } else {
+                            Swal.fire({
+                              width: 300,
+                              text: '要先登入才能加入喜愛的戲劇到自己的片單喔！',
+                              icon: 'warning',
+                              iconColor: '#bbb',
+                              confirmButtonColor: '#555',
+                            });
+                          }
+                        }}
+                        style={{
+                          width: '130px',
+                          color:
+                            dramaList && dramaId && dramaList.includes(dramaId)
+                              ? '#181818'
+                              : '#fff',
+                          backgroundColor:
+                            dramaList && dramaId && dramaList.includes(dramaId)
+                              ? '#fff'
+                              : '#181818',
+                        }}
+                      >
+                        {dramaList && dramaId && dramaList.includes(dramaId)
+                          ? '✓ 已加入片單'
+                          : '＋ 加入片單'}
+                      </DramaCardButton>
+                      <DramaCardButton>
+                        <Link
+                          to={`/forum/${dramaCard?.engType}?keyword=${dramaCard?.title}`}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <HiOutlineChat style={{ fontSize: '20px' }} />
+                          <span>聊劇去</span>
+                        </Link>
+                      </DramaCardButton>
+                    </RowFlexbox>
                     <CloseButton
                       onClick={() => {
                         setDramaCard(undefined);
@@ -1079,11 +1135,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                       loading="lazy"
                     />
                   </ColumnFlexbox>
-                  <ColumnFlexbox
-                    justifyContent="space-between"
-                    width="400px"
-                    tabletWidth="385px"
-                  >
+                  <ColumnFlexbox justifyContent="space-between">
                     <ColumnFlexbox gap="6px" tabletGap="4px">
                       <XSText>劇情大綱</XSText>
                       <XSGreyText>{dramaCard?.story}</XSGreyText>
@@ -1141,10 +1193,10 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                           }
                         })}
                     </RowFlexbox>
-                    <ColumnFlexbox gap="6px" tabletGap="6px">
+                    <ColumnFlexbox gap="6px">
                       <XSText>相關影片</XSText>
                       <RowFlexbox
-                        gap="8px"
+                        gap="10px"
                         style={{
                           overflowX: 'scroll',
                         }}
