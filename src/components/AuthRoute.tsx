@@ -56,7 +56,6 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
           dispatch(setUserInfo(userData));
         }
         setIsLoading(false);
-        localStorage.setItem('isLoggedIn', 'true');
       } else {
         console.log('unauthorized');
       }

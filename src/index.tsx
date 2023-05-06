@@ -18,17 +18,13 @@ initializeApp(firebaseConfig);
 
 const container = document.getElementById('root')!;
 const root = createRoot(container);
-const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 root.render(
   <Provider store={store}>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />}>
           <Route index element={<Home />} />
-          <Route
-            path="login"
-            element={isLoggedIn ? <Navigate to="/" /> : <Login />}
-          />
+          <Route path="login" element={<Login />} />
           <Route path="forum/:boardName" element={<Forum />} />
           <Route path="forum/:boardName/:id" element={<Article />} />
           <Route path="forum/:boardName/post" element={<Post />} />

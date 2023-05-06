@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { db } from '../../config/firebase.config';
 import { collection, getDocs } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
-import { XXLText, SMGreyText } from '../../style/Text';
+import { XXLText, XSGreyText } from '../../style/Text';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import SearchBar from '../../components/SearchBar';
 import FilterNavBar from '../../components/FilterNavBar';
@@ -318,7 +318,7 @@ function Home() {
           {filterData.filters.map((filter, index) => {
             return (
               <RowFlexbox alignItems="center">
-                <SMGreyText margin="0 10px 0 0">{filter.title}</SMGreyText>
+                <XSGreyText margin="0 10px 0 0">{filter.title}</XSGreyText>
                 <RowFlexbox
                   gap="4px"
                   key={index}

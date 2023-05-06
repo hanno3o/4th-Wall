@@ -7,6 +7,7 @@ import {
   createUserWithEmailAndPassword,
 } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { useAppSelector } from '../../redux/hooks';
 import { useState } from 'react';
 import { FaUser } from 'react-icons/fa';
 import { BsGoogle } from 'react-icons/bs';
@@ -120,6 +121,7 @@ function Login() {
   const [password, setPassword] = useState('');
   const [isShowOrHidePassword, setIsShowOrHidePassword] = useState(true);
   const [isSignInState, setIsSignInState] = useState(true);
+  const id = useAppSelector((state) => state.user.id);
   const signInWithGoogle = async () => {
     setAuthing(true);
     signInWithPopup(auth, new GoogleAuthProvider())
@@ -208,114 +210,119 @@ function Login() {
       });
   };
 
-  return (
-    <LoginPageWrapper
-      style={{
-        backgroundImage: `linear-gradient(to top, rgb(0, 0, 0), rgb(255, 255, 255, 0) 100%), url(${backgroundImageURL})`,
-      }}
-    >
-      {isSignInState ? (
-        <LoginAndSignUpCard>
-          <XXLText style={{ marginBottom: '10px' }}>Login</XXLText>
-          <GoogleButton onClick={() => signInWithGoogle()} disabled={authing}>
-            <BsGoogle />
-            <LGText>Google註冊/登入</LGText>
-          </GoogleButton>
-          <RowFlexbox alignItems="center" justifyContent="space-between">
-            <DividerLine style={{ width: '45%' }} />
-            <SMText>or</SMText>
-            <DividerLine style={{ width: '45%' }} />
-          </RowFlexbox>
-          <ColumnFlexbox gap="8px" tabletGap="6px">
-            <SMText>Email</SMText>
-            <InputField
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="請輸入電子郵件"
-              required
-              name="email"
-            />
-          </ColumnFlexbox>
-          <ColumnFlexbox
-            gap="8px"
-            tabletGap="6px"
-            style={{ position: 'relative' }}
-          >
-            <SMText>密碼</SMText>
-            <InputField
-              type={isShowOrHidePassword ? 'password' : 'text'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="請輸入密碼"
-              required
-              name="password"
-            />
-            <ShowOrHidePasswordButton
-              onClick={() => setIsShowOrHidePassword(!isShowOrHidePassword)}
+  if (!id) {
+    return (
+      <LoginPageWrapper
+        style={{
+          backgroundImage: `linear-gradient(to top, rgb(0, 0, 0), rgb(255, 255, 255, 0) 100%), url(${backgroundImageURL})`,
+        }}
+      >
+        {isSignInState ? (
+          <LoginAndSignUpCard>
+            <XXLText style={{ marginBottom: '10px' }}>Login</XXLText>
+            <GoogleButton onClick={() => signInWithGoogle()} disabled={authing}>
+              <BsGoogle />
+              <LGText>Google註冊/登入</LGText>
+            </GoogleButton>
+            <RowFlexbox alignItems="center" justifyContent="space-between">
+              <DividerLine style={{ width: '45%' }} />
+              <SMText>or</SMText>
+              <DividerLine style={{ width: '45%' }} />
+            </RowFlexbox>
+            <ColumnFlexbox gap="8px" tabletGap="6px">
+              <SMText>Email</SMText>
+              <InputField
+                type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="請輸入電子郵件"
+                required
+                name="email"
+              />
+            </ColumnFlexbox>
+            <ColumnFlexbox
+              gap="8px"
+              tabletGap="6px"
+              style={{ position: 'relative' }}
             >
-              {isShowOrHidePassword ? <RiEyeCloseLine /> : <IoEye />}
-            </ShowOrHidePasswordButton>
-          </ColumnFlexbox>
-          <LoginButton onClick={nativeSignIn} disabled={authing}>
-            <FaUser />
-            <LGText>會員登入</LGText>
-          </LoginButton>
-          <RowFlexbox>
-            <SMGreyText>還沒有帳號嗎？</SMGreyText>
-            <SignUpButton onClick={() => setIsSignInState(false)}>
-              註冊
-            </SignUpButton>
-          </RowFlexbox>
-        </LoginAndSignUpCard>
-      ) : (
-        <LoginAndSignUpCard>
-          <XXLText style={{ marginBottom: '10px' }}>SignUp</XXLText>
-          <ColumnFlexbox gap="8px" tabletGap="6px">
-            <SMText>Email</SMText>
-            <InputField
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="請輸入電子郵件"
-              required
-              name="email"
-            />
-          </ColumnFlexbox>
-          <ColumnFlexbox
-            gap="8px"
-            tabletGap="6px"
-            style={{ position: 'relative' }}
-          >
-            <SMText>密碼</SMText>
-            <InputField
-              type={isShowOrHidePassword ? 'password' : 'text'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="請輸入密碼"
-              required
-              name="password"
-            />
-            <ShowOrHidePasswordButton
-              onClick={() => setIsShowOrHidePassword(!isShowOrHidePassword)}
+              <SMText>密碼</SMText>
+              <InputField
+                type={isShowOrHidePassword ? 'password' : 'text'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="請輸入密碼"
+                required
+                name="password"
+              />
+              <ShowOrHidePasswordButton
+                onClick={() => setIsShowOrHidePassword(!isShowOrHidePassword)}
+              >
+                {isShowOrHidePassword ? <RiEyeCloseLine /> : <IoEye />}
+              </ShowOrHidePasswordButton>
+            </ColumnFlexbox>
+            <LoginButton onClick={nativeSignIn} disabled={authing}>
+              <FaUser />
+              <LGText>會員登入</LGText>
+            </LoginButton>
+            <RowFlexbox>
+              <SMGreyText>還沒有帳號嗎？</SMGreyText>
+              <SignUpButton onClick={() => setIsSignInState(false)}>
+                註冊
+              </SignUpButton>
+            </RowFlexbox>
+          </LoginAndSignUpCard>
+        ) : (
+          <LoginAndSignUpCard>
+            <XXLText style={{ marginBottom: '10px' }}>SignUp</XXLText>
+            <ColumnFlexbox gap="8px" tabletGap="6px">
+              <SMText>Email</SMText>
+              <InputField
+                type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="請輸入電子郵件"
+                required
+                name="email"
+              />
+            </ColumnFlexbox>
+            <ColumnFlexbox
+              gap="8px"
+              tabletGap="6px"
+              style={{ position: 'relative' }}
             >
-              {isShowOrHidePassword ? <RiEyeCloseLine /> : <IoEye />}
-            </ShowOrHidePasswordButton>
-          </ColumnFlexbox>
-          <LoginButton onClick={SignUp}>
-            <FaUser />
-            <LGText>註冊會員</LGText>
-          </LoginButton>
-          <RowFlexbox>
-            <SMGreyText>已經有帳號了嗎？</SMGreyText>
-            <SignUpButton onClick={() => setIsSignInState(true)}>
-              登入
-            </SignUpButton>
-          </RowFlexbox>
-        </LoginAndSignUpCard>
-      )}
-    </LoginPageWrapper>
-  );
+              <SMText>密碼</SMText>
+              <InputField
+                type={isShowOrHidePassword ? 'password' : 'text'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="請輸入密碼"
+                required
+                name="password"
+              />
+              <ShowOrHidePasswordButton
+                onClick={() => setIsShowOrHidePassword(!isShowOrHidePassword)}
+              >
+                {isShowOrHidePassword ? <RiEyeCloseLine /> : <IoEye />}
+              </ShowOrHidePasswordButton>
+            </ColumnFlexbox>
+            <LoginButton onClick={SignUp}>
+              <FaUser />
+              <LGText>註冊會員</LGText>
+            </LoginButton>
+            <RowFlexbox>
+              <SMGreyText>已經有帳號了嗎？</SMGreyText>
+              <SignUpButton onClick={() => setIsSignInState(true)}>
+                登入
+              </SignUpButton>
+            </RowFlexbox>
+          </LoginAndSignUpCard>
+        )}
+      </LoginPageWrapper>
+    );
+  } else {
+    navigate('/');
+    return <></>;
+  }
 }
 
 export default Login;

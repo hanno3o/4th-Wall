@@ -122,7 +122,6 @@ const SettingOption = styled.button`
 
 function Header() {
   let navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const auth = getAuth();
   const email = useAppSelector((state) => state.user.email);
   const avatar = useAppSelector((state) => state.user.avatar);
@@ -152,7 +151,7 @@ function Header() {
             <Avatar src={avatar} alt="" />
           </Link>
         )}
-        {email && isLoggedIn ? (
+        {email ? (
           <>
             <MoreButton onClick={() => setSettingsMenu((prev) => !prev)}>
               ...
@@ -186,7 +185,6 @@ function Header() {
                   }).then((res) => {
                     if (res.isConfirmed) {
                       navigate('/login');
-                      localStorage.setItem('isLoggedIn', 'false');
                       signOut(auth);
                       dispatch(
                         setUserInfo({
