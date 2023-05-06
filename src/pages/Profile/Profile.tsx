@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../config/firebase.config';
@@ -46,10 +46,36 @@ const DividerLine = styled.div`
 
 const UserImage = styled.img`
   object-fit: cover;
-  background-color: #eee;
+  background-color: ${(props) => props.theme.grey};
   width: 160px;
   height: 160px;
   border-radius: 50%;
+  ${MEDIA_QUERY_TABLET} {
+    width: 140px;
+    height: 140px;
+  }
+`;
+
+const fade = keyframes`
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+`;
+
+const UserImageSkeleton = styled.div`
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
   ${MEDIA_QUERY_TABLET} {
     width: 140px;
     height: 140px;
@@ -98,6 +124,32 @@ const EditUserName = styled.input`
     font-size: 26px;
     padding: 3.5px 10px;
   }
+`;
+
+const UserNameSkeleton = styled.div`
+  margin-top: 10px;
+  border-radius: 5px;
+  height: 36px;
+  width: 218px;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
+`;
+
+const SMTextSkeleton = styled(SMText)`
+  width: 60px;
+  height: 16px;
+  border-radius: 20px;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
+`;
+
+const XLTextSkeleton = styled(XLText)`
+  width: 26px;
+  height: 26px;
+  border-radius: 20px;
+  margin: 0 auto;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
 `;
 
 const HomepageLink = styled(Link)`
@@ -156,7 +208,7 @@ function Profile() {
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string | null>(
     '所有影集'
   );
-
+  const [isLoading, setIsLoading] = useState(false);
   const [searchWords, setSearchWords] = useState('');
   const [editing, setEditing] = useState(false);
   const [updatedUserName, setUpdatedUserName] = useState(userName);
@@ -178,22 +230,25 @@ function Profile() {
       ? displayedDramaList.filter((drama) => drama.type === selectedTypeFilter)
       : displayedDramaList;
 
+  const getDramaList = async () => {
+    if (dramaList) {
+      const dramaListRef = await Promise.all(
+        dramaList.map((dramaId) => getDoc(doc(dramasCollectionRef, dramaId)))
+      );
+      const dramaListData = dramaListRef.map((doc) => doc.data());
+      setUserDramaList(dramaListData);
+    }
+  };
+
   useEffect(() => {
-    const getDramaList = async () => {
-      if (dramaList) {
-        const dramaListRef = await Promise.all(
-          dramaList.map((dramaId) => getDoc(doc(dramasCollectionRef, dramaId)))
-        );
-        const dramaListData = dramaListRef.map((doc) => doc.data());
-        setUserDramaList(dramaListData);
-      }
-    };
     if (id) {
       const userRef = doc(db, 'users', id);
       updateDoc(userRef, { dramaList: dramaList });
+      getDramaList();
+      setTimeout(() => {
+        setIsLoading(true);
+      }, 100);
     }
-
-    getDramaList();
   }, [dramaList]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,58 +297,81 @@ function Profile() {
 
   return (
     <ProfilePageWrapper>
-      <UserInfo>
-        {avatar && <UserImage src={avatar} alt="" />}
-        <UploadButton>
-          <label htmlFor="upload-file">
-            <FiUploadCloud style={{ cursor: 'pointer' }} />
-          </label>
-        </UploadButton>
-        <input
-          id="upload-file"
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handleImageUpload}
-        />
-        <ColumnFlexbox width="100%" justifyContent="space-around">
-          {userName && (
-            <>
-              <RowFlexbox alignItems="center">
-                {editing ? (
-                  <EditUserName
-                    type="text"
-                    maxLength={15}
-                    defaultValue={userName}
-                    onChange={handleUserNameInput}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSaveUserName();
+      {isLoading ? (
+        <UserInfo>
+          {avatar && <UserImage src={avatar} alt="" />}
+          <UploadButton>
+            <label htmlFor="upload-file">
+              <FiUploadCloud style={{ cursor: 'pointer' }} />
+            </label>
+          </UploadButton>
+          <input
+            id="upload-file"
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleImageUpload}
+          />
+          <ColumnFlexbox width="100%" justifyContent="space-around">
+            {userName && (
+              <>
+                <RowFlexbox alignItems="center">
+                  {editing ? (
+                    <EditUserName
+                      type="text"
+                      maxLength={15}
+                      defaultValue={userName}
+                      onChange={handleUserNameInput}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSaveUserName();
+                        }
+                      }}
+                    />
+                  ) : (
+                    <UserName
+                      onClick={
+                        editing ? handleSaveUserName : handleEditUserName
                       }
-                    }}
-                  />
-                ) : (
-                  <UserName
-                    onClick={editing ? handleSaveUserName : handleEditUserName}
-                  >
-                    {userName}
-                  </UserName>
-                )}
-              </RowFlexbox>
-              <RowFlexbox gap="18px">
-                {recordData.map((record) => {
-                  return (
-                    <ColumnFlexbox textAlign="center" gap="8px">
-                      <SMText>{record.title}</SMText>
-                      <XLText>{record.data}</XLText>
-                    </ColumnFlexbox>
-                  );
-                })}
-              </RowFlexbox>
-            </>
-          )}
-        </ColumnFlexbox>
-      </UserInfo>
+                    >
+                      {userName}
+                    </UserName>
+                  )}
+                </RowFlexbox>
+                <RowFlexbox gap="18px">
+                  {recordData.map((record) => {
+                    return (
+                      <ColumnFlexbox textAlign="center" gap="8px">
+                        <SMText>{record.title}</SMText>
+                        <XLText>{record.data}</XLText>
+                      </ColumnFlexbox>
+                    );
+                  })}
+                </RowFlexbox>
+              </>
+            )}
+          </ColumnFlexbox>
+        </UserInfo>
+      ) : (
+        <UserInfo>
+          <UserImageSkeleton />
+          <ColumnFlexbox justifyContent="space-around">
+            <RowFlexbox alignItems="center">
+              <UserNameSkeleton />
+            </RowFlexbox>
+            <RowFlexbox gap="18px">
+              {recordData.map(() => {
+                return (
+                  <ColumnFlexbox textAlign="center" gap="8px">
+                    <SMTextSkeleton />
+                    <XLTextSkeleton />
+                  </ColumnFlexbox>
+                );
+              })}
+            </RowFlexbox>
+          </ColumnFlexbox>
+        </UserInfo>
+      )}
       <ColumnFlexbox>
         <RowFlexbox justifyContent="space-between" alignItems="flex-end">
           <FilterNavBar

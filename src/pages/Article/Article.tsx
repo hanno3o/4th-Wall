@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { db } from '../../config/firebase.config';
+import ReactLoading from 'react-loading';
 import {
   collection,
   doc,
@@ -30,6 +31,10 @@ import Swal from 'sweetalert2';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
+
+const Loading = styled(ReactLoading)`
+  margin: 36vh auto;
+`;
 
 const ArticleWrapper = styled.div`
   display: flex;
@@ -157,7 +162,7 @@ const CancelButton = styled.button`
 const ConfirmButton = styled(CancelButton)`
   background-color: ${(props) => props.theme.lightGrey};
   color: ${(props) => props.theme.darkGrey};
-  font-weight: 550;
+  font-weight: 500;
   &:hover {
     background-color: ${(props) => props.theme.white};
     color: ${(props) => props.theme.black};
@@ -250,7 +255,9 @@ function Article() {
     if (articleRef && commentsRef) {
       const articleSnapshot = await getDoc(articleRef);
       setArticle(articleSnapshot.data() as IArticle);
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
       const commentsSnapshot = await getDocs(commentsRef);
       const commentsArr: any = [];
       for (const singleDoc of commentsSnapshot.docs) {
@@ -332,7 +339,7 @@ function Article() {
     <ArticleWrapper
       onClick={() => commentOptionWindow && setCommentOptionWindow(null)}
     >
-      {isLoading && <p>loading...</p>}
+      {isLoading && <Loading type="spinningBubbles" color="#fff" />}
       {!isLoading && article && (
         <ColumnFlexbox>
           <ArticleHeader>
@@ -454,6 +461,7 @@ function Article() {
                                 <>
                                   <MDGreyText> · </MDGreyText>
                                   <ReplyButton
+                                    disabled={!email}
                                     onClick={() =>
                                       email && handleReply(comment.id, index)
                                     }

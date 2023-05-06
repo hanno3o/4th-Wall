@@ -167,7 +167,7 @@ const IconButton = styled.button`
   border: solid 1px transparent;
   padding: 5px;
   border-radius: 50%;
-  &:hover {
+  &:not([disabled]):hover {
     background-color: rgba(255, 255, 255, 0.1);
     transition: ease-in-out 0.5s;
   }
@@ -728,6 +728,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     />
                     <RowFlexbox gap="4px" justifyContent="center">
                       <TextButton
+                        disabled={!email}
                         onClick={() => {
                           setUserRating(0);
                           setWrittenReview('');
@@ -736,6 +737,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                         取消
                       </TextButton>
                       <TextButton
+                        disabled={!email}
                         onClick={() => {
                           if (userRating) {
                             handleUploadReview();
