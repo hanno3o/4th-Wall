@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { db } from '../../config/firebase.config';
 import { collection, addDoc } from 'firebase/firestore';
@@ -8,9 +8,10 @@ import 'react-quill/dist/quill.snow.css';
 import { useAppSelector } from '../../redux/hooks';
 import { FaPen } from 'react-icons/fa';
 import { ColumnFlexbox, RowFlexbox } from '../../style/Flexbox';
-import { MDText, XSText } from '../../style/Text';
+import { LGText, MDText, XSText } from '../../style/Text';
 import { IoChevronBackCircle } from 'react-icons/io5';
 import { AiOutlineInfoCircle } from 'react-icons/ai';
+import Swal from 'sweetalert2';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -114,7 +115,7 @@ const TitleInputField = styled.input`
   }
 `;
 
-const PostButton = styled(Link)`
+const PostButton = styled.button`
   color: ${(props) => props.theme.white};
   background-color: rgba(255, 255, 255, 0.3);
   margin: 40px auto 0;
@@ -133,7 +134,7 @@ const PostButton = styled(Link)`
 `;
 
 const DisabledPostButton = styled.button`
-  cursor: no-drop;
+  cursor: default;
   color: ${(props) => props.theme.grey};
   background-color: rgba(255, 255, 255, 0.1);
   margin: 40px auto 0;
@@ -218,7 +219,7 @@ function Post() {
   }, []);
 
   return (
-    <PostPageWrapper onClick={() => infoCard && setInfoCard(false)}>
+    <PostPageWrapper>
       <BackButton onClick={() => navigate(-1)}>
         <IoChevronBackCircle style={{ fontSize: '32px' }} />
       </BackButton>
@@ -254,7 +255,10 @@ function Post() {
           <option>閒聊</option>
           <option>問題</option>
         </Select>
-        <InfoButton onClick={() => setInfoCard(!infoCard)}>
+        <InfoButton
+          onMouseEnter={() => setInfoCard(true)}
+          onMouseLeave={() => setInfoCard(false)}
+        >
           <AiOutlineInfoCircle />
         </InfoButton>
       </RowFlexbox>
@@ -278,17 +282,42 @@ function Post() {
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>').length > 50 ? (
         <PostButton
-          to={`/forum/${boardToPost}`}
-          onClick={async () => {
-            boardName &&
-              (await addDoc(collection(db, 'forum', boardToPost, 'articles'), {
-                authorId: userId,
-                type: type,
-                title: title,
-                content: content,
-                date: Date.now(),
-                commentsNum: 0,
-              }));
+          onClick={() => {
+            Swal.fire({
+              text: '確定要發布這篇文章嗎？',
+              icon: 'warning',
+              width: 300,
+              reverseButtons: true,
+              showCancelButton: true,
+              cancelButtonText: '取消',
+              confirmButtonText: '是的',
+              iconColor: '#bbb',
+              confirmButtonColor: '#555',
+              cancelButtonColor: '#b0b0b0',
+            }).then(async (res) => {
+              if (res.isConfirmed) {
+                boardName &&
+                  (await addDoc(
+                    collection(db, 'forum', boardToPost, 'articles'),
+                    {
+                      authorId: userId,
+                      type: type,
+                      title: title,
+                      content: content,
+                      date: Date.now(),
+                      commentsNum: 0,
+                    }
+                  ));
+                navigate(`/forum/${boardToPost}`);
+                Swal.fire({
+                  title: '已成功發布文章',
+                  icon: 'success',
+                  width: 300,
+                  iconColor: '#bbb',
+                  confirmButtonColor: '#555',
+                });
+              }
+            });
           }}
         >
           <RowFlexbox gap="4px" justifyContent="center" alignItems="center">
@@ -297,7 +326,17 @@ function Post() {
           </RowFlexbox>
         </PostButton>
       ) : (
-        <DisabledPostButton disabled>
+        <DisabledPostButton
+          onClick={() => {
+            Swal.fire({
+              text: '請檢查是否已經選擇發文類別 輸入文章標題及至少50字內文',
+              width: '300',
+              icon: 'warning',
+              iconColor: '#bbb',
+              confirmButtonColor: '#555',
+            });
+          }}
+        >
           <RowFlexbox gap="4px" justifyContent="center" alignItems="center">
             <FaPen />
             <MDText>發布文章</MDText>
@@ -306,14 +345,19 @@ function Post() {
       )}
       <RowFlexbox>
         <InfoCard style={{ display: infoCard ? 'block' : 'none' }}>
-          <ColumnFlexbox gap="8px">
-            <MDText style={{ marginBottom: '6px' }}>發文注意事項</MDText>
+          <ColumnFlexbox gap="4px">
+            <LGText style={{ marginBottom: '6px' }}>發文注意事項</LGText>
+            <XSText>※ 發文類別選擇後會呈現於標題，不需於標題重複輸入</XSText>
             <XSText>
-              ※ 如有暴雷內容請註明於標題，如：黑暗榮耀觀後心得（有雷）
+              ※ 需選擇發文類別、輸入標題及至少50字內文才可發布文章
             </XSText>
-            <XSText>※ 發文類別選擇後會呈現於標題，不須於標題重複輸入</XSText>
             <XSText>
-              ※ 須選擇發文看板、類別，輸入標題及至少50字以內內文才可發布文章
+              ※ 如有暴雷內容請盡量註明於標題，如：黑暗榮耀觀後心得（有雷）
+            </XSText>
+            <XSText>
+              ※ 標題或內文提及「雷」、「劇透」等關鍵字，則文章預覽區塊會
+              <br />
+              加上防雷灰底提醒其他使用者，敬請見諒
             </XSText>
           </ColumnFlexbox>
         </InfoCard>

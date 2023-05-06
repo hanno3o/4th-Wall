@@ -82,7 +82,7 @@ export const SMText = styled.div<TextProps>`
 export const XSText = styled.div<TextProps>`
   font-size: 14px;
   font-weight: 500;
-  line-height: ${(props) => props.LineHeight || ''};
+  line-height: ${(props) => props.LineHeight || '18px'};
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET} {
     font-weight: 400;
