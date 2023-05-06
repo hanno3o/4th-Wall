@@ -2,7 +2,15 @@ import styled, { keyframes } from 'styled-components';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../config/firebase.config';
-import { doc, updateDoc, collection, getDoc } from 'firebase/firestore';
+import {
+  doc,
+  updateDoc,
+  collection,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
 import { updateAvatar, updateUserName } from '../../redux/reducers/userSlice';
 import { useState, useEffect } from 'react';
 import { FiUploadCloud } from 'react-icons/fi';
@@ -215,10 +223,12 @@ function Profile() {
   const dramaList = useAppSelector((state) => state.user.dramaList);
   const dramasCollectionRef = collection(db, 'dramas');
   const [userDramaList, setUserDramaList] = useState<any[]>([]);
+  const [articleCount, setArticleCount] = useState<number>(0);
+
   const recordData = [
     { title: '使用天數', data: daysSinceRegistration },
     { title: '已收藏的劇', data: userDramaList.length },
-    { title: '發文數', data: 0 },
+    { title: '發文數', data: articleCount },
   ];
   const displayedDramaList = userDramaList.filter(
     (drama) =>
@@ -239,8 +249,48 @@ function Profile() {
       setUserDramaList(dramaListData);
     }
   };
+  const getArticlesByAuthorId = async (
+    boardName: string,
+    id: string | null
+  ) => {
+    try {
+      const articlesCollectionRef = collection(
+        db,
+        'forum',
+        boardName,
+        'articles'
+      );
+      const articlesQuerySnapshot = await getDocs(
+        query(articlesCollectionRef, where('authorId', '==', id))
+      );
+      const articles = articlesQuerySnapshot.docs.map((doc) => doc.data());
+      return articles.length;
+    } catch (error) {
+      console.error('Error getting articles by author ID: ', error);
+      return;
+    }
+  };
 
   useEffect(() => {
+    const promises = [
+      'TaiwanDrama',
+      'KoreanDrama',
+      'JapaneseDrama',
+      'AmericanDrama',
+      'ChinaDrama',
+    ].map((boardName) => getArticlesByAuthorId(boardName, id));
+
+    Promise.all(promises).then((res) => {
+      const totalArticleCount = res.reduce((acc: number, currentValue) => {
+        if (typeof currentValue === 'number') {
+          return acc + currentValue;
+        } else {
+          return acc;
+        }
+      }, 0);
+      setArticleCount(totalArticleCount);
+    });
+
     if (id) {
       const userRef = doc(db, 'users', id);
       updateDoc(userRef, { dramaList: dramaList });
