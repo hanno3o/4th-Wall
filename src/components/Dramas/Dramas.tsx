@@ -634,8 +634,9 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                       onClick={(e) => {
                         e.stopPropagation();
                         Swal.fire({
-                          text: `確定要從片單中移除 ${drama.title} 嗎？`,
+                          text: `確定要從片單中刪除 ${drama.title} 嗎？`,
                           icon: 'warning',
+                          width: 400,
                           reverseButtons: true,
                           showCancelButton: true,
                           cancelButtonText: '取消',
@@ -648,7 +649,8 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                             if (drama.id) {
                               handleRemoveFromList(drama.id);
                               Swal.fire({
-                                text: '已移除',
+                                title: '已刪除',
+                                width: 300,
                                 icon: 'success',
                                 iconColor: '#bbb',
                                 confirmButtonColor: '#555',
@@ -722,7 +724,13 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                             handleUploadReview();
                           }
                         } else {
-                          alert('要先選擇星星數才能送出評論喔～');
+                          Swal.fire({
+                            width: 350,
+                            text: '要先選擇星星數才能送出評論喔！',
+                            icon: 'warning',
+                            iconColor: '#bbb',
+                            confirmButtonColor: '#555',
+                          });
                         }
                       }}
                     />
@@ -742,7 +750,13 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                           if (userRating) {
                             handleUploadReview();
                           } else {
-                            email && alert('要先選擇星星數才能送出評論喔～');
+                            Swal.fire({
+                              width: 350,
+                              text: '要先選擇星星數才能送出評論喔！',
+                              icon: 'warning',
+                              iconColor: '#bbb',
+                              confirmButtonColor: '#555',
+                            });
                           }
                         }}
                       >
@@ -849,7 +863,13 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                                     if (userRating) {
                                       handleSaveReview();
                                     } else {
-                                      alert('要先選擇星星數才能送出評論喔～');
+                                      Swal.fire({
+                                        width: 350,
+                                        text: '要先選擇星星數才能送出評論喔！',
+                                        icon: 'warning',
+                                        iconColor: '#bbb',
+                                        confirmButtonColor: '#555',
+                                      });
                                     }
                                   }
                                 }}
@@ -878,6 +898,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                                 Swal.fire({
                                   text: '確定要刪除這筆評論嗎？',
                                   icon: 'warning',
+                                  width: 300,
                                   reverseButtons: true,
                                   showCancelButton: true,
                                   cancelButtonText: '取消',
@@ -890,9 +911,10 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                                     handleRemoveReview();
                                     setUpdatedUserReview('');
                                     Swal.fire({
-                                      text: '已刪除評論',
+                                      title: '已刪除評論',
                                       icon: 'success',
                                       iconColor: '#bbb',
+                                      width: 300,
                                       confirmButtonColor: '#555',
                                     });
                                   }
@@ -1029,16 +1051,16 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                         <SMGreyText>目前尚無評價</SMGreyText>
                       </ColumnFlexbox>
                     )}
-                    <ColumnFlexbox gap="14px" textAlign="left" tabletGap="12px">
-                      <ColumnFlexbox gap="5px">
+                    <ColumnFlexbox gap="10px" textAlign="left" tabletGap="8px">
+                      <ColumnFlexbox gap="6px" tabletGap="2px">
                         <XSText>編劇</XSText>
                         <MDText>{dramaCard?.screenwriter}</MDText>
                       </ColumnFlexbox>
-                      <ColumnFlexbox gap="5px">
+                      <ColumnFlexbox gap="6px" tabletGap="2px">
                         <XSText>導演</XSText>
                         <MDText>{dramaCard?.director}</MDText>
                       </ColumnFlexbox>
-                      <ColumnFlexbox gap="5px" width="100%">
+                      <ColumnFlexbox gap="6px" tabletGap="2px" width="100%">
                         <XSText>演員</XSText>
                         <ActorLink>
                           {actors &&

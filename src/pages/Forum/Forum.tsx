@@ -178,7 +178,8 @@ const PostButton = styled(Link)`
   width: 50px;
   border-radius: 50%;
   position: fixed;
-  bottom: 120px;
+  z-index: 1;
+  bottom: 60px;
   right: 40px;
   font-size: 16px;
   &:hover {
@@ -302,7 +303,7 @@ function Forum() {
         await Promise.all(updatePromises);
         setTimeout(() => {
           setIsLoading(true);
-        }, 300);
+        }, 100);
       }
     } catch (error) {
       console.error('Error getting articles: ', error);

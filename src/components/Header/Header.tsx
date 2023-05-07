@@ -175,6 +175,7 @@ function Header() {
                   Swal.fire({
                     text: '確定要登出嗎？',
                     icon: 'warning',
+                    width: 300,
                     reverseButtons: true,
                     showCancelButton: true,
                     cancelButtonText: '取消',
@@ -198,6 +199,7 @@ function Header() {
                       );
                       Swal.fire({
                         title: '已登出',
+                        width: 300,
                         icon: 'success',
                         iconColor: '#bbb',
                         confirmButtonColor: '#555',

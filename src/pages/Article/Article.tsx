@@ -526,6 +526,7 @@ function Article() {
                                     Swal.fire({
                                       text: '確定要刪除這則留言嗎？',
                                       icon: 'warning',
+                                      width:300,
                                       reverseButtons: true,
                                       showCancelButton: true,
                                       cancelButtonText: '取消',
@@ -538,7 +539,8 @@ function Article() {
                                         handleRemoveComment(comment.id);
                                         setCommentOptionWindow(null);
                                         Swal.fire({
-                                          text: '已刪除留言',
+                                          title: '已刪除留言',
+                                          width:300,
                                           icon: 'success',
                                           iconColor: '#bbb',
                                           confirmButtonColor: '#555',
