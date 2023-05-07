@@ -234,6 +234,7 @@ function Article() {
   const email = useAppSelector((state) => state.user.email);
   const userId = useAppSelector((state) => state.user.id);
   const { boardName, id } = useParams();
+  const regex = /\bB\d+\b/g;
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
   const [comments, setComments] = useState<IComments[]>([]);
@@ -257,7 +258,7 @@ function Article() {
       setArticle(articleSnapshot.data() as IArticle);
       setTimeout(() => {
         setIsLoading(false);
-      }, 500);
+      }, 300);
       const commentsSnapshot = await getDocs(commentsRef);
       const commentsArr: any = [];
       for (const singleDoc of commentsSnapshot.docs) {
@@ -343,7 +344,7 @@ function Article() {
       {!isLoading && article && (
         <ColumnFlexbox>
           <ArticleHeader>
-            <BackButton onClick={() => navigate(-1)}>
+            <BackButton onClick={() => navigate(`/forum/${boardName}`)}>
               <IoChevronBackCircle style={{ fontSize: '32px' }} />
             </BackButton>
             <RowFlexbox
@@ -426,11 +427,15 @@ function Article() {
                       <>
                         <Comment key={index}>
                           <ColumnFlexbox gap="8px" width="100%">
-                            <RowFlexbox gap="8px" tabletGap="6px">
+                            <RowFlexbox
+                              id={`B${index + 2}`}
+                              gap="8px"
+                              tabletGap="6px"
+                            >
                               <MDText>{comment.userName}</MDText>
-                              <SMGreyText>
+                              <MDGreyText>
                                 {comment.userId === userId && '(Me)'}
-                              </SMGreyText>
+                              </MDGreyText>
                             </RowFlexbox>
                             <>
                               {editingCommentId === comment.id ? (
@@ -451,7 +456,17 @@ function Article() {
                                   LineHeight="20px"
                                   style={{ wordBreak: 'break-word' }}
                                 >
-                                  {comment.comment}
+                                  <div
+                                    dangerouslySetInnerHTML={{
+                                      __html:
+                                        (comment?.comment &&
+                                          comment.comment.replace(
+                                            regex,
+                                            `<a href="#$&" style="color: #2c68a1;">$&</a>`
+                                          )) ||
+                                        '',
+                                    }}
+                                  />
                                 </NMText>
                               )}
                             </>
@@ -460,14 +475,16 @@ function Article() {
                               {comment.userId !== userId && (
                                 <>
                                   <MDGreyText> · </MDGreyText>
-                                  <ReplyButton
-                                    disabled={!email}
-                                    onClick={() =>
-                                      email && handleReply(comment.id, index)
-                                    }
-                                  >
-                                    <MDGreyText>回覆</MDGreyText>
-                                  </ReplyButton>
+                                  <a href="#comment-textarea">
+                                    <ReplyButton
+                                      disabled={!email}
+                                      onClick={() =>
+                                        email && handleReply(comment.id, index)
+                                      }
+                                    >
+                                      <MDGreyText>回覆</MDGreyText>
+                                    </ReplyButton>
+                                  </a>
                                 </>
                               )}
                             </ReplyTo>
@@ -526,7 +543,7 @@ function Article() {
                                     Swal.fire({
                                       text: '確定要刪除這則留言嗎？',
                                       icon: 'warning',
-                                      width:300,
+                                      width: 300,
                                       reverseButtons: true,
                                       showCancelButton: true,
                                       cancelButtonText: '取消',
@@ -540,7 +557,7 @@ function Article() {
                                         setCommentOptionWindow(null);
                                         Swal.fire({
                                           title: '已刪除留言',
-                                          width:300,
+                                          width: 300,
                                           icon: 'success',
                                           iconColor: '#bbb',
                                           confirmButtonColor: '#555',
@@ -567,6 +584,7 @@ function Article() {
             </ColumnFlexbox>
             <ColumnFlexbox alignItems="center" gap="8px" margin="10px 0 0 0">
               <CommentTextArea
+                id="comment-textarea"
                 value={writtenComment}
                 placeholder={
                   email
