@@ -74,11 +74,6 @@ const ArticleContent = styled.div`
   line-height: 32px;
 `;
 
-const ReplyButton = styled.button`
-  border-radius: 20px;
-  box-shadow: 0 0 0 3px ${(props) => props.theme.black}, 0 0 0 5px transparent;
-`;
-
 const MoreButton = styled.button`
   height: 30px;
   width: 30px;
@@ -235,6 +230,7 @@ function Article() {
   const userId = useAppSelector((state) => state.user.id);
   const { boardName, id } = useParams();
   const regex = /\bB\d+\b/g;
+  const [floor, setFloor] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
   const [comments, setComments] = useState<IComments[]>([]);
@@ -338,7 +334,11 @@ function Article() {
 
   return (
     <ArticleWrapper
-      onClick={() => commentOptionWindow && setCommentOptionWindow(null)}
+      onClick={(e) => {
+        const target = e.target as HTMLElement;
+        commentOptionWindow && setCommentOptionWindow(null);
+        target.tagName !== 'A' && floor && setFloor(undefined);
+      }}
     >
       {isLoading && <Loading type="spinningBubbles" color="#fff" />}
       {!isLoading && article && (
@@ -407,7 +407,7 @@ function Article() {
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
             <RowFlexbox alignItems="flex-end" margin="60px 0 0 0">
-              <LGText>留言區</LGText>
+              <LGText id="B1">留言區</LGText>
               <SMGreyText>（共有 {comments.length} 則留言）</SMGreyText>
             </RowFlexbox>
             <ColumnFlexbox gap="8px" margin="20px 0 0 0 ">
@@ -425,13 +425,18 @@ function Article() {
                   .map((comment, index) => {
                     return (
                       <>
-                        <Comment key={index}>
+                        <Comment
+                          key={index}
+                          id={`B${index + 2}`}
+                          style={{
+                            background:
+                              floor === index + 1
+                                ? 'linear-gradient(to left, rgba(252,51,68,0.3), rgba(78,94,235,0.3))'
+                                : '',
+                          }}
+                        >
                           <ColumnFlexbox gap="8px" width="100%">
-                            <RowFlexbox
-                              id={`B${index + 2}`}
-                              gap="8px"
-                              tabletGap="6px"
-                            >
+                            <RowFlexbox gap="8px" tabletGap="6px">
                               <MDText>{comment.userName}</MDText>
                               <MDGreyText>
                                 {comment.userId === userId && '(Me)'}
@@ -462,9 +467,20 @@ function Article() {
                                         (comment?.comment &&
                                           comment.comment.replace(
                                             regex,
-                                            `<a href="#$&" style="color: #2c68a1;">$&</a>`
+                                            `<a href="#$&" style="color:#7b85c6;">$&</a>`
                                           )) ||
                                         '',
+                                    }}
+                                    onClick={(e) => {
+                                      const target = e.target as HTMLElement;
+                                      if (target.tagName === 'A') {
+                                        target.textContent &&
+                                          setFloor(
+                                            parseInt(
+                                              target.textContent.slice(1)
+                                            )
+                                          );
+                                      }
                                     }}
                                   />
                                 </NMText>
@@ -476,14 +492,14 @@ function Article() {
                                 <>
                                   <MDGreyText> · </MDGreyText>
                                   <a href="#comment-textarea">
-                                    <ReplyButton
+                                    <button
                                       disabled={!email}
                                       onClick={() =>
                                         email && handleReply(comment.id, index)
                                       }
                                     >
                                       <MDGreyText>回覆</MDGreyText>
-                                    </ReplyButton>
+                                    </button>
                                   </a>
                                 </>
                               )}
@@ -595,7 +611,24 @@ function Article() {
                 onChange={(e) => setWrittenComment(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    handleUploadComment();
+                    const matchBNumberWrittenComment =
+                      writtenComment.match(regex);
+                    matchBNumberWrittenComment &&
+                      matchBNumberWrittenComment.forEach((match) => {
+                        const number = parseInt(match.substring(1));
+                        if (number > comments.length) {
+                          Swal.fire({
+                            text: '此樓層不存在，無法進行回覆',
+                            width: 350,
+                            icon: 'warning',
+                            iconColor: '#bbb',
+                            confirmButtonColor: '#555',
+                          });
+                          return;
+                        } else {
+                          handleUploadComment();
+                        }
+                      });
                   }
                 }}
                 disabled={!email}
@@ -612,7 +645,24 @@ function Article() {
                 <ConfirmButton
                   disabled={!email || !writtenComment}
                   onClick={() => {
-                    writtenComment && handleUploadComment();
+                    const matchBNumberWrittenComment =
+                      writtenComment.match(regex);
+                    matchBNumberWrittenComment &&
+                      matchBNumberWrittenComment.forEach((match) => {
+                        const number = parseInt(match.substring(1));
+                        if (number > comments.length) {
+                          Swal.fire({
+                            text: '此樓層不存在，無法進行回覆',
+                            width: 350,
+                            icon: 'warning',
+                            iconColor: '#bbb',
+                            confirmButtonColor: '#555',
+                          });
+                          return;
+                        } else {
+                          handleUploadComment();
+                        }
+                      });
                   }}
                 >
                   送出
