@@ -71,6 +71,10 @@ const BackButton = styled.button`
 `;
 
 const ArticleContent = styled.div`
+  a {
+    color: #7b85c6;
+    text-decoration: underline;
+  }
   line-height: 32px;
 `;
 
