@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signOut } from 'firebase/auth';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { setUserInfo } from '../../redux/reducers/userSlice';
@@ -8,6 +8,7 @@ import { FaUser } from 'react-icons/fa';
 import { HiOutlineCog8Tooth } from 'react-icons/hi2';
 import { VscSignOut } from 'react-icons/vsc';
 import { BsWechat } from 'react-icons/bs';
+import Swal from 'sweetalert2';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -63,6 +64,7 @@ const Avatar = styled.img`
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
+  background-color: ${(props) => props.theme.lightGrey};
   &:hover {
     box-shadow: 0 0 0 5px ${(props) => props.theme.darkBlack},
       0 0 0 6px rgba(255, 255, 255, 0.25);
@@ -119,14 +121,19 @@ const SettingOption = styled.button`
 `;
 
 function Header() {
+  let navigate = useNavigate();
   const auth = getAuth();
-  const userName = useAppSelector((state) => state.user.userName);
+  const email = useAppSelector((state) => state.user.email);
   const avatar = useAppSelector((state) => state.user.avatar);
   const dispatch = useAppDispatch();
   const [settingsMenu, setSettingsMenu] = useState(false);
 
   return (
-    <HeaderWrapper>
+    <HeaderWrapper
+      onClick={() => {
+        settingsMenu && setSettingsMenu(false);
+      }}
+    >
       <Link to="/home">
         <LogoImage
           src="https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Flogo.png?alt=media&token=c662b230-56af-4667-a245-0dd57d2f7ad5"
@@ -144,7 +151,7 @@ function Header() {
             <Avatar src={avatar} alt="" />
           </Link>
         )}
-        {userName ? (
+        {email ? (
           <>
             <MoreButton onClick={() => setSettingsMenu((prev) => !prev)}>
               ...
@@ -165,18 +172,40 @@ function Header() {
               </SettingOption>
               <SettingOption
                 onClick={() => {
-                  setSettingsMenu((prev) => !prev);
-                  signOut(auth);
-                  dispatch(
-                    setUserInfo({
-                      id: null,
-                      avatar: null,
-                      email: null,
-                      userName: null,
-                      registrationDate: null,
-                      dramaList: null,
-                    })
-                  );
+                  Swal.fire({
+                    text: '確定要登出嗎？',
+                    icon: 'warning',
+                    width: 300,
+                    reverseButtons: true,
+                    showCancelButton: true,
+                    cancelButtonText: '取消',
+                    confirmButtonText: '確定',
+                    iconColor: '#bbb',
+                    confirmButtonColor: '#555',
+                    cancelButtonColor: '#b0b0b0',
+                  }).then((res) => {
+                    if (res.isConfirmed) {
+                      navigate('/login');
+                      signOut(auth);
+                      dispatch(
+                        setUserInfo({
+                          id: null,
+                          avatar: null,
+                          email: null,
+                          userName: null,
+                          registrationDate: null,
+                          dramaList: null,
+                        })
+                      );
+                      Swal.fire({
+                        title: '已登出',
+                        width: 300,
+                        icon: 'success',
+                        iconColor: '#bbb',
+                        confirmButtonColor: '#555',
+                      });
+                    }
+                  });
                 }}
               >
                 <VscSignOut
@@ -190,11 +219,9 @@ function Header() {
             </SettingOptions>
           </>
         ) : (
-          <Link to="/login">
-            <NavIconButton>
-              <FaUser style={{ fontSize: '24px' }} />
-            </NavIconButton>
-          </Link>
+          <NavIconButton onClick={() => navigate('/login')}>
+            <FaUser style={{ fontSize: '24px' }} />
+          </NavIconButton>
         )}
       </NavBar>
     </HeaderWrapper>

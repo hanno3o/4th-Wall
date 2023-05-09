@@ -57,13 +57,19 @@ export const MDText = styled.div<TextProps>`
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET},${MEDIA_QUERY_MOBILE} {
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
   }
+`;
+
+export const NMText = styled.div<TextProps>`
+  font-size: 16px;
+  line-height: ${(props) => props.LineHeight || ''};
+  margin: ${(props) => props.margin || ''};
 `;
 
 export const SMText = styled.div<TextProps>`
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 550;
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET} {
@@ -74,9 +80,9 @@ export const SMText = styled.div<TextProps>`
 `;
 
 export const XSText = styled.div<TextProps>`
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: ${(props) => props.LineHeight || ''};
+  line-height: ${(props) => props.LineHeight || '18px'};
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET} {
     font-weight: 400;
@@ -88,9 +94,10 @@ export const LGGreyText = styled.div<TextProps>`
   font-weight: 700;
   color: ${(props) => props.theme.lightGrey};
   line-height: ${(props) => props.LineHeight || ''};
-  ${MEDIA_QUERY_TABLET} {
-    font-size: 14px;
-  }
+`;
+
+export const LGDarkGreyText = styled(LGGreyText)`
+  color: ${(props) => props.theme.grey};
 `;
 
 export const MDGreyText = styled.div<TextProps>`
@@ -103,24 +110,24 @@ export const MDGreyText = styled.div<TextProps>`
 `;
 
 export const SMGreyText = styled.div<TextProps>`
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: ${(props) => props.theme.lightGrey};
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET}, ${MEDIA_QUERY_MOBILE} {
-    font-size: 12px;
+    font-size: 15.5px;
     font-weight: 400;
   }
 `;
 
 export const XSGreyText = styled.div<TextProps>`
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: ${(props) => props.theme.lightGrey};
   line-height: 18px;
   margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET}, ${MEDIA_QUERY_MOBILE} {
-    line-height: 17px;
+    font-size: 13px;
   }
 `;

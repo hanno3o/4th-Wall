@@ -1,7 +1,8 @@
 import styled from 'styled-components';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { db } from '../../config/firebase.config';
+import ReactLoading from 'react-loading';
 import {
   collection,
   doc,
@@ -14,18 +15,33 @@ import {
 import { useAppSelector } from '../../redux/hooks';
 import { FaColumns, FaUser } from 'react-icons/fa';
 import { IoIosTime } from 'react-icons/io';
-import { XLText, LGText, MDText, SMText, SMGreyText } from '../../style/Text';
+import {
+  XLText,
+  LGText,
+  MDText,
+  NMText,
+  SMText,
+  MDGreyText,
+  SMGreyText,
+} from '../../style/Text';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
+import { IoChevronBackCircle } from 'react-icons/io5';
+import Swal from 'sweetalert2';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
+
+const Loading = styled(ReactLoading)`
+  margin: 36vh auto;
+`;
 
 const ArticleWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding-top: 70px;
+  padding-bottom: 200px;
 `;
 
 const ArticleHeader = styled.div`
@@ -35,25 +51,31 @@ const ArticleHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding-top: 20px;
+  position: relative;
+`;
+
+const BackButton = styled.button`
+  color: ${(props) => props.theme.lightGrey};
+  opacity: 0.5;
+  position: fixed;
+  left: 35px;
+  top: 90px;
+  font-weight: 900;
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 14px;
+  }
+  &:hover {
+    opacity: 1;
+    transition: ease-in-out 0.25s;
+  }
 `;
 
 const ArticleContent = styled.div`
-  line-height: 36px;
-  width: 1280px;
-  ${MEDIA_QUERY_TABLET} {
-    width: 65%;
-    line-height: 32px;
+  a {
+    color: #7b85c6;
+    text-decoration: underline;
   }
-`;
-
-const ReplyButton = styled.button`
-  border-radius: 20px;
-  box-shadow: 0 0 0 3px ${(props) => props.theme.black}, 0 0 0 5px transparent;
-  &:hover {
-    box-shadow: 0 0 0 3px ${(props) => props.theme.black},
-      0 0 0 5px rgba(255, 255, 255, 0.1);
-    transition: ease-in-out 0.25s;
-  }
+  line-height: 32px;
 `;
 
 const MoreButton = styled.button`
@@ -126,37 +148,72 @@ const ReplyTo = styled.div`
   gap: 6px;
 `;
 
+const CancelButton = styled.button`
+  color: ${(props) => props.theme.lightGrey};
+  font-size: 16px;
+  border: solid 1px transparent;
+  padding: 6px 10px;
+  border-radius: 20px;
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 14px;
+  }
+`;
+const ConfirmButton = styled(CancelButton)`
+  background-color: ${(props) => props.theme.lightGrey};
+  color: ${(props) => props.theme.darkGrey};
+  font-weight: 500;
+  &:hover {
+    background-color: ${(props) => props.theme.white};
+    color: ${(props) => props.theme.black};
+    transition: ease-in-out 0.25s;
+  }
+  &:disabled {
+    background-color: ${(props) => props.theme.grey};
+    color: ${(props) => props.theme.darkGrey};
+  }
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 14px;
+  }
+`;
+
 const CommentDate = styled.div`
   font-size: 14px;
   position: absolute;
   right: 16px;
   bottom: 20px;
-
-  ${MEDIA_QUERY_TABLET} {
-    font-size: 12px;
-  }
 `;
 
-const Input = styled.input`
+const CommentTextArea = styled.textarea`
   cursor: text;
+  resize: none;
+  line-height: 22px;
   width: 100%;
   border-radius: 20px;
-  padding: 10px 16px;
-  margin: 10px 0 200px 5px;
-  outline: solid 2px ${(props) => props.theme.grey};
-  color: ${(props) => props.theme.white};
+  padding: 18px 16px;
+  margin: 10px 0;
+  outline: solid 2px transparent;
   font-weight: 500;
   background-color: rgba(255, 255, 255, 0.1);
   &:focus {
-    box-shadow: 0 0 0 5px ${(props) => props.theme.black},
-      0 0 0 6px rgba(255, 255, 255, 0.1);
     transition: ease-in-out 0.25s;
+    background-color: rgba(255, 255, 255, 0.15);
   }
+`;
+
+const CommentEditTextArea = styled.textarea`
+  line-height: 20px;
+  border-radius: 5px;
+  resize: none;
+  outline: ${(props) => props.theme.grey};
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+  width: 100%;
 `;
 interface IArticle {
   drama?: string;
   title?: string;
   author?: string;
+  authorId?: string;
   content: string;
   episode?: string;
   type?: string;
@@ -172,9 +229,12 @@ interface IComments {
 }
 
 function Article() {
-  const userName = useAppSelector((state) => state.user.userName);
+  let navigate = useNavigate();
+  const email = useAppSelector((state) => state.user.email);
   const userId = useAppSelector((state) => state.user.id);
   const { boardName, id } = useParams();
+  const regex = /\bB\d+\b/g;
+  const [floor, setFloor] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
   const [comments, setComments] = useState<IComments[]>([]);
@@ -193,11 +253,12 @@ function Article() {
   }, []);
 
   const getArticleAndComments = async () => {
-    if (articleRef && commentsRef && userId) {
+    if (articleRef && commentsRef) {
       const articleSnapshot = await getDoc(articleRef);
       setArticle(articleSnapshot.data() as IArticle);
-      setIsLoading(false);
-
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 300);
       const commentsSnapshot = await getDocs(commentsRef);
       const commentsArr: any = [];
       for (const singleDoc of commentsSnapshot.docs) {
@@ -216,13 +277,6 @@ function Article() {
     }
   };
 
-  const handleCommentInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setWrittenComment(e.target.value);
-    if (articleRef) {
-      await updateDoc(articleRef, { commentsNum: comments.length + 1 });
-    }
-  };
-
   const handleUploadComment = async () => {
     try {
       if (articleRef && id && writtenComment) {
@@ -231,6 +285,7 @@ function Article() {
           userId: userId,
           comment: writtenComment,
         });
+        await updateDoc(articleRef, { commentsNum: comments.length + 1 });
         setWrittenComment('');
         getArticleAndComments();
       }
@@ -247,12 +302,6 @@ function Article() {
     if (commentId) setEditingCommentId(commentId);
   };
 
-  const handleUpdatedCommentInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setUpdatedComment(e.target.value);
-  };
-
   const handleUpdateComment = async (commentId: string | undefined) => {
     if (commentId) setEditingCommentId(commentId);
     try {
@@ -261,6 +310,7 @@ function Article() {
         await updateDoc(commentRef, { comment: updatedComment });
         handleEditComment('Other word instead of comment id');
         getArticleAndComments();
+        setUpdatedComment('');
       }
     } catch (err) {
       console.error('Error updating comment:', err);
@@ -272,7 +322,6 @@ function Article() {
       if (commentsRef) {
         const commentRef = doc(commentsRef, commentId);
         await deleteDoc(commentRef);
-        alert('已刪除留言');
         getArticleAndComments();
         await updateDoc(articleRef, { commentsNum: comments.length - 1 });
       }
@@ -288,11 +337,20 @@ function Article() {
   };
 
   return (
-    <ArticleWrapper>
-      {isLoading && <p>loading...</p>}
+    <ArticleWrapper
+      onClick={(e) => {
+        const target = e.target as HTMLElement;
+        commentOptionWindow && setCommentOptionWindow(null);
+        target.tagName !== 'A' && floor && setFloor(undefined);
+      }}
+    >
+      {isLoading && <Loading type="spinningBubbles" color="#fff" />}
       {!isLoading && article && (
         <ColumnFlexbox>
           <ArticleHeader>
+            <BackButton onClick={() => navigate(`/forum/${boardName}`)}>
+              <IoChevronBackCircle style={{ fontSize: '32px' }} />
+            </BackButton>
             <RowFlexbox
               width="1100px"
               margin="0 auto"
@@ -301,18 +359,34 @@ function Article() {
             >
               <XLText>{`[${article.type}] ${article.title}`}</XLText>
               <ColumnFlexbox gap="14px">
-                <div>{article.author}</div>
                 <RowFlexbox gap="8px">
                   <MDText>
                     <FaColumns />
                   </MDText>
-                  <MDText>韓劇版</MDText>
+                  <MDText>
+                    {(() => {
+                      switch (boardName) {
+                        case 'TaiwanDrama':
+                          return '台劇版';
+                        case 'KoreanDrama':
+                          return '韓劇版';
+                        case 'AmericanDrama':
+                          return '美劇版';
+                        case 'JapaneseDrama':
+                          return '日劇版';
+                        case 'ChinaDrama':
+                          return '陸劇版';
+                        default:
+                          return boardName;
+                      }
+                    })()}
+                  </MDText>
                 </RowFlexbox>
                 <RowFlexbox gap="8px">
                   <MDText>
                     <FaUser />
                   </MDText>
-                  <MDText>melody_6_9</MDText>
+                  <MDText>{article.author}</MDText>
                 </RowFlexbox>
                 <RowFlexbox gap="8px">
                   <MDText>
@@ -337,7 +411,7 @@ function Article() {
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
             <RowFlexbox alignItems="flex-end" margin="60px 0 0 0">
-              <LGText>留言區</LGText>
+              <LGText id="B1">留言區</LGText>
               <SMGreyText>（共有 {comments.length} 則留言）</SMGreyText>
             </RowFlexbox>
             <ColumnFlexbox gap="8px" margin="20px 0 0 0 ">
@@ -355,19 +429,31 @@ function Article() {
                   .map((comment, index) => {
                     return (
                       <>
-                        <Comment key={index}>
-                          <ColumnFlexbox gap="8px" mobileGap="4px">
-                            <MDText>{comment.userName}</MDText>
+                        <Comment
+                          key={index}
+                          id={`B${index + 2}`}
+                          style={{
+                            background:
+                              floor === index + 1
+                                ? 'linear-gradient(to left, rgba(252,51,68,0.3), rgba(78,94,235,0.3))'
+                                : '',
+                          }}
+                        >
+                          <ColumnFlexbox gap="8px" width="100%">
+                            <RowFlexbox gap="8px" tabletGap="6px">
+                              <MDText>{comment.userName}</MDText>
+                              <MDGreyText>
+                                {comment.userId === userId && '(Me)'}
+                              </MDGreyText>
+                            </RowFlexbox>
                             <>
                               {editingCommentId === comment.id ? (
-                                <input
-                                  style={{
-                                    border: '#a1a1a1 solid 1px',
-                                    backgroundColor: '#4b4b4b',
-                                    width: '900px',
+                                <CommentEditTextArea
+                                  defaultValue={comment.comment}
+                                  maxLength={100}
+                                  onChange={(e) => {
+                                    setUpdatedComment(e.target.value);
                                   }}
-                                  type="text"
-                                  onChange={handleUpdatedCommentInputChange}
                                   onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                       handleUpdateComment(comment.id);
@@ -375,29 +461,50 @@ function Article() {
                                   }}
                                 />
                               ) : (
-                                <input
-                                  style={{
-                                    backgroundColor: 'transparent',
-                                    width: '900px',
-                                  }}
-                                  type="text"
-                                  value={comment.comment}
-                                  disabled
-                                />
+                                <NMText
+                                  LineHeight="20px"
+                                  style={{ wordBreak: 'break-word' }}
+                                >
+                                  <div
+                                    dangerouslySetInnerHTML={{
+                                      __html:
+                                        (comment?.comment &&
+                                          comment.comment.replace(
+                                            regex,
+                                            `<a href="#$&" style="color:#7b85c6;">$&</a>`
+                                          )) ||
+                                        '',
+                                    }}
+                                    onClick={(e) => {
+                                      const target = e.target as HTMLElement;
+                                      if (target.tagName === 'A') {
+                                        target.textContent &&
+                                          setFloor(
+                                            parseInt(
+                                              target.textContent.slice(1)
+                                            )
+                                          );
+                                      }
+                                    }}
+                                  />
+                                </NMText>
                               )}
                             </>
                             <ReplyTo>
-                              <SMGreyText>B{index + 1}</SMGreyText>
+                              <MDGreyText>B{index + 1}</MDGreyText>
                               {comment.userId !== userId && (
                                 <>
-                                  <SMGreyText> · </SMGreyText>
-                                  <ReplyButton
-                                    onClick={() =>
-                                      handleReply(comment.id, index)
-                                    }
-                                  >
-                                    <SMGreyText>回覆</SMGreyText>
-                                  </ReplyButton>
+                                  <MDGreyText> · </MDGreyText>
+                                  <a href="#comment-textarea">
+                                    <button
+                                      disabled={!email}
+                                      onClick={() =>
+                                        email && handleReply(comment.id, index)
+                                      }
+                                    >
+                                      <MDGreyText>回覆</MDGreyText>
+                                    </button>
+                                  </a>
                                 </>
                               )}
                             </ReplyTo>
@@ -453,8 +560,30 @@ function Article() {
                                 </CommentOption>
                                 <CommentOption
                                   onClick={() => {
-                                    handleRemoveComment(comment.id);
-                                    setCommentOptionWindow(null);
+                                    Swal.fire({
+                                      text: '確定要刪除這則留言嗎？',
+                                      icon: 'warning',
+                                      width: 300,
+                                      reverseButtons: true,
+                                      showCancelButton: true,
+                                      cancelButtonText: '取消',
+                                      confirmButtonText: '刪除',
+                                      iconColor: '#bbb',
+                                      confirmButtonColor: '#555',
+                                      cancelButtonColor: '#b0b0b0',
+                                    }).then((res) => {
+                                      if (res.isConfirmed) {
+                                        handleRemoveComment(comment.id);
+                                        setCommentOptionWindow(null);
+                                        Swal.fire({
+                                          title: '已刪除留言',
+                                          width: 300,
+                                          icon: 'success',
+                                          iconColor: '#bbb',
+                                          confirmButtonColor: '#555',
+                                        });
+                                      }
+                                    });
                                   }}
                                 >
                                   <AiOutlineDelete
@@ -473,24 +602,77 @@ function Article() {
                     );
                   })}
             </ColumnFlexbox>
-            <RowFlexbox alignItems="center" gap="8px" margin="10px 0 0 0">
-              <Input
-                type="text"
+            <ColumnFlexbox alignItems="center" gap="8px" margin="10px 0 0 0">
+              <CommentTextArea
+                id="comment-textarea"
                 value={writtenComment}
                 placeholder={
-                  userName
+                  email
                     ? '留言.......'
-                    : '要先登入才能使用論壇的討論功能喔！'
+                    : '要先登入才能使用論壇的討論及回覆功能喔！'
                 }
-                onChange={handleCommentInput}
+                maxLength={100}
+                onChange={(e) => setWrittenComment(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    handleUploadComment();
+                    const matchBNumberWrittenComment =
+                      writtenComment.match(regex);
+                    matchBNumberWrittenComment &&
+                      matchBNumberWrittenComment.forEach((match) => {
+                        const number = parseInt(match.substring(1));
+                        if (number > comments.length) {
+                          Swal.fire({
+                            text: '此樓層不存在，無法進行回覆',
+                            width: 350,
+                            icon: 'warning',
+                            iconColor: '#bbb',
+                            confirmButtonColor: '#555',
+                          });
+                          return;
+                        } else {
+                          handleUploadComment();
+                        }
+                      });
                   }
                 }}
-                disabled={!userName}
+                disabled={!email}
               />
-            </RowFlexbox>
+              <RowFlexbox gap="4px" justifyContent="flex-end">
+                <CancelButton
+                  disabled={!writtenComment}
+                  onClick={() => {
+                    setWrittenComment('');
+                  }}
+                >
+                  取消
+                </CancelButton>
+                <ConfirmButton
+                  disabled={!email || !writtenComment}
+                  onClick={() => {
+                    const matchBNumberWrittenComment =
+                      writtenComment.match(regex);
+                    matchBNumberWrittenComment &&
+                      matchBNumberWrittenComment.forEach((match) => {
+                        const number = parseInt(match.substring(1));
+                        if (number > comments.length) {
+                          Swal.fire({
+                            text: '此樓層不存在，無法進行回覆',
+                            width: 350,
+                            icon: 'warning',
+                            iconColor: '#bbb',
+                            confirmButtonColor: '#555',
+                          });
+                          return;
+                        } else {
+                          handleUploadComment();
+                        }
+                      });
+                  }}
+                >
+                  送出
+                </ConfirmButton>
+              </RowFlexbox>
+            </ColumnFlexbox>
           </ColumnFlexbox>
         </ColumnFlexbox>
       )}

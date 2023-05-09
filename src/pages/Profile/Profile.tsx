@@ -1,31 +1,29 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../config/firebase.config';
-import { doc, updateDoc, collection, getDoc } from 'firebase/firestore';
 import {
-  updateAvatar,
-  updateUserName,
-  removeFromDramaList,
-} from '../../redux/reducers/userSlice';
+  doc,
+  updateDoc,
+  collection,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
+import { updateAvatar, updateUserName } from '../../redux/reducers/userSlice';
 import { useState, useEffect } from 'react';
 import { FiUploadCloud } from 'react-icons/fi';
-import { AiOutlineEdit } from 'react-icons/ai';
-import { MdOutlineRemoveCircle } from 'react-icons/md';
-import SearchBar from '../../components/SearchBar';
+import { HiOutlineArrowLongRight } from 'react-icons/hi2';
 import FilterNavBar from '../../components/FilterNavBar';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
-import {
-  XLText,
-  LGText,
-  SMText,
-  MDGreyText,
-  SMGreyText,
-} from '../../style/Text';
+import { XLText, SMText, LGDarkGreyText } from '../../style/Text';
+import Dramas from '../../components/Dramas';
+import { Link } from 'react-router-dom';
+import { FaSearch } from 'react-icons/fa';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
-const MEDIA_QUERY_MOBILE = '@media screen and (max-width: 1280px)';
 
 const ProfilePageWrapper = styled.div`
   width: 1280px;
@@ -56,7 +54,7 @@ const DividerLine = styled.div`
 
 const UserImage = styled.img`
   object-fit: cover;
-  background-color: #eee;
+  background-color: ${(props) => props.theme.grey};
   width: 160px;
   height: 160px;
   border-radius: 50%;
@@ -66,8 +64,33 @@ const UserImage = styled.img`
   }
 `;
 
+const fade = keyframes`
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+`;
+
+const UserImageSkeleton = styled.div`
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
+  ${MEDIA_QUERY_TABLET} {
+    width: 140px;
+    height: 140px;
+  }
+`;
+
 const UploadButton = styled.button`
-  color: ${(props) => props.theme.lightGrey};
   font-size: 24px;
   position: absolute;
   bottom: 0px;
@@ -77,101 +100,106 @@ const UploadButton = styled.button`
     left: 116px;
   }
   &:hover {
-    color: ${(props) => props.theme.white};
     scale: 1.05;
     transition: ease-in-out 0.25s;
   }
 `;
 
-const EditUserNameButton = styled.button`
-  color: ${(props) => props.theme.lightGrey};
-  font-size: 24px;
-  padding: 10px;
-  border-radius: 50%;
-  &:hover {
-    color: ${(props) => props.theme.white};
-    transition: ease-in-out 0.5s;
-  }
-  ${MEDIA_QUERY_TABLET} {
-    font-size: 18px;
-  }
-`;
-
-const UserName = styled.input`
-  border-radius: 6px;
-  padding: 10px 0;
+const UserName = styled.div`
+  cursor: pointer;
   font-size: 32px;
   font-weight: 500;
-  margin-right: 10px;
-  width: 300px;
+  margin-left: -10px;
   padding: 6px 10px;
   border-radius: 5px;
   font-weight: 500;
-  font-weight: 500;
-  background-color: rgba(255, 255, 255, 0.1);
-  &:focus {
-    box-shadow: 0 0 0 5px ${(props) => props.theme.black},
-      0 0 0 6px rgba(255, 255, 255, 0.1);
-    transition: ease-in-out 0.25s;
-  }
+  outline: solid 2px transparent;
   ${MEDIA_QUERY_TABLET} {
     font-size: 26px;
   }
 `;
 
-const DramaCardsWrapper = styled.div`
-  padding: 26px 0 100px 0;
-  display: flex;
-  gap: 26px;
-  flex-wrap: wrap;
-
-  ${MEDIA_QUERY_TABLET} {
-    gap: 16px;
-  }
-  ${MEDIA_QUERY_MOBILE} {
-    gap: 16px;
-  }
-`;
-const DramaCard = styled.div`
-  width: 275px;
-  height: 362px;
-  background-color: ${(props) => props.theme.grey};
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  justify-content: flex-end;
-  align-items: flex-start;
-  padding: 20px;
-  background-size: cover;
-  position: relative;
-  ${MEDIA_QUERY_TABLET} {
-    width: 238px;
-    height: 316px;
-    padding: 16px;
-  }
-  ${MEDIA_QUERY_MOBILE} {
-    width: 180px;
-    height: 265px;
-    padding: 12px;
-  }
-`;
-
-const RemoveFromListButton = styled.button`
-  opacity: 0.5;
+const EditUserName = styled.input`
   font-size: 32px;
-  opacity: 0.2;
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  font-weight: 500;
+  margin-left: -10px;
+  padding: 2px 10px;
+  border-radius: 5px;
+  font-weight: 500;
+  outline: solid 2px transparent;
+  background-color: rgba(255, 255, 255, 0.1);
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 26px;
+    padding: 3.5px 10px;
+  }
+`;
+
+const UserNameSkeleton = styled.div`
+  margin-top: 10px;
+  border-radius: 5px;
+  height: 36px;
+  width: 218px;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
+`;
+
+const SMTextSkeleton = styled(SMText)`
+  width: 60px;
+  height: 16px;
+  border-radius: 20px;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
+`;
+
+const XLTextSkeleton = styled(XLText)`
+  width: 26px;
+  height: 26px;
+  border-radius: 20px;
+  margin: 0 auto;
+  background-color: ${(props) => props.theme.grey};
+  animation: ${fade} 1s linear infinite;
+`;
+
+const HomepageLink = styled(Link)`
+  margin: -36px auto;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  padding: 8px 20px;
+  z-index: 0;
+  background-color: rgba(255, 255, 255, 0.1);
   &:hover {
-    scale: 1.05;
-    opacity: 0.7;
+    color: ${(props) => props.theme.white};
+    background-color: rgba(255, 255, 255, 0.2);
     transition: ease-in-out 0.25s;
   }
-  ${MEDIA_QUERY_TABLET} {
-    font-size: 28px;
+`;
+
+const SearchbarWrapper = styled.div`
+  position: relative;
+`;
+
+const SearchbarIcon = styled.div`
+  position: absolute;
+  top: 25%;
+  transform: translate(0, -25%);
+  font-size: 20px;
+  padding: 10px 10px;
+  &:hover {
+    transition: ease-in-out 0.25s;
   }
+`;
+
+const SearchbarInput = styled.input`
+  outline: solid 2px transparent;
+  color: ${(props) => props.theme.white};
+  height: 40px;
+  width: 100%;
+  padding-left: 50px;
+  font-weight: 500;
+  background-color: transparent;
 `;
 
 function Profile() {
@@ -188,17 +216,19 @@ function Profile() {
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string | null>(
     '所有影集'
   );
-
+  const [isLoading, setIsLoading] = useState(false);
   const [searchWords, setSearchWords] = useState('');
   const [editing, setEditing] = useState(false);
   const [updatedUserName, setUpdatedUserName] = useState(userName);
   const dramaList = useAppSelector((state) => state.user.dramaList);
   const dramasCollectionRef = collection(db, 'dramas');
   const [userDramaList, setUserDramaList] = useState<any[]>([]);
+  const [articleCount, setArticleCount] = useState<number>(0);
+
   const recordData = [
     { title: '使用天數', data: daysSinceRegistration },
     { title: '已收藏的劇', data: userDramaList.length },
-    { title: '發文數', data: 36 },
+    { title: '發文數', data: articleCount },
   ];
   const displayedDramaList = userDramaList.filter(
     (drama) =>
@@ -210,22 +240,65 @@ function Profile() {
       ? displayedDramaList.filter((drama) => drama.type === selectedTypeFilter)
       : displayedDramaList;
 
+  const getDramaList = async () => {
+    if (dramaList) {
+      const dramaListRef = await Promise.all(
+        dramaList.map((dramaId) => getDoc(doc(dramasCollectionRef, dramaId)))
+      );
+      const dramaListData = dramaListRef.map((doc) => doc.data());
+      setUserDramaList(dramaListData);
+    }
+  };
+  const getArticlesByAuthorId = async (
+    boardName: string,
+    id: string | null
+  ) => {
+    try {
+      const articlesCollectionRef = collection(
+        db,
+        'forum',
+        boardName,
+        'articles'
+      );
+      const articlesQuerySnapshot = await getDocs(
+        query(articlesCollectionRef, where('authorId', '==', id))
+      );
+      const articles = articlesQuerySnapshot.docs.map((doc) => doc.data());
+      return articles.length;
+    } catch (error) {
+      console.error('Error getting articles by author ID: ', error);
+      return;
+    }
+  };
+
   useEffect(() => {
-    const getDramaList = async () => {
-      if (dramaList) {
-        const dramaListRef = await Promise.all(
-          dramaList.map((dramaId) => getDoc(doc(dramasCollectionRef, dramaId)))
-        );
-        const dramaListData = dramaListRef.map((doc) => doc.data());
-        setUserDramaList(dramaListData);
-      }
-    };
+    const promises = [
+      'TaiwanDrama',
+      'KoreanDrama',
+      'JapaneseDrama',
+      'AmericanDrama',
+      'ChinaDrama',
+    ].map((boardName) => getArticlesByAuthorId(boardName, id));
+
+    Promise.all(promises).then((res) => {
+      const totalArticleCount = res.reduce((acc: number, currentValue) => {
+        if (typeof currentValue === 'number') {
+          return acc + currentValue;
+        } else {
+          return acc;
+        }
+      }, 0);
+      setArticleCount(totalArticleCount);
+    });
+
     if (id) {
       const userRef = doc(db, 'users', id);
       updateDoc(userRef, { dramaList: dramaList });
+      getDramaList();
+      setTimeout(() => {
+        setIsLoading(true);
+      }, 100);
     }
-
-    getDramaList();
   }, [dramaList]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,7 +322,7 @@ function Profile() {
     setEditing(true);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUserNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUpdatedUserName(e.target.value);
   };
 
@@ -260,10 +333,6 @@ function Profile() {
       await updateDoc(userRef, { userName: updatedUserName });
       dispatch(updateUserName(updatedUserName));
     }
-  };
-
-  const handleRemoveFromList = (dramaIdToRemove: string) => {
-    dispatch(removeFromDramaList(dramaIdToRemove));
   };
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -278,117 +347,116 @@ function Profile() {
 
   return (
     <ProfilePageWrapper>
-      <UserInfo>
-        {avatar && <UserImage src={avatar} alt="" />}
-        <UploadButton>
-          <label htmlFor="upload-file">
-            <FiUploadCloud style={{ cursor: 'pointer' }} />
-          </label>
-        </UploadButton>
-        <input
-          id="upload-file"
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handleImageUpload}
-        />
-        <ColumnFlexbox width="100%" justifyContent="space-around">
-          {userName && (
-            <>
-              <RowFlexbox alignItems="baseline">
-                {editing ? (
-                  <UserName
-                    style={{
-                      outline: 'solid 2px #555',
-                    }}
-                    type="text"
-                    onChange={handleInputChange}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSaveUserName();
-                      }
-                    }}
-                  />
-                ) : (
-                  <UserName
-                    style={{
-                      backgroundColor: 'transparent',
-                    }}
-                    type="text"
-                    value={userName}
-                    disabled
-                  />
-                )}
-                <EditUserNameButton
-                  onClick={editing ? handleSaveUserName : handleEditUserName}
-                >
+      {isLoading ? (
+        <UserInfo>
+          {avatar && <UserImage src={avatar} alt="" />}
+          <UploadButton>
+            <label htmlFor="upload-file">
+              <FiUploadCloud style={{ cursor: 'pointer' }} />
+            </label>
+          </UploadButton>
+          <input
+            id="upload-file"
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleImageUpload}
+          />
+          <ColumnFlexbox width="100%" justifyContent="space-around">
+            {userName && (
+              <>
+                <RowFlexbox alignItems="center">
                   {editing ? (
-                    <MDGreyText>儲存</MDGreyText>
+                    <EditUserName
+                      type="text"
+                      maxLength={15}
+                      defaultValue={userName}
+                      onChange={handleUserNameInput}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSaveUserName();
+                        }
+                      }}
+                    />
                   ) : (
-                    <AiOutlineEdit style={{ marginBottom: '-4px' }} />
+                    <UserName
+                      onClick={
+                        editing ? handleSaveUserName : handleEditUserName
+                      }
+                    >
+                      {userName}
+                    </UserName>
                   )}
-                </EditUserNameButton>
-              </RowFlexbox>
-              <RowFlexbox gap="18px">
-                {recordData.map((record) => {
-                  return (
-                    <ColumnFlexbox textAlign="center" gap="8px">
-                      <SMText>{record.title}</SMText>
-                      <XLText>{record.data}</XLText>
-                    </ColumnFlexbox>
-                  );
-                })}
-              </RowFlexbox>
-            </>
-          )}
-        </ColumnFlexbox>
-      </UserInfo>
+                </RowFlexbox>
+                <RowFlexbox gap="18px">
+                  {recordData.map((record) => {
+                    return (
+                      <ColumnFlexbox textAlign="center" gap="8px">
+                        <SMText>{record.title}</SMText>
+                        <XLText>{record.data}</XLText>
+                      </ColumnFlexbox>
+                    );
+                  })}
+                </RowFlexbox>
+              </>
+            )}
+          </ColumnFlexbox>
+        </UserInfo>
+      ) : (
+        <UserInfo>
+          <UserImageSkeleton />
+          <ColumnFlexbox justifyContent="space-around">
+            <RowFlexbox alignItems="center">
+              <UserNameSkeleton />
+            </RowFlexbox>
+            <RowFlexbox gap="18px">
+              {recordData.map(() => {
+                return (
+                  <ColumnFlexbox textAlign="center" gap="8px">
+                    <SMTextSkeleton />
+                    <XLTextSkeleton />
+                  </ColumnFlexbox>
+                );
+              })}
+            </RowFlexbox>
+          </ColumnFlexbox>
+        </UserInfo>
+      )}
       <ColumnFlexbox>
         <RowFlexbox justifyContent="space-between" alignItems="flex-end">
           <FilterNavBar
             selectedTypeFilter={selectedTypeFilter}
             onClick={handleTypeFilter}
           />
-          <SearchBar placeHolder="在片單中搜尋" onChange={handleSearchInput} />
+          <SearchbarWrapper>
+            <SearchbarIcon>
+              <FaSearch />
+            </SearchbarIcon>
+            <SearchbarInput
+              type="text"
+              placeholder="在片單中搜尋"
+              onChange={handleSearchInput}
+            />
+          </SearchbarWrapper>
         </RowFlexbox>
         <DividerLine />
-        <DramaCardsWrapper>
-          {filteredByTypeDramas.map((drama) => (
-            <>
-              <DramaCard
-                style={{
-                  backgroundImage: `linear-gradient(to top, #000, rgb(255, 255, 255, 0) 100%), url(${drama.image})`,
-                }}
-              >
-                <LGText>{drama.title}</LGText>
-                <SMGreyText>{drama.eng}</SMGreyText>
-                <RowFlexbox gap="4px" alignItems="center">
-                  <SMText>{drama.year}</SMText>
-                  <SMText>{drama.type}</SMText>
-                  <SMText>{drama.genre}</SMText>
-                </RowFlexbox>
-                <RowFlexbox>
-                  {drama.rating && drama.rating > 0 ? (
-                    <RowFlexbox alignItems="flex-end">
-                      <LGText>{drama?.rating}</LGText>
-                      <SMText margin="0 0 1px 0">/5</SMText>
-                    </RowFlexbox>
-                  ) : (
-                    <SMText>目前尚無評價</SMText>
-                  )}
-                </RowFlexbox>
-                <RemoveFromListButton
-                  onClick={() => {
-                    alert(`確定要從片單中移除 ${drama.title} 嗎？`);
-                    handleRemoveFromList(drama.id);
-                  }}
-                >
-                  <MdOutlineRemoveCircle />
-                </RemoveFromListButton>
-              </DramaCard>
-            </>
-          ))}
-        </DramaCardsWrapper>
+        {!filteredByTypeDramas.length && (
+          <ColumnFlexbox>
+            <RowFlexbox margin="50px auto" textAlign="center">
+              <LGDarkGreyText LineHeight="28px">
+                空空如也的片單有點寂寞嗎？
+                <br />
+                快來挑選你熱愛的戲劇，設計獨一無二的觀影清單吧！
+              </LGDarkGreyText>
+            </RowFlexbox>
+            <HomepageLink to="/home">
+              <RowFlexbox>
+                挑劇去 <HiOutlineArrowLongRight />
+              </RowFlexbox>
+            </HomepageLink>
+          </ColumnFlexbox>
+        )}
+        <Dramas dramasData={filteredByTypeDramas} isRemoveButton={true} />
       </ColumnFlexbox>
     </ProfilePageWrapper>
   );

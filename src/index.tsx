@@ -1,4 +1,3 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -19,7 +18,6 @@ initializeApp(firebaseConfig);
 
 const container = document.getElementById('root')!;
 const root = createRoot(container);
-
 root.render(
   <Provider store={store}>
     <BrowserRouter>
@@ -28,7 +26,7 @@ root.render(
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="forum/:boardName" element={<Forum />} />
-          <Route path="forum/:boardName/article/:id" element={<Article />} />
+          <Route path="forum/:boardName/:id" element={<Article />} />
           <Route path="forum/:boardName/post" element={<Post />} />
           <Route path="profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />

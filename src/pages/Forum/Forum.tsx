@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { Link, useParams } from 'react-router-dom';
 import { db } from '../../config/firebase.config';
-import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, setDoc } from 'firebase/firestore';
 import { useAppSelector } from '../../redux/hooks';
 import { FaPen } from 'react-icons/fa';
 import SearchBar from '../../components/SearchBar';
@@ -15,6 +15,7 @@ import {
   LGText,
 } from '../../style/Text';
 import { ColumnFlexbox, RowFlexbox } from '../../style/Flexbox';
+import Swal from 'sweetalert2';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -60,12 +61,12 @@ const Board = styled(Link)<ISelectedBoardProps>`
     `}
   ${MEDIA_QUERY_TABLET} {
     padding: 8px 12px;
-    font-size: 14px;
+    font-size: 16px;
     ${(props) =>
       props.selectedBoard &&
       props.selectedBoard.includes(props.children as string) &&
       `
-  border-bottom: #fff 3px solid;
+  border-bottom: #fff 3.5px solid;
   `}
   }
   ${MEDIA_QUERY_MOBILE} {
@@ -158,6 +159,16 @@ const XsGreyTextSkeleton = styled(XSGreyText)`
   animation: ${fade} 1s linear infinite;
 `;
 
+const Spoiler = styled.div`
+  width: 600px;
+  height: 18px;
+  background-color: rgba(255, 255, 255, 0.25);
+  ${MEDIA_QUERY_TABLET} {
+    width: 400px;
+    height: 16px;
+  }
+`;
+
 const PostButton = styled(Link)`
   background-color: rgba(255, 255, 255, 0.25);
   display: flex;
@@ -167,7 +178,8 @@ const PostButton = styled(Link)`
   width: 50px;
   border-radius: 50%;
   position: fixed;
-  bottom: 120px;
+  z-index: 1;
+  bottom: 60px;
   right: 40px;
   font-size: 16px;
   &:hover {
@@ -217,13 +229,14 @@ function Forum() {
   const [selectedBoard, setSelectedBoard] = useState<string | undefined>('');
   const [searchWords, setSearchWords] = useState('');
   const [board, setBoard] = useState<string>('TaiwanDrama');
-  const userName = useAppSelector((state) => state.user.userName);
+  const email = useAppSelector((state) => state.user.email);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 15;
   const totalPages = Math.ceil(articles.length / PAGE_SIZE);
   const urlSearchParams = new URLSearchParams(window.location.search);
   const keyword = urlSearchParams.get('keyword');
   const currentDate = new Date();
+  const spoilerKeywords = ['雷', '劇透'];
 
   const displayedArticles = articles.filter((article) =>
     article.title?.includes(searchWords)
@@ -255,25 +268,43 @@ function Forum() {
 
   const getArticles = async () => {
     try {
-      const articlesCollectionRef = collection(db, 'forum', board, 'articles');
-      const articleSnapShot = await getDocs(articlesCollectionRef);
-      const articleArr: IArticles[] = [];
-      for (const singleDoc of articleSnapShot.docs) {
-        const articleData = singleDoc.data();
-        const articleUserId = articleData.authorId;
-        const userDoc = await getDoc(doc(db, 'users', articleUserId));
-        const userData = userDoc.data();
-        const article = {
-          ...articleData,
-          id: singleDoc.id,
-          author: userData?.userName || '',
-        };
-        articleArr.push(article);
+      if (boardName) {
+        const articlesCollectionRef = collection(
+          db,
+          'forum',
+          boardName,
+          'articles'
+        );
+        const articleSnapShot = await getDocs(articlesCollectionRef);
+        const updatePromises: Promise<void>[] = [];
+        const articleArr: IArticles[] = [];
+        for (const singleDoc of articleSnapShot.docs) {
+          const articleData = singleDoc.data();
+          const articleUserId = articleData.authorId;
+          const userDoc = await getDoc(doc(db, 'users', articleUserId));
+          const userData = userDoc.data();
+          const article = {
+            ...articleData,
+            id: singleDoc.id,
+            author: userData?.userName || '',
+          };
+          articleArr.push(article);
+          const articleDocRef = doc(articlesCollectionRef, singleDoc.id);
+          const updatePromise = setDoc(
+            articleDocRef,
+            {
+              author: userData?.userName || '',
+            },
+            { merge: true }
+          );
+          updatePromises.push(updatePromise);
+        }
+        setArticles(articleArr);
+        await Promise.all(updatePromises);
+        setTimeout(() => {
+          setIsLoading(true);
+        }, 100);
       }
-      setArticles(articleArr);
-      setTimeout(() => {
-        setIsLoading(true);
-      }, 1000);
     } catch (error) {
       console.error('Error getting articles: ', error);
       setIsLoading(false);
@@ -294,7 +325,6 @@ function Forum() {
       setSelectedBoard('陸劇版');
     }
     setBoard(boardName ? boardName : 'TaiwanDrama');
-
     getArticles();
   }, [board]);
 
@@ -315,9 +345,10 @@ function Forum() {
               <Board
                 key={index}
                 onClick={() => {
-                  setSelectedBoard(board.Chinese);
                   setBoard(board.English);
+                  setSelectedBoard(board.Chinese);
                   setSearchWords('');
+                  handlePageChange(1);
                 }}
                 to={`/forum/${board.English}`}
                 selectedBoard={selectedBoard}
@@ -329,12 +360,22 @@ function Forum() {
         </RowFlexbox>
       </BoardsWrapper>
       <DividerLine />
-      {userName ? (
+      {email ? (
         <PostButton to={`/forum/${board}/post`}>
           <FaPen />
         </PostButton>
       ) : (
-        <PostButton to="" onClick={() => alert('要先登入才能發布文章喔！')}>
+        <PostButton
+          to=""
+          onClick={() =>
+            Swal.fire({
+              title: '要先登入才能發布文章喔！',
+              icon: 'warning',
+              iconColor: '#bbb',
+              confirmButtonColor: '#555',
+            })
+          }
+        >
           <FaPen />
         </PostButton>
       )}
@@ -344,7 +385,7 @@ function Forum() {
               return (
                 <>
                   <Article
-                    to={`/forum/${boardName}/article/${article.id}`}
+                    to={`/forum/${boardName}/${article.id}`}
                     key={article.id}
                   >
                     <RowFlexbox>
@@ -381,14 +422,22 @@ function Forum() {
                       <MDText>
                         [{article.type}] {article.title}
                       </MDText>
-                      <MDGreyText>
-                        {article.content
-                          ?.replace(/(<([^>]+)>)/gi, '')
-                          .replace(/&lt;/g, '<')
-                          .replace(/&gt;/g, '>')
-                          .slice(0, 45)}
-                        ...
-                      </MDGreyText>
+                      {spoilerKeywords.some(
+                        (keyword) =>
+                          article?.title?.includes(keyword) ||
+                          article?.content?.includes(keyword)
+                      ) ? (
+                        <Spoiler />
+                      ) : (
+                        <MDGreyText>
+                          {article.content
+                            ?.replace(/(<([^>]+)>)/gi, '')
+                            .replace(/&lt;/g, '<')
+                            .replace(/&gt;/g, '>')
+                            .slice(0, 45)}
+                          ...
+                        </MDGreyText>
+                      )}
                       <XSGreyText>{article.author}</XSGreyText>
                     </ColumnFlexbox>
                     <SMGreyText margin="40px 0 0 0">
@@ -442,7 +491,7 @@ function Forum() {
               style={
                 page === currentPage
                   ? {
-                      backgroundColor: '#fff',
+                      backgroundColor: '#bbb',
                       color: '#181818',
                       fontWeight: 500,
                     }
