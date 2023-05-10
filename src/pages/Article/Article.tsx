@@ -411,7 +411,7 @@ function Article() {
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
             <RowFlexbox alignItems="flex-end" margin="60px 0 0 0">
-              <LGText id="B1">留言區</LGText>
+              <LGText>留言區</LGText>
               <SMGreyText>（共有 {comments.length} 則留言）</SMGreyText>
             </RowFlexbox>
             <ColumnFlexbox gap="8px" margin="20px 0 0 0 ">
@@ -431,8 +431,9 @@ function Article() {
                       <>
                         <Comment
                           key={index}
-                          id={`B${index + 2}`}
+                          id={`B${index + 1}`}
                           style={{
+                            scrollMarginTop: '80px',
                             background:
                               floor === index + 1
                                 ? 'linear-gradient(to left, rgba(252,51,68,0.3), rgba(78,94,235,0.3))'
