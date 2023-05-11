@@ -117,6 +117,18 @@ const Avatar = styled.img`
   }
 `;
 
+const AvatarSkeleton = styled.div`
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: transparent;
+
+  ${MEDIA_QUERY_TABLET} {
+    width: 45px;
+    height: 45px;
+  }
+`;
+
 const SpotifyIframe = styled.iframe`
   border-radius: 20px;
   margin-top: 8px;
@@ -214,7 +226,6 @@ const ActorLink = styled.div`
 
 const ActorsButton = styled.button`
   flex-shrink: 0;
-  border-radius: 20px;
   gap: 6px;
   display: flex;
   justify-content: center;
@@ -316,17 +327,25 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   const isTablet = useMediaQuery({
     query: '(min-width: 1281px) and (max-width: 1440px)',
   });
+  const [cachedActors, setCachedActors] = useState<{
+    [key: string]: IActor[];
+  } | null>(null);
 
   useEffect(() => {
-    getDramasAndActors();
-  }, [dramaCard]);
-
-  useEffect(() => {
+    getDramas();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const getDramasAndActors = async () => {
+  useEffect(() => {
+    if (cachedActors && dramaId && cachedActors[dramaId]) {
+      setActors(cachedActors[dramaId]);
+    } else {
+      getActors();
+    }
+  }, [dramaCard]);
+
+  const getDramas = async () => {
     const dramasSnapshot = await getDocs(dramasRef);
     setDramas(
       dramasSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
@@ -334,6 +353,9 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
     setTimeout(() => {
       setIsLoading(true);
     }, 300);
+  };
+
+  const getActors = async () => {
     const actorsQuery = await query(
       actorsRef,
       where('dramas', 'array-contains', dramaId)
@@ -344,6 +366,11 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
       id: doc.id,
     }));
     setActors(actors);
+    dramaId &&
+      setCachedActors((prevVisitedDramas) => ({
+        ...(prevVisitedDramas || {}),
+        [dramaId]: actors,
+      }));
   };
 
   const handleDramaCard = (drama: IDrama) => {
@@ -456,6 +483,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
           onClick={() => {
             setDramaCard(undefined);
             setActorCard(undefined);
+            setActors(undefined);
           }}
         />
       )}
@@ -520,7 +548,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     <ColumnFlexbox gap="6px" tabletGap="2px" width="100%">
                       <XSText>演員</XSText>
                       <ActorLink>
-                        {actors &&
+                        {actors ? (
                           actors.map((actor) => (
                             <ActorsButton
                               onClick={() => {
@@ -536,7 +564,10 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                                 </ColumnFlexbox>
                               </span>
                             </ActorsButton>
-                          ))}
+                          ))
+                        ) : (
+                          <AvatarSkeleton />
+                        )}
                       </ActorLink>
                     </ColumnFlexbox>
                   </ColumnFlexbox>
@@ -594,6 +625,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                   <CloseButton
                     onClick={() => {
                       setDramaCard(undefined);
+                      setActors(undefined);
                     }}
                   >
                     ✕
