@@ -57,33 +57,6 @@ export const RowFlexbox = styled.div<FlexboxProps>`
   }
 `;
 
-export const ColumnFlexbox = styled.div<FlexboxProps>`
-  display: flex;
+export const ColumnFlexbox = styled(RowFlexbox)`
   flex-direction: column;
-  width: ${(props) => props.width || ''};
-  height: ${(props) => props.height || ''};
-  gap: ${(props) => props.gap || ''};
-  text-align: ${(props) => props.textAlign || ''};
-  cursor: ${(props) => props.cursor || ''};
-  justify-content: ${(props) => props.justifyContent || ''};
-  align-items: ${(props) => props.alignItems || ''};
-  padding: ${(props) => props.padding || ''};
-  margin: ${(props) => props.margin || ''};
-  border: ${(props) => props.border || ''};
-
-  ${MEDIA_QUERY_TABLET} {
-    width: ${(props) => props.tabletWidth || ''};
-    height: ${(props) => props.tabletHeight || ''};
-    justify-content: ${(props) => props.tabletJustifyContent || ''};
-    align-items: ${(props) => props.tabletAlignItems || ''};
-    gap: ${(props) => props.tabletGap || ''};
-  }
-
-  ${MEDIA_QUERY_MOBILE} {
-    width: ${(props) => props.mobileWidth || ''};
-    height: ${(props) => props.mobileHeight || ''};
-    justify-content: ${(props) => props.mobileJustifyContent || ''};
-    align-items: ${(props) => props.mobileAlignItems || ''};
-    gap: ${(props) => props.mobileGap || ''};
-  }
 `;
