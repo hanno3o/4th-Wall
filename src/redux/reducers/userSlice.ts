@@ -11,7 +11,7 @@ export interface userState {
   dramaList: string[] | null;
 }
 
-const initialState: userState = {
+export const initialState: userState = {
   status: 'idle',
   id: '',
   email: '',

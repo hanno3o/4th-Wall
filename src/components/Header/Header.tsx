@@ -45,7 +45,7 @@ const LogoImage = styled.img`
   }
 `;
 
-const NavIconButton = styled.button`
+const NavIconButton = styled(Link)`
   font-size: 32px;
   filter: brightness(0.9);
   &:hover {
@@ -141,11 +141,9 @@ function Header() {
         />
       </Link>
       <NavBar>
-        <Link to="/forum/TaiwanDrama">
-          <NavIconButton>
-            <BsWechat />
-          </NavIconButton>
-        </Link>
+        <NavIconButton to="/forum/TaiwanDrama">
+          <BsWechat />
+        </NavIconButton>
         {avatar && (
           <Link to="/profile">
             <Avatar src={avatar} alt="" />
@@ -219,7 +217,7 @@ function Header() {
             </SettingOptions>
           </>
         ) : (
-          <NavIconButton onClick={() => navigate('/login')}>
+          <NavIconButton to="/login">
             <FaUser style={{ fontSize: '24px' }} />
           </NavIconButton>
         )}
