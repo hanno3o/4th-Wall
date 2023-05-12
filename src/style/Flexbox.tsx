@@ -5,6 +5,7 @@ const MEDIA_QUERY_TABLET =
 const MEDIA_QUERY_MOBILE = '@media screen and (max-width: 1280px)';
 
 interface FlexboxProps {
+  flexWrap?: string;
   width?: string;
   height?: string;
   gap?: string;
@@ -29,6 +30,7 @@ interface FlexboxProps {
 
 export const RowFlexbox = styled.div<FlexboxProps>`
   display: flex;
+  flex-wrap: ${(props) => props.flexWrap || ''};
   width: ${(props) => props.width || ''};
   height: ${(props) => props.height || ''};
   gap: ${(props) => props.gap || ''};

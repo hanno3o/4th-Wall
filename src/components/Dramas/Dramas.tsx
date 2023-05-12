@@ -67,7 +67,7 @@ const DramaCardSkeleton = styled(DramaCard)`
   animation: ${fade} 1s linear infinite;
 `;
 
-const DramaInfo = styled.div`
+const Popup = styled.div`
   background: ${(props) => props.theme.black};
   position: fixed;
   left: 50vw;
@@ -92,7 +92,7 @@ const DramaInfo = styled.div`
   }
 `;
 
-const DramaInfoImage = styled.img`
+const DramaImage = styled.img`
   object-fit: cover;
   width: 280px;
   height: 400px;
@@ -141,7 +141,7 @@ const SpotifyIframe = styled.iframe`
   }
 `;
 
-const DramaCardButton = styled.button`
+const ActionButton = styled.button`
   font-size: 14px;
   color: ${(props) => props.theme.white};
   border: solid 1px ${(props) => props.theme.grey};
@@ -237,27 +237,6 @@ const ActorsButton = styled.button`
 
   &:hover span {
     display: block;
-  }
-`;
-
-const ActorInfo = styled.div`
-  width: 1102px;
-  height: 934px;
-  transform: translate(-50%, -50%);
-  background: ${(props) => props.theme.black};
-  color: ${(props) => props.theme.white};
-  position: fixed;
-  left: 50vw;
-  top: 50vh;
-  border-radius: 20px;
-  padding: 100px 40px;
-  display: block;
-  border: ${(props) => props.theme.grey} 1px solid;
-  z-index: 1;
-  ${MEDIA_QUERY_TABLET} {
-    width: 65vw;
-    height: 760px;
-    padding: 80px 40px;
   }
 `;
 
@@ -487,7 +466,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
           }}
         />
       )}
-      <DramaInfo style={{ display: dramaCard ? 'block' : 'none' }}>
+      <Popup style={{ display: dramaCard ? 'block' : 'none' }}>
         {isLoading && (
           <RowFlexbox gap="20px" height="100%" width="100%">
             <Reviews
@@ -501,7 +480,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
               height="100%"
             >
               <RowFlexbox gap="20px">
-                <DramaInfoImage src={dramaCard?.image} alt="" />
+                <DramaImage src={dramaCard?.image} alt="" />
                 <ColumnFlexbox justifyContent="space-between" width="100%">
                   <ColumnFlexbox gap="6px">
                     <XLText>{dramaCard?.title}</XLText>
@@ -572,7 +551,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     </ColumnFlexbox>
                   </ColumnFlexbox>
                   <RowFlexbox gap="6px">
-                    <DramaCardButton
+                    <ActionButton
                       onClick={() => {
                         if (
                           dramaList &&
@@ -607,8 +586,8 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                       {dramaList && dramaId && dramaList.includes(dramaId)
                         ? '✓ 已加入片單'
                         : '＋ 加入片單'}
-                    </DramaCardButton>
-                    <DramaCardButton>
+                    </ActionButton>
+                    <ActionButton>
                       <Link
                         to={`/forum/${dramaCard?.engType}?keyword=${dramaCard?.title}`}
                         style={{
@@ -620,7 +599,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                         <HiOutlineChat style={{ fontSize: '20px' }} />
                         <span>聊劇去</span>
                       </Link>
-                    </DramaCardButton>
+                    </ActionButton>
                   </RowFlexbox>
                   <CloseButton
                     onClick={() => {
@@ -648,7 +627,6 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     <XSText>劇情大綱</XSText>
                     <XSGreyText>{dramaCard?.story}</XSGreyText>
                   </ColumnFlexbox>
-
                   <ColumnFlexbox gap="6px" tabletGap="4px">
                     <XSText>上架日期</XSText>
                     <SMText>{dramaCard?.releaseDate}</SMText>
@@ -732,16 +710,16 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
             </ColumnFlexbox>
           </RowFlexbox>
         )}
-      </DramaInfo>
-      <ActorInfo style={{ display: actorCard ? 'block' : 'none' }}>
+      </Popup>
+      <Popup style={{ display: actorCard ? 'block' : 'none' }}>
         {actorCard && actorAppearedDramas ? (
           actorAppearedDramas.length > 0 ? (
-            <ColumnFlexbox gap="16px">
-              <RowFlexbox alignItems="flex-end" gap="4px" margin="-15px 0 0 0">
+            <ColumnFlexbox gap="16px" margin='30px 80px'>
+              <RowFlexbox alignItems="flex-end" gap="4px">
                 <LGText>{actorCard.name}</LGText>
-                <MDText>還有出演過這些戲劇</MDText>
+                <LGText>還有出演過這些戲劇</LGText>
               </RowFlexbox>
-              <RowFlexbox gap="16px">
+              <RowFlexbox gap="16px" flexWrap="wrap">
                 {actorAppearedDramas?.map((drama, index) => (
                   <DramaCard
                     onClick={() => {
@@ -775,7 +753,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
             </ColumnFlexbox>
           ) : (
             <ColumnFlexbox>
-              <RowFlexbox alignItems="flex-end" gap="4px">
+              <RowFlexbox alignItems="flex-end" gap="4px" margin='30px 40px'>
                 <LGGreyText>
                   很抱歉，目前沒有 {actorCard.name} 出演過的其他戲劇資料：（
                 </LGGreyText>
@@ -798,7 +776,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
         >
           ✕
         </CloseButton>
-      </ActorInfo>
+      </Popup>
     </DramaCardsWrapper>
   );
 }
