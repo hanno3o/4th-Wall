@@ -346,8 +346,8 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
     }));
     setActors(actors);
     dramaId &&
-      setCachedActors((prevVisitedDramas) => ({
-        ...(prevVisitedDramas || {}),
+      setCachedActors((prevCachedActors) => ({
+        ...(prevCachedActors || {}),
         [dramaId]: actors,
       }));
   };

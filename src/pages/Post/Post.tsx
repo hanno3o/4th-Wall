@@ -12,6 +12,7 @@ import { LGText, MDText, XSText } from '../../style/Text';
 import { IoChevronBackCircle } from 'react-icons/io5';
 import { AiOutlineInfoCircle } from 'react-icons/ai';
 import Swal from 'sweetalert2';
+import { boardNames } from '../../utils/constants';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -239,11 +240,11 @@ function Post() {
           <option value="none" disabled>
             選擇看板
           </option>
-          <option value="TaiwanDrama">台劇版</option>
-          <option value="KoreanDrama">韓劇版</option>
-          <option value="JapaneseDrama">日劇版</option>
-          <option value="AmericanDrama">美劇版</option>
-          <option value="ChinaDrama">陸劇版</option>
+          {Object.entries(boardNames).map(([englishName, chineseName]) => (
+            <option key={englishName} value={englishName}>
+              {chineseName}
+            </option>
+          ))}
         </Select>
         <Select name="type" onChange={(e) => setType(e.currentTarget.value)}>
           <option value="none" disabled selected>

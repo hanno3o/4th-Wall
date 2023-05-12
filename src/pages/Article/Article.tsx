@@ -28,6 +28,7 @@ import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
 import { IoChevronBackCircle } from 'react-icons/io5';
 import Swal from 'sweetalert2';
+import { boardNames } from '../../utils/constants';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -364,22 +365,8 @@ function Article() {
                     <FaColumns />
                   </MDText>
                   <MDText>
-                    {(() => {
-                      switch (boardName) {
-                        case 'TaiwanDrama':
-                          return '台劇版';
-                        case 'KoreanDrama':
-                          return '韓劇版';
-                        case 'AmericanDrama':
-                          return '美劇版';
-                        case 'JapaneseDrama':
-                          return '日劇版';
-                        case 'ChinaDrama':
-                          return '陸劇版';
-                        default:
-                          return boardName;
-                      }
-                    })()}
+                    {boardNames[boardName as keyof typeof boardNames] ||
+                      boardName}
                   </MDText>
                 </RowFlexbox>
                 <RowFlexbox gap="8px">

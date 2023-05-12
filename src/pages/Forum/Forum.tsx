@@ -16,6 +16,7 @@ import {
 } from '../../style/Text';
 import { ColumnFlexbox, RowFlexbox } from '../../style/Flexbox';
 import Swal from 'sweetalert2';
+import { boardNames } from '../../utils/constants';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -215,20 +216,11 @@ interface ISelectedBoardProps {
 
 function Forum() {
   const { boardName } = useParams();
-  const BoardsData = {
-    boards: [
-      { Chinese: '台劇版', English: 'TaiwanDrama' },
-      { Chinese: '韓劇版', English: 'KoreanDrama' },
-      { Chinese: '日劇版', English: 'JapaneseDrama' },
-      { Chinese: '美劇版', English: 'AmericanDrama' },
-      { Chinese: '陸劇版', English: 'ChinaDrama' },
-    ],
-  };
   const [isLoading, setIsLoading] = useState(false);
   const [articles, setArticles] = useState<IArticles[]>([]);
   const [selectedBoard, setSelectedBoard] = useState<string | undefined>('');
   const [searchWords, setSearchWords] = useState('');
-  const [board, setBoard] = useState<string>('TaiwanDrama');
+  const [board, setBoard] = useState<string>(boardNames.TaiwanDrama);
   const email = useAppSelector((state) => state.user.email);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const PAGE_SIZE = 15;
@@ -313,18 +305,12 @@ function Forum() {
 
   useEffect(() => {
     setSearchWords(keyword ?? '');
-    if (boardName === 'TaiwanDrama') {
-      setSelectedBoard('台劇版');
-    } else if (boardName === 'KoreanDrama') {
-      setSelectedBoard('韓劇版');
-    } else if (boardName === 'JapaneseDrama') {
-      setSelectedBoard('日劇版');
-    } else if (boardName === 'AmericanDrama') {
-      setSelectedBoard('美劇版');
-    } else if (boardName === 'ChinaDrama') {
-      setSelectedBoard('陸劇版');
-    }
+    boardName
+      ? setSelectedBoard(boardNames[boardName as keyof typeof boardNames])
+      : setSelectedBoard(boardNames.TaiwanDrama);
+     
     setBoard(boardName ? boardName : 'TaiwanDrama');
+    
     getArticles();
   }, [board]);
 
@@ -340,20 +326,22 @@ function Forum() {
       />
       <BoardsWrapper>
         <RowFlexbox mobileJustifyContent="space-between">
-          {BoardsData.boards.map((board, index) => {
+          {Object.keys(boardNames).map((englishName, index) => {
+            const chineseName =
+              boardNames[englishName as keyof typeof boardNames];
             return (
               <Board
                 key={index}
                 onClick={() => {
-                  setBoard(board.English);
-                  setSelectedBoard(board.Chinese);
+                  setBoard(englishName);
+                  setSelectedBoard(chineseName);
                   setSearchWords('');
                   handlePageChange(1);
                 }}
-                to={`/forum/${board.English}`}
+                to={`/forum/${englishName}`}
                 selectedBoard={selectedBoard}
               >
-                {board.Chinese}
+                {chineseName}
               </Board>
             );
           })}
