@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, BrowserRouter } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import firebaseConfig from './config/firebase.config';
 import { Provider } from 'react-redux';
@@ -20,6 +20,7 @@ const container = document.getElementById('root')!;
 const root = createRoot(container);
 root.render(
   <Provider store={store}>
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />}>
           <Route index element={<Home />} />
@@ -31,5 +32,6 @@ root.render(
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
+    </BrowserRouter>
   </Provider>
 );

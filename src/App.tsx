@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, BrowserRouter } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { createGlobalStyle, ThemeProvider } from 'styled-components';
 import { Reset } from 'styled-reset';
 import AuthRoute from './components/AuthRoute';
@@ -107,15 +107,13 @@ function App() {
     <>
       <Reset />
       <GlobalStyle />
-      <BrowserRouter>
-        <AuthRoute>
-          <ThemeProvider theme={theme}>
-            <Header />
-            <Outlet />
-            <Footer />
-          </ThemeProvider>
-        </AuthRoute>
-      </BrowserRouter>
+      <AuthRoute>
+        <ThemeProvider theme={theme}>
+          <Header />
+          <Outlet />
+          <Footer />
+        </ThemeProvider>
+      </AuthRoute>
     </>
   );
 }
