@@ -1,12 +1,12 @@
 import styled from 'styled-components';
-import { db } from '../../config/firebase.config';
-import { collection, getDocs } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { XXLText, XSGreyText } from '../../style/Text';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import SearchBar from '../../components/SearchBar';
 import FilterNavBar from '../../components/FilterNavBar';
 import Dramas from '../../components/Dramas';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import { GET_ALL_DRAMAS } from '../../redux/reducers/dramasSlice';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -109,7 +109,7 @@ interface IDrama {
   id?: string | undefined;
   title?: string;
   year?: number;
-  rating?: number;
+  rating?: string;
   image?: string;
   eng?: string;
   genre?: string;
@@ -173,29 +173,22 @@ function Home() {
       },
     ],
   };
-  const dramasRef = collection(db, 'dramas');
   const [searchWords, setSearchWords] = useState('');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string | null>(
     '所有影集'
   );
+  const dispatch = useAppDispatch();
   const [genre, setGenre] = useState<string[]>([]);
   const [order, setOrder] = useState('');
   const [year, setYear] = useState<number[]>([]);
   const [platform, setPlatform] = useState<string[]>([]);
-  const [dramas, setDramas] = useState<IDrama[]>([]);
+  const dramas = useAppSelector((state) => state.dramas.dramas);
 
   const bannerImageURL =
     'https://firebasestorage.googleapis.com/v0/b/thwall-d0123.appspot.com/o/images%2Ffinalbanner.png?alt=media&token=5613b7b7-a3f2-446a-8184-b60bab7a8f02';
 
-  const getDramasAndActors = async () => {
-    const dramasSnapshot = await getDocs(dramasRef);
-    setDramas(
-      dramasSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-    );
-  };
-
   useEffect(() => {
-    getDramasAndActors();
+    dispatch(GET_ALL_DRAMAS());
   }, []);
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -285,7 +278,7 @@ function Home() {
         }
       }
       if (a.rating && b.rating && order === '評價最高') {
-        return b.rating - a.rating;
+        return Number(b.rating) - Number(a.rating);
       }
       return 0;
     });

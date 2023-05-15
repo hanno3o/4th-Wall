@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signOut } from 'firebase/auth';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { setUserInfo } from '../../redux/reducers/userSlice';
+import { SET_USERINFO } from '../../redux/reducers/userSlice';
 import { FaUser } from 'react-icons/fa';
 import { HiOutlineCog8Tooth } from 'react-icons/hi2';
 import { VscSignOut } from 'react-icons/vsc';
@@ -186,7 +186,7 @@ function Header() {
                       navigate('/login');
                       signOut(auth);
                       dispatch(
-                        setUserInfo({
+                        SET_USERINFO({
                           id: null,
                           avatar: null,
                           email: null,

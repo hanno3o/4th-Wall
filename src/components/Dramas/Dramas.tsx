@@ -1,18 +1,11 @@
 import styled, { keyframes } from 'styled-components';
 import { db } from '../../config/firebase.config';
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  query,
-  where,
-} from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { useState, useEffect, useRef } from 'react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import {
-  addToDramaList,
-  removeFromDramaList,
+  ADD_TO_DRAMALIST,
+  REMOVE_FROM_DRAMALIST,
 } from '../../redux/reducers/userSlice';
 import { Link } from 'react-router-dom';
 import { IoChevronBackCircle } from 'react-icons/io5';
@@ -25,6 +18,7 @@ import {
   SMText,
   XSText,
   LGGreyText,
+  MDGreyText,
   SMGreyText,
   XSGreyText,
 } from '../../style/Text';
@@ -32,10 +26,117 @@ import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { DramaCardsWrapper, DramaCard } from '../../style/DramaCard';
 import Swal from 'sweetalert2';
 import { useMediaQuery } from 'react-responsive';
-import Reviews, { reviewsLength } from './Reviews';
+import {
+  GET_REVIEWS,
+  UPLOAD_REVIEW,
+  UPDATE_REVIEW,
+  REMOVE_REVIEW,
+  GET_ACTORS,
+} from '../../redux/reducers/dramasSlice';
+import {
+  ReviewsPayload,
+  IReview,
+  IDrama,
+  IDramas,
+  IActor,
+  IUserRating,
+} from '../../redux/api/dramasAPI';
+import { FaStar, FaRegStar } from 'react-icons/fa';
+import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
+import { RiPushpinLine } from 'react-icons/ri';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
+
+const Avatar = styled.img`
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+
+  ${MEDIA_QUERY_TABLET} {
+    width: 45px;
+    height: 45px;
+  }
+`;
+const DividerLine = styled.div`
+  margin: 0 auto;
+  border-bottom: solid 1px ${(props) => props.theme.grey};
+`;
+
+const IconButton = styled.button`
+  color: ${(props) => props.theme.lightGrey};
+  font-size: 16px;
+  border: solid 1px transparent;
+  padding: 5px;
+  border-radius: 50%;
+  &:not([disabled]):hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: ease-in-out 0.5s;
+  }
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 14px;
+  }
+`;
+
+const TextButton = styled(IconButton)`
+  font-size: 14px;
+  border-radius: 20px;
+  ${MEDIA_QUERY_TABLET} {
+    padding: 2px 6px;
+  }
+`;
+
+const UserRatingStars = styled.button<IUserRating>`
+  cursor: ${({ email }) => (email ? 'pointer' : 'default')};
+  display: flex;
+  gap: 4px;
+  color: ${({ isFilled }) => (isFilled ? '#fff' : '#555')};
+  background-color: transparent;
+  font-size: 18px;
+  ${MEDIA_QUERY_TABLET} {
+    font-size: 16px;
+  }
+`;
+
+const ReviewTextArea = styled.textarea`
+  resize: none;
+  outline: ${(props) => props.theme.grey};
+  background-color: ${(props) => props.theme.grey};
+  box-shadow: 0 0 0 3px ${(props) => props.theme.grey};
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 5px;
+  padding: 14px;
+  height: 60px;
+  line-height: 20px;
+  &::placeholder {
+    color: ${(props) => props.theme.lightGrey};
+  }
+  ${MEDIA_QUERY_TABLET} {
+    height: 42px;
+    width: 90%;
+    margin: 0 auto;
+    padding: 10px;
+  }
+`;
+
+const ReviewTextEditArea = styled.textarea`
+  width: 216px;
+  font-weight: 500;
+  line-height: 20px;
+  resize: none;
+  font-size: 14px;
+  border-radius: 5px;
+  outline: ${(props) => props.theme.grey};
+  background-color: ${(props) => props.theme.grey};
+  box-shadow: 0 0 0 6px ${(props) => props.theme.grey};
+  margin-top: 4px;
+  ${MEDIA_QUERY_TABLET} {
+    width: 206px;
+  }
+`;
+
 const MEDIA_QUERY_MOBILE = '@media screen and (max-width: 1280px)';
 
 const Overlay = styled.div`
@@ -102,18 +203,6 @@ const DramaImage = styled.img`
   ${MEDIA_QUERY_TABLET} {
     width: 224px;
     height: 320px;
-  }
-`;
-
-const Avatar = styled.img`
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-
-  ${MEDIA_QUERY_TABLET} {
-    width: 45px;
-    height: 45px;
   }
 `;
 
@@ -251,54 +340,22 @@ const PlatformIcon = styled.img`
   }
 `;
 
-interface IDrama {
-  id?: string | undefined;
-  title?: string;
-  year?: number;
-  rating?: number;
-  image?: string;
-  eng?: string;
-  genre?: string;
-  platform?: string[];
-  type?: string;
-  story?: string;
-  director?: string;
-  screenwriter?: string;
-  spotify?: string;
-  episodes?: number;
-  engType?: string;
-  relatedVideos?: string[];
-  releaseDate?: string;
-}
-
-interface IActor {
-  name?: string;
-  eng?: string;
-  avatar?: string;
-  id: string;
-  dramas?: string[];
-}
-
-interface IDramas {
-  dramasData: IDrama[];
-  isRemoveButton: boolean;
-}
-
 function Dramas({ dramasData, isRemoveButton }: IDramas) {
   const [isLoading, setIsLoading] = useState(false);
-  const dramasRef = collection(db, 'dramas');
-  const [dramas, setDramas] = useState<IDrama[]>([]);
-  const [dramaCard, setDramaCard] = useState<IDrama>();
+  const [reviewsArr, setReviewsArr] = useState<IReview[]>([]);
+  const [otherUserReviewsArr, setOtherUserReviewsArr] = useState<IReview[]>([]);
+  const [userReview, setUserReview] = useState<IReview | undefined>(undefined);
+  const [dramaPopup, setDramaPopup] = useState<IDrama>();
   const prevDramaCardRef = useRef<IDrama | undefined>();
-  const actorsRef = collection(db, 'actors');
   const [actorAppearedDramas, setActorAppearedDramas] = useState<IDrama[]>([]);
-  const [actors, setActors] = useState<IActor[] | undefined>(undefined);
-  const [actorCard, setActorCard] = useState<IActor>();
+  const [actorPopup, setActorPopup] = useState<IActor>();
   const email = useAppSelector((state) => state.user.email);
-  const userId = useAppSelector((state) => state.user.id);
+  const userID = useAppSelector((state) => state.user.id);
   const dramaList = useAppSelector((state) => state.user.dramaList);
+  const dramas = useAppSelector((state) => state.dramas.dramas);
+  const actors = useAppSelector((state) => state.dramas.actors);
   const dispatch = useAppDispatch();
-  const dramaId = dramaCard?.id;
+  const dramaID = dramaPopup?.id;
   const PAGE_SIZE = 12;
   const [page, setPage] = useState(1);
   const start = (page - 1) * PAGE_SIZE;
@@ -306,67 +363,100 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   const isTablet = useMediaQuery({
     query: '(min-width: 1281px) and (max-width: 1440px)',
   });
-  const [cachedActors, setCachedActors] = useState<{
-    [key: string]: IActor[];
-  } | null>(null);
+  const currentDate = new Date();
+  const [writtenReview, setWrittenReview] = useState<string | undefined>(
+    undefined
+  );
+  const [userRating, setUserRating] = useState(0);
+  const [editing, setEditing] = useState(false);
+  const [updatedUserReview, setUpdatedUserReview] = useState('');
+
+  const getAllReviews = () => {
+    dramaID &&
+      userID &&
+      dispatch(GET_REVIEWS({ dramaID, userID })).then((res) => {
+        const payload = res.payload as ReviewsPayload;
+        setReviewsArr(payload.reviewsArr);
+        setOtherUserReviewsArr(payload.otherUserReviewsArr);
+        setUserReview(payload.userReview);
+      });
+  };
+
+  const uploadReview = () => {
+    dramaID &&
+      userID &&
+      dispatch(
+        UPLOAD_REVIEW({
+          dramaID,
+          userID,
+          userRating,
+          writtenReview,
+        })
+      );
+    getAllReviews();
+  };
+
+  const updateReview = () => {
+    setEditing(false);
+    dramaID &&
+      userID &&
+      dispatch(
+        UPDATE_REVIEW({
+          dramaID,
+          userID,
+          userRating,
+          updatedUserReview,
+        })
+      );
+    getAllReviews();
+  };
+
+  const removeReview = () => {
+    dramaID &&
+      userID &&
+      dispatch(
+        REMOVE_REVIEW({
+          dramaID,
+          userID,
+        })
+      ).then(() => {
+        getAllReviews();
+      });
+  };
+
+  const getActors = () => {
+    dramaID && dispatch(GET_ACTORS(dramaID));
+  };
 
   useEffect(() => {
-    getDramas();
+    setTimeout(() => {
+      setIsLoading(true);
+    }, 300);
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
-    if (cachedActors && dramaId && cachedActors[dramaId]) {
-      setActors(cachedActors[dramaId]);
-    } else {
-      getActors();
-    }
-  }, [dramaCard]);
+    getAllReviews();
+    getActors();
+  }, [dramaPopup]);
 
-  const getDramas = async () => {
-    const dramasSnapshot = await getDocs(dramasRef);
-    setDramas(
-      dramasSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-    );
-    setTimeout(() => {
-      setIsLoading(true);
-    }, 300);
-  };
-
-  const getActors = async () => {
-    const actorsQuery = await query(
-      actorsRef,
-      where('dramas', 'array-contains', dramaId)
-    );
-    const actorsQuerySnapshot = await getDocs(actorsQuery);
-    const actors = actorsQuerySnapshot.docs.map((doc) => ({
-      ...doc.data(),
-      id: doc.id,
-    }));
-    setActors(actors);
-    dramaId &&
-      setCachedActors((prevCachedActors) => ({
-        ...(prevCachedActors || {}),
-        [dramaId]: actors,
-      }));
-  };
-
-  const handleDramaCard = (drama: IDrama) => {
+  const handleDramaPopup = (drama: IDrama) => {
     prevDramaCardRef.current = drama;
-    setDramaCard(drama);
+    setDramaPopup(drama);
   };
 
   const handleAddToDramaList = async () => {
-    if (dramaCard?.id && userId) {
-      dispatch(addToDramaList(dramaCard?.id));
-      const userRef = doc(db, 'users', userId);
-      await updateDoc(userRef, { dramaList: dramaList });
+    if (dramaID && userID) {
+      dispatch(ADD_TO_DRAMALIST(dramaID));
+      // const userRef = doc(db, 'users', userID);
+      // await updateDoc(userRef, { dramaList: dramaList });
     }
   };
 
   const handleRemoveFromList = (dramaIdToRemove: string) => {
-    dispatch(removeFromDramaList(dramaIdToRemove));
+    dispatch(REMOVE_FROM_DRAMALIST(dramaIdToRemove));
     return () => {};
   };
 
@@ -376,11 +466,11 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
     }
   };
 
-  const handleActorCard = (actor: IActor) => {
+  const handleActorPopup = (actor: IActor) => {
     if (actor.dramas) {
-      setActorCard(actor);
+      setActorPopup(actor);
       const otherDramasIds = actor.dramas.filter(
-        (dramaID) => dramaID !== dramaId
+        (dramaId) => dramaId !== dramaID
       );
       const otherDramas = dramas.filter(
         (drama) => drama.id && otherDramasIds.includes(drama.id)
@@ -395,7 +485,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
         ? dramasData.slice(0, end).map((drama, index) => {
             return (
               <DramaCard
-                onClick={() => handleDramaCard(drama)}
+                onClick={() => handleDramaPopup(drama)}
                 key={index}
                 style={{
                   backgroundImage: `linear-gradient(to top, #000, rgb(255, 255, 255, 0) 60%), url(${drama.image})`,
@@ -410,7 +500,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                   <SMText>{drama.genre}</SMText>
                 </RowFlexbox>
                 <RowFlexbox>
-                  {drama.rating && drama.rating > 0 ? (
+                  {drama.rating && Number(drama.rating) > 0 ? (
                     <RowFlexbox alignItems="flex-end">
                       <LGText>{drama?.rating}</LGText>
                       <SMText margin="0 0 1px 0">/5</SMText>
@@ -457,22 +547,346 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
             );
           })
         : dramasData.map(() => <DramaCardSkeleton />)}
-      {(dramaCard || actorCard) && (
+      {(dramaPopup || actorPopup) && (
         <Overlay
           onClick={() => {
-            setDramaCard(undefined);
-            setActorCard(undefined);
-            setActors(undefined);
+            setEditing(false);
+            setWrittenReview('');
+            setUserRating(0);
+            setDramaPopup(undefined);
+            setActorPopup(undefined);
           }}
         />
       )}
-      <Popup style={{ display: dramaCard ? 'block' : 'none' }}>
+      <Popup style={{ display: dramaPopup ? 'block' : 'none' }}>
         {isLoading && (
           <RowFlexbox gap="20px" height="100%" width="100%">
-            <Reviews
-              dramaCardTitle={dramaCard?.title || ''}
-              dramaId={dramaId || ''}
-            />
+            <ColumnFlexbox height="100%">
+              {userReview ? null : (
+                <ColumnFlexbox height="20%" gap="10px" padding="10px 0 0 0">
+                  <RowFlexbox justifyContent="center">
+                    {[...Array(5)].map((_, index) => {
+                      index += 1;
+                      return (
+                        <UserRatingStars
+                          key={index}
+                          className={index <= userRating ? 'on' : 'off'}
+                          isFilled={index <= userRating}
+                          email={email || ''}
+                          onMouseOver={() => email && setUserRating(index)}
+                          onKeyPress={(e) => {
+                            if (userRating && userID && dramaID) {
+                              if (e.key === 'Enter') {
+                                uploadReview();
+                              }
+                            }
+                          }}
+                        >
+                          <FaStar />
+                        </UserRatingStars>
+                      );
+                    })}
+                  </RowFlexbox>
+                  <ReviewTextArea
+                    disabled={!email}
+                    maxLength={50}
+                    placeholder={
+                      email
+                        ? `留下對 ${dramaPopup?.title} 的評論`
+                        : '要先登入才能使用評論功能喔！'
+                    }
+                    defaultValue={writtenReview}
+                    value={writtenReview}
+                    onChange={(e) => setWrittenReview(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (userRating) {
+                        if (e.key === 'Enter') {
+                          uploadReview();
+                        }
+                      } else {
+                        Swal.fire({
+                          width: 350,
+                          text: '要先選擇星星數才能送出評論喔！',
+                          icon: 'warning',
+                          iconColor: '#bbb',
+                          confirmButtonColor: '#555',
+                        });
+                      }
+                    }}
+                  />
+                  <RowFlexbox gap="4px" justifyContent="center">
+                    <TextButton
+                      disabled={!email}
+                      onClick={() => {
+                        setUserRating(0);
+                        setWrittenReview('');
+                      }}
+                    >
+                      取消
+                    </TextButton>
+                    <TextButton
+                      disabled={!email}
+                      onClick={() => {
+                        if (userRating) {
+                          userID && dramaID && uploadReview();
+                        } else {
+                          Swal.fire({
+                            width: 350,
+                            text: '要先選擇星星數才能送出評論喔！',
+                            icon: 'warning',
+                            iconColor: '#bbb',
+                            confirmButtonColor: '#555',
+                          });
+                        }
+                      }}
+                    >
+                      送出
+                    </TextButton>
+                  </RowFlexbox>
+                </ColumnFlexbox>
+              )}
+              <ColumnFlexbox
+                width="300px"
+                tabletWidth="280px"
+                height={userReview ? '100%' : '80%'}
+              >
+                <MDText margin="4px 10px" tabletMargin="2px 6px">
+                  評論
+                </MDText>
+                {!reviewsArr.length && (
+                  <ColumnFlexbox margin="10px 0 0 10px">
+                    <MDGreyText style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                      \ 歡迎留下第一則評論 દ ᵕ̈ ૩ /
+                    </MDGreyText>
+                  </ColumnFlexbox>
+                )}
+                <ColumnFlexbox style={{ overflowY: 'scroll' }}>
+                  {userReview && (
+                    <RowFlexbox gap="8px" padding="14px 10px">
+                      <Avatar src={userReview?.avatar} alt="" />
+                      <ColumnFlexbox>
+                        <RowFlexbox gap="6px">
+                          <XSGreyText>
+                            {userReview.date
+                              ? new Date(userReview.date).getFullYear() !==
+                                currentDate.getFullYear()
+                                ? new Date(userReview.date).toLocaleDateString()
+                                : new Date(userReview.date).toLocaleDateString(
+                                    undefined,
+                                    {
+                                      month: 'numeric',
+                                      day: 'numeric',
+                                    }
+                                  )
+                              : null}
+                          </XSGreyText>
+                          {editing ? (
+                            <RowFlexbox>
+                              {[...Array(5)].map((_, index) => {
+                                index += 1;
+                                return (
+                                  <UserRatingStars
+                                    key={index}
+                                    className={
+                                      index <= userRating ? 'on' : 'off'
+                                    }
+                                    isFilled={index <= userRating}
+                                    onMouseOver={() => setUserRating(index)}
+                                    email={email || ''}
+                                  >
+                                    <span>
+                                      <FaStar style={{ fontSize: '14px' }} />
+                                    </span>
+                                  </UserRatingStars>
+                                );
+                              })}
+                            </RowFlexbox>
+                          ) : (
+                            userReview?.rating && (
+                              <RowFlexbox>
+                                {Array.from(
+                                  { length: userReview?.rating },
+                                  (_, index) => (
+                                    <span key={index}>
+                                      <FaStar style={{ fontSize: '14px' }} />
+                                    </span>
+                                  )
+                                )}
+                                {Array.from(
+                                  { length: 5 - userReview?.rating },
+                                  (_, index) => (
+                                    <span key={userReview?.rating! + index}>
+                                      <FaRegStar style={{ fontSize: '14px' }} />
+                                    </span>
+                                  )
+                                )}
+                              </RowFlexbox>
+                            )
+                          )}
+                          <MDGreyText>
+                            <RiPushpinLine />
+                          </MDGreyText>
+                        </RowFlexbox>
+                        <RowFlexbox margin="6px 0">
+                          {editing ? (
+                            <ReviewTextEditArea
+                              maxLength={50}
+                              defaultValue={userReview?.writtenReview}
+                              onChange={(e) =>
+                                setUpdatedUserReview(e.target.value)
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  if (userRating) {
+                                    updateReview();
+                                  } else {
+                                    Swal.fire({
+                                      width: 350,
+                                      text: '要先選擇星星數才能送出評論喔！',
+                                      icon: 'warning',
+                                      iconColor: '#bbb',
+                                      confirmButtonColor: '#555',
+                                    });
+                                  }
+                                }
+                              }}
+                            />
+                          ) : (
+                            <XSText
+                              LineHeight="20px"
+                              style={{ wordBreak: 'break-word' }}
+                            >
+                              {userReview?.writtenReview}
+                            </XSText>
+                          )}
+                        </RowFlexbox>
+                        <RowFlexbox margin="0 0 0 -6px">
+                          <TextButton
+                            onClick={
+                              editing && userRating
+                                ? updateReview
+                                : () => setEditing(true)
+                            }
+                          >
+                            {editing ? '儲存' : <AiOutlineEdit />}
+                          </TextButton>
+                          <IconButton
+                            onClick={() => {
+                              Swal.fire({
+                                text: '確定要刪除這筆評論嗎？',
+                                icon: 'warning',
+                                width: 300,
+                                reverseButtons: true,
+                                showCancelButton: true,
+                                cancelButtonText: '取消',
+                                confirmButtonText: '刪除',
+                                iconColor: '#bbb',
+                                confirmButtonColor: '#555',
+                                cancelButtonColor: '#b0b0b0',
+                              }).then((res) => {
+                                if (res.isConfirmed) {
+                                  removeReview();
+                                  setWrittenReview('');
+                                  setUpdatedUserReview('');
+                                  setUserRating(0);
+                                  Swal.fire({
+                                    title: '已刪除評論',
+                                    icon: 'success',
+                                    iconColor: '#bbb',
+                                    width: 300,
+                                    confirmButtonColor: '#555',
+                                  });
+                                }
+                              });
+                            }}
+                          >
+                            <AiOutlineDelete />
+                          </IconButton>
+                        </RowFlexbox>
+                      </ColumnFlexbox>
+                    </RowFlexbox>
+                  )}
+                  {otherUserReviewsArr
+                    .slice()
+                    .sort((a, b) => {
+                      if (a.date && b.date) {
+                        return (
+                          new Date(b.date).getTime() -
+                          new Date(a.date).getTime()
+                        );
+                      } else {
+                        return 0;
+                      }
+                    })
+                    .map((review) => {
+                      return (
+                        <ColumnFlexbox
+                          style={{
+                            flexShrink: '0',
+                          }}
+                        >
+                          <RowFlexbox padding="16px 10px" gap="8px">
+                            <Avatar src={review.avatar} alt="" />
+                            <ColumnFlexbox gap="4px">
+                              <XSText>{review.userName}</XSText>
+                              <RowFlexbox alignItems="center" gap="4px">
+                                <XSGreyText>
+                                  {review.date
+                                    ? new Date(review.date).getFullYear() !==
+                                      currentDate.getFullYear()
+                                      ? new Date(
+                                          review.date
+                                        ).toLocaleDateString()
+                                      : new Date(
+                                          review.date
+                                        ).toLocaleDateString(undefined, {
+                                          month: 'numeric',
+                                          day: 'numeric',
+                                        })
+                                    : null}
+                                </XSGreyText>
+                                {review.rating && (
+                                  <RowFlexbox>
+                                    {Array.from(
+                                      { length: review.rating },
+                                      (_, index) => (
+                                        <span key={index}>
+                                          <FaStar
+                                            style={{ fontSize: '14px' }}
+                                          />
+                                        </span>
+                                      )
+                                    )}
+                                    {Array.from(
+                                      { length: 5 - review.rating },
+                                      (_, index) => (
+                                        <span key={review.rating! + index}>
+                                          <FaRegStar
+                                            style={{ fontSize: '14px' }}
+                                          />
+                                        </span>
+                                      )
+                                    )}
+                                  </RowFlexbox>
+                                )}
+                              </RowFlexbox>
+                              <XSText
+                                LineHeight="18px"
+                                style={{ wordBreak: 'break-word' }}
+                              >
+                                {review.writtenReview}
+                              </XSText>
+                            </ColumnFlexbox>
+                          </RowFlexbox>
+                          {otherUserReviewsArr.length > 1 && (
+                            <DividerLine style={{ width: '95%' }} />
+                          )}
+                        </ColumnFlexbox>
+                      );
+                    })}
+                </ColumnFlexbox>
+              </ColumnFlexbox>
+            </ColumnFlexbox>
             <ColumnFlexbox
               gap="20px"
               tabletGap="14px"
@@ -480,35 +894,37 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
               height="100%"
             >
               <RowFlexbox gap="20px">
-                <DramaImage src={dramaCard?.image} alt="" />
+                <DramaImage src={dramaPopup?.image} alt="" />
                 <ColumnFlexbox justifyContent="space-between" width="100%">
                   <ColumnFlexbox gap="6px">
-                    <XLText>{dramaCard?.title}</XLText>
-                    <SMGreyText>{dramaCard?.eng}</SMGreyText>
+                    <XLText>{dramaPopup?.title}</XLText>
+                    <SMGreyText>{dramaPopup?.eng}</SMGreyText>
                     {isTablet ? (
                       <>
                         <MDText>
-                          {dramaCard?.year} | {dramaCard?.type} |{' '}
-                          {dramaCard?.genre} · 全 {dramaCard?.episodes} 集
+                          {dramaPopup?.year} | {dramaPopup?.type} |{' '}
+                          {dramaPopup?.genre} · 全 {dramaPopup?.episodes} 集
                         </MDText>
                       </>
                     ) : (
                       <>
                         <MDText>
-                          {dramaCard?.year} | {dramaCard?.type} |{' '}
-                          {dramaCard?.genre}
+                          {dramaPopup?.year} | {dramaPopup?.type} |{' '}
+                          {dramaPopup?.genre}
                         </MDText>
-                        <MDText>全 {dramaCard?.episodes} 集</MDText>
+                        <MDText>全 {dramaPopup?.episodes} 集</MDText>
                       </>
                     )}
                   </ColumnFlexbox>
-                  {reviewsLength ? (
+                  {reviewsArr.length ? (
                     <ColumnFlexbox gap="6px" tabletGap="2px">
                       <RowFlexbox alignItems="flex-end">
-                        <XLText>{dramaCard?.rating}</XLText>
+                        <XLText>{dramaPopup?.rating}</XLText>
                         <XSText>/5</XSText>
                       </RowFlexbox>
-                      <XSGreyText>已有 {reviewsLength} 人留下評價</XSGreyText>
+                      <XSGreyText>
+                        已有 {reviewsArr.length} 人留下評價
+                      </XSGreyText>
                     </ColumnFlexbox>
                   ) : (
                     <ColumnFlexbox height="48px" tabletHeight="40px">
@@ -518,11 +934,11 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                   <ColumnFlexbox gap="10px" textAlign="left" tabletGap="8px">
                     <ColumnFlexbox gap="6px" tabletGap="2px">
                       <XSText>編劇</XSText>
-                      <MDText>{dramaCard?.screenwriter}</MDText>
+                      <MDText>{dramaPopup?.screenwriter}</MDText>
                     </ColumnFlexbox>
                     <ColumnFlexbox gap="6px" tabletGap="2px">
                       <XSText>導演</XSText>
-                      <MDText>{dramaCard?.director}</MDText>
+                      <MDText>{dramaPopup?.director}</MDText>
                     </ColumnFlexbox>
                     <ColumnFlexbox gap="6px" tabletGap="2px" width="100%">
                       <XSText>演員</XSText>
@@ -531,8 +947,8 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                           actors.map((actor) => (
                             <ActorsButton
                               onClick={() => {
-                                handleActorCard(actor);
-                                setDramaCard(undefined);
+                                handleActorPopup(actor);
+                                setDramaPopup(undefined);
                               }}
                             >
                               <Avatar src={actor.avatar} alt="" />
@@ -555,10 +971,10 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                       onClick={() => {
                         if (
                           dramaList &&
-                          dramaId &&
-                          dramaList.includes(dramaId)
+                          dramaID &&
+                          dramaList.includes(dramaID)
                         ) {
-                          handleRemoveFromList(dramaId);
+                          handleRemoveFromList(dramaID);
                         } else if (email) {
                           handleAddToDramaList();
                         } else {
@@ -574,22 +990,22 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                       style={{
                         width: '130px',
                         color:
-                          dramaList && dramaId && dramaList.includes(dramaId)
+                          dramaList && dramaID && dramaList.includes(dramaID)
                             ? '#181818'
                             : '#fff',
                         backgroundColor:
-                          dramaList && dramaId && dramaList.includes(dramaId)
+                          dramaList && dramaID && dramaList.includes(dramaID)
                             ? '#fff'
                             : '#181818',
                       }}
                     >
-                      {dramaList && dramaId && dramaList.includes(dramaId)
+                      {dramaList && dramaID && dramaList.includes(dramaID)
                         ? '✓ 已加入片單'
                         : '＋ 加入片單'}
                     </ActionButton>
                     <ActionButton>
                       <Link
-                        to={`/forum/${dramaCard?.engType}?keyword=${dramaCard?.title}`}
+                        to={`/forum/${dramaPopup?.engType}?keyword=${dramaPopup?.title}`}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -603,8 +1019,8 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                   </RowFlexbox>
                   <CloseButton
                     onClick={() => {
-                      setDramaCard(undefined);
-                      setActors(undefined);
+                      setEditing(false);
+                      setDramaPopup(undefined);
                     }}
                   >
                     ✕
@@ -616,7 +1032,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                   <XSText>原聲帶</XSText>
                   <SpotifyIframe
                     title="Spotify"
-                    src={dramaCard?.spotify}
+                    src={dramaPopup?.spotify}
                     allowFullScreen
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy"
@@ -625,15 +1041,15 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                 <ColumnFlexbox justifyContent="space-between">
                   <ColumnFlexbox gap="6px" tabletGap="4px">
                     <XSText>劇情大綱</XSText>
-                    <XSGreyText>{dramaCard?.story}</XSGreyText>
+                    <XSGreyText>{dramaPopup?.story}</XSGreyText>
                   </ColumnFlexbox>
                   <ColumnFlexbox gap="6px" tabletGap="4px">
                     <XSText>上架日期</XSText>
-                    <SMText>{dramaCard?.releaseDate}</SMText>
+                    <SMText>{dramaPopup?.releaseDate}</SMText>
                   </ColumnFlexbox>
                   <RowFlexbox gap="6px" tabletGap="4px">
-                    {dramaCard?.platform &&
-                      dramaCard.platform.map((platform) => {
+                    {dramaPopup?.platform &&
+                      dramaPopup.platform.map((platform) => {
                         if (platform.includes('Netflix')) {
                           return (
                             <PlatformIcon
@@ -687,9 +1103,9 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                         overflowX: 'scroll',
                       }}
                     >
-                      {dramaCard &&
-                        dramaCard.relatedVideos &&
-                        dramaCard.relatedVideos.map((video, index) => (
+                      {dramaPopup &&
+                        dramaPopup.relatedVideos &&
+                        dramaPopup.relatedVideos.map((video, index) => (
                           <iframe
                             key={index}
                             style={{
@@ -711,20 +1127,20 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
           </RowFlexbox>
         )}
       </Popup>
-      <Popup style={{ display: actorCard ? 'block' : 'none' }}>
-        {actorCard && actorAppearedDramas ? (
+      <Popup style={{ display: actorPopup ? 'block' : 'none' }}>
+        {actorPopup && actorAppearedDramas ? (
           actorAppearedDramas.length > 0 ? (
-            <ColumnFlexbox gap="16px" margin='30px 80px'>
+            <ColumnFlexbox gap="16px" margin="30px 80px">
               <RowFlexbox alignItems="flex-end" gap="4px">
-                <LGText>{actorCard.name}</LGText>
+                <LGText>{actorPopup.name}</LGText>
                 <LGText>還有出演過這些戲劇</LGText>
               </RowFlexbox>
               <RowFlexbox gap="16px" flexWrap="wrap">
                 {actorAppearedDramas?.map((drama, index) => (
                   <DramaCard
                     onClick={() => {
-                      handleDramaCard(drama);
-                      setActorCard(undefined);
+                      handleDramaPopup(drama);
+                      setActorPopup(undefined);
                     }}
                     key={index}
                     style={{
@@ -739,7 +1155,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                       <SMText>{drama.type} |</SMText>
                       <SMText>{drama.genre}</SMText>
                     </RowFlexbox>
-                    {drama.rating && drama.rating > 0 ? (
+                    {drama.rating && Number(drama.rating) > 0 ? (
                       <RowFlexbox alignItems="flex-end">
                         <LGText>{drama?.rating}</LGText>
                         <SMText margin="0 0 1px 0">/5</SMText>
@@ -753,9 +1169,9 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
             </ColumnFlexbox>
           ) : (
             <ColumnFlexbox>
-              <RowFlexbox alignItems="flex-end" gap="4px" margin='30px 40px'>
+              <RowFlexbox alignItems="flex-end" gap="4px" margin="30px 40px">
                 <LGGreyText>
-                  很抱歉，目前沒有 {actorCard.name} 出演過的其他戲劇資料：（
+                  很抱歉，目前沒有 {actorPopup.name} 出演過的其他戲劇資料：（
                 </LGGreyText>
               </RowFlexbox>
             </ColumnFlexbox>
@@ -763,15 +1179,15 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
         ) : null}
         <BackButton
           onClick={() => {
-            setDramaCard(prevDramaCardRef.current);
-            setActorCard(undefined);
+            setDramaPopup(prevDramaCardRef.current);
+            setActorPopup(undefined);
           }}
         >
           <IoChevronBackCircle style={{ fontSize: '24px' }} />
         </BackButton>
         <CloseButton
           onClick={() => {
-            setActorCard(undefined);
+            setActorPopup(undefined);
           }}
         >
           ✕

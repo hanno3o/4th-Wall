@@ -3,7 +3,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../config/firebase.config';
 import { useAppDispatch } from '../redux/hooks';
-import { setUserInfo } from '../redux/reducers/userSlice';
+import { SET_USERINFO } from '../redux/reducers/userSlice';
 
 export interface AuthRouteProps {
   children?: React.ReactNode;
@@ -35,7 +35,7 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
             registrationDate: number;
             dramaList: string[];
           };
-          dispatch(setUserInfo(userData));
+          dispatch(SET_USERINFO(userData));
         } else {
           const userData = {
             id: user.uid,
@@ -53,7 +53,7 @@ const AuthRoute: React.FunctionComponent<AuthRouteProps> = (props) => {
             dramaList: [],
           };
           await setDoc(userRef, userData);
-          dispatch(setUserInfo(userData));
+          dispatch(SET_USERINFO(userData));
         }
         setIsLoading(false);
       } else {

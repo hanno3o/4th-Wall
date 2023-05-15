@@ -6,12 +6,11 @@ import {
   doc,
   updateDoc,
   collection,
-  getDoc,
   getDocs,
   query,
   where,
 } from 'firebase/firestore';
-import { updateAvatar, updateUserName } from '../../redux/reducers/userSlice';
+import { UPDATE_AVATAR, UPDATE_USERNAME } from '../../redux/reducers/userSlice';
 import { useState, useEffect } from 'react';
 import { FiUploadCloud } from 'react-icons/fi';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
@@ -21,6 +20,8 @@ import { XLText, SMText, LGDarkGreyText } from '../../style/Text';
 import Dramas from '../../components/Dramas';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
+import { GET_USER_DRAMALIST } from '../../redux/reducers/dramasSlice';
+import { IDrama } from '../../redux/api/dramasAPI';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -206,6 +207,7 @@ function Profile() {
   const id = useAppSelector((state) => state.user.id);
   const userName = useAppSelector((state) => state.user.userName);
   const avatar = useAppSelector((state) => state.user.avatar);
+  const dramaList = useAppSelector((state) => state.user.dramaList);
   const dispatch = useAppDispatch();
   const registrationDate = useAppSelector(
     (state) => state.user.registrationDate
@@ -220,7 +222,6 @@ function Profile() {
   const [searchWords, setSearchWords] = useState('');
   const [editing, setEditing] = useState(false);
   const [updatedUserName, setUpdatedUserName] = useState(userName);
-  const dramaList = useAppSelector((state) => state.user.dramaList);
   const dramasCollectionRef = collection(db, 'dramas');
   const [userDramaList, setUserDramaList] = useState<any[]>([]);
   const [articleCount, setArticleCount] = useState<number>(0);
@@ -230,6 +231,7 @@ function Profile() {
     { title: '已收藏的劇', data: userDramaList.length },
     { title: '發文數', data: articleCount },
   ];
+
   const displayedDramaList = userDramaList.filter(
     (drama) =>
       drama.eng?.toLowerCase().includes(searchWords.toLowerCase()) ||
@@ -240,16 +242,7 @@ function Profile() {
       ? displayedDramaList.filter((drama) => drama.type === selectedTypeFilter)
       : displayedDramaList;
 
-  const getDramaList = async () => {
-    if (dramaList) {
-      const dramaListRef = await Promise.all(
-        dramaList.map((dramaId) => getDoc(doc(dramasCollectionRef, dramaId)))
-      );
-      const dramaListData = dramaListRef.map((doc) => doc.data());
-      setUserDramaList(dramaListData);
-    }
-  };
-  const getArticlesByAuthorId = async (
+  const getUserArticlesByAuthorId = async (
     boardName: string,
     id: string | null
   ) => {
@@ -278,7 +271,7 @@ function Profile() {
       'JapaneseDrama',
       'AmericanDrama',
       'ChinaDrama',
-    ].map((boardName) => getArticlesByAuthorId(boardName, id));
+    ].map((boardName) => getUserArticlesByAuthorId(boardName, id));
 
     Promise.all(promises).then((res) => {
       const totalArticleCount = res.reduce((acc: number, currentValue) => {
@@ -294,10 +287,14 @@ function Profile() {
     if (id) {
       const userRef = doc(db, 'users', id);
       updateDoc(userRef, { dramaList: dramaList });
-      getDramaList();
-      setTimeout(() => {
-        setIsLoading(true);
-      }, 100);
+      const dramaIDList = dramaList || [];
+      dispatch(GET_USER_DRAMALIST(dramaIDList)).then((res) => {
+        setTimeout(() => {
+          setIsLoading(true);
+        }, 100);
+        const dramas = res.payload;
+        setUserDramaList(dramas as IDrama[]);
+      });
     }
   }, [dramaList]);
 
@@ -307,7 +304,7 @@ function Profile() {
     if (id) {
       const userRef = doc(db, 'users', id);
       await updateDoc(userRef, { avatar: imageUrl });
-      dispatch(updateAvatar(imageUrl));
+      dispatch(UPDATE_AVATAR(imageUrl));
     }
   };
 
@@ -331,7 +328,7 @@ function Profile() {
     if (id && updatedUserName) {
       const userRef = doc(db, 'users', id);
       await updateDoc(userRef, { userName: updatedUserName });
-      dispatch(updateUserName(updatedUserName));
+      dispatch(UPDATE_USERNAME(updatedUserName));
     }
   };
 
