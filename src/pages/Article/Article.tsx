@@ -221,7 +221,7 @@ interface IArticle {
   date?: Date;
 }
 
-interface IComments {
+interface IComment {
   id?: string;
   userName?: string;
   userId?: string;
@@ -238,7 +238,7 @@ function Article() {
   const [floor, setFloor] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
-  const [comments, setComments] = useState<IComments[]>([]);
+  const [comments, setComments] = useState<IComment[]>([]);
   const [writtenComment, setWrittenComment] = useState<string>('');
   const [commentOptionWindow, setCommentOptionWindow] = useState<
     string | undefined | null
@@ -331,11 +331,31 @@ function Article() {
     }
   };
 
-  const handleReply = (commentId: string | undefined, index: number) => {
-    if (commentId) {
-      setWrittenComment(`B${index + 1} `);
-    }
+  const handleReply = (commentID: string | undefined, index: number) => {
+    commentID && setWrittenComment(`B${index + 1} `);
   };
+
+  function checkValidComment(writtenComment: string, comments: IComment[]) {
+    const matchBNumberWrittenComment = writtenComment.match(regex);
+    let hasValidComment = false;
+
+    matchBNumberWrittenComment &&
+      matchBNumberWrittenComment.forEach((match) => {
+        const number = parseInt(match.substring(1));
+        if (number > comments.length) {
+          Swal.fire({
+            text: '您的留言中包含不存在的樓層，因此無法進行回覆',
+            width: 350,
+            icon: 'warning',
+            iconColor: '#bbb',
+            confirmButtonColor: '#555',
+          });
+          hasValidComment = true;
+        }
+      });
+
+    !hasValidComment && handleUploadComment();
+  }
 
   return (
     <ArticleWrapper
@@ -603,24 +623,7 @@ function Article() {
                 onChange={(e) => setWrittenComment(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    const matchBNumberWrittenComment =
-                      writtenComment.match(regex);
-                    matchBNumberWrittenComment &&
-                      matchBNumberWrittenComment.forEach((match) => {
-                        const number = parseInt(match.substring(1));
-                        if (number > comments.length) {
-                          Swal.fire({
-                            text: '此樓層不存在，無法進行回覆',
-                            width: 350,
-                            icon: 'warning',
-                            iconColor: '#bbb',
-                            confirmButtonColor: '#555',
-                          });
-                          return;
-                        } else {
-                          handleUploadComment();
-                        }
-                      });
+                    checkValidComment(writtenComment, comments);
                   }
                 }}
                 disabled={!email}
@@ -637,24 +640,7 @@ function Article() {
                 <ConfirmButton
                   disabled={!email || !writtenComment}
                   onClick={() => {
-                    const matchBNumberWrittenComment =
-                      writtenComment.match(regex);
-                    matchBNumberWrittenComment &&
-                      matchBNumberWrittenComment.forEach((match) => {
-                        const number = parseInt(match.substring(1));
-                        if (number > comments.length) {
-                          Swal.fire({
-                            text: '此樓層不存在，無法進行回覆',
-                            width: 350,
-                            icon: 'warning',
-                            iconColor: '#bbb',
-                            confirmButtonColor: '#555',
-                          });
-                          return;
-                        } else {
-                          handleUploadComment();
-                        }
-                      });
+                    checkValidComment(writtenComment, comments);
                   }}
                 >
                   送出
