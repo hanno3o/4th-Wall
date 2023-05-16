@@ -450,8 +450,6 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   const handleAddToDramaList = async () => {
     if (dramaID && userID) {
       dispatch(ADD_TO_DRAMALIST(dramaID));
-      // const userRef = doc(db, 'users', userID);
-      // await updateDoc(userRef, { dramaList: dramaList });
     }
   };
 

@@ -151,13 +151,15 @@ const calculateAverageRating = async (
       const dramaRef = doc(db, 'dramas', dramaID);
       const totalStars = reviewsArr.reduce((acc, review) => {
         if (review.rating) {
-          return acc + Number(review.rating); 
+          return acc + Number(review.rating);
         } else {
           return acc;
         }
       }, 0);
       const averageRating =
-        reviewsArr.length > 0 ? (totalStars / reviewsArr.length).toFixed(1) : '0';
+        reviewsArr.length > 0
+          ? (totalStars / reviewsArr.length).toFixed(1)
+          : '0';
       await updateDoc(dramaRef, { rating: averageRating });
       return averageRating;
     }
@@ -167,7 +169,6 @@ const calculateAverageRating = async (
     return null;
   }
 };
-
 
 export const handleUploadReview = async (
   dramaID: string,
@@ -228,11 +229,11 @@ export const handleRemoveReview = async (dramaID: string, userID: string) => {
   }
 };
 
-export const getUserDramaList = async (dramaList: string[]) => {
+export const getUserDramasList = async (dramasList: string[]) => {
   try {
-    if (dramaList) {
+    if (dramasList) {
       const dramaListRef = await Promise.all(
-        dramaList.map((dramaId) => getDoc(doc(dramasRef, dramaId)))
+        dramasList.map((dramaId) => getDoc(doc(dramasRef, dramaId)))
       );
       const userDramaList = dramaListRef.map((doc) => doc.data());
       return userDramaList;

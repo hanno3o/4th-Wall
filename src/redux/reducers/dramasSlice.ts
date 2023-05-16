@@ -1,8 +1,7 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
   getAllDramas,
-  getUserDramaList,
+  getUserDramasList,
   IDrama,
   IReview,
   getReviews,
@@ -20,10 +19,10 @@ export const GET_ALL_DRAMAS = createAsyncThunk(
   }
 );
 
-export const GET_USER_DRAMALIST = createAsyncThunk(
-  'dramas/getUserDramaList',
-  async (dramaList: string[]) => {
-    return await getUserDramaList(dramaList);
+export const GET_USER_DRAMASLIST = createAsyncThunk(
+  'dramas/getUserDramasList',
+  async (dramasList: string[]) => {
+    return await getUserDramasList(dramasList);
   }
 );
 
@@ -83,6 +82,7 @@ export const REMOVE_REVIEW = createAsyncThunk(
 
 interface DramasState {
   dramas: IDrama[];
+  userDramasList: IDrama[];
   actors: IActor[];
   reviewsArr: IReview[];
   otherUserReviewsArr: IReview[];
@@ -93,6 +93,7 @@ interface DramasState {
 
 const initialState: DramasState = {
   dramas: [] as IDrama[],
+  userDramasList: [] as IDrama[],
   actors: [] as IActor[],
   reviewsArr: [] as IReview[],
   otherUserReviewsArr: [] as IReview[],
@@ -119,15 +120,15 @@ const dramasSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || null;
       })
-      .addCase(GET_USER_DRAMALIST.pending, (state) => {
+      .addCase(GET_USER_DRAMASLIST.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(GET_USER_DRAMALIST.fulfilled, (state, action) => {
+      .addCase(GET_USER_DRAMASLIST.fulfilled, (state, action) => {
         state.loading = false;
-        state.dramas = action.payload as IDrama[];
+        state.userDramasList = action.payload as IDrama[];
       })
-      .addCase(GET_USER_DRAMALIST.rejected, (state, action) => {
+      .addCase(GET_USER_DRAMASLIST.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || null;
       })

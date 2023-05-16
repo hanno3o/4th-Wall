@@ -20,8 +20,10 @@ import { XLText, SMText, LGDarkGreyText } from '../../style/Text';
 import Dramas from '../../components/Dramas';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
-import { GET_USER_DRAMALIST } from '../../redux/reducers/dramasSlice';
-import { IDrama } from '../../redux/api/dramasAPI';
+import {
+  GET_USER_DRAMASLIST,
+  GET_ALL_DRAMAS,
+} from '../../redux/reducers/dramasSlice';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -208,6 +210,7 @@ function Profile() {
   const userName = useAppSelector((state) => state.user.userName);
   const avatar = useAppSelector((state) => state.user.avatar);
   const dramaList = useAppSelector((state) => state.user.dramaList);
+  const userDramasList = useAppSelector((state) => state.dramas.userDramasList);
   const dispatch = useAppDispatch();
   const registrationDate = useAppSelector(
     (state) => state.user.registrationDate
@@ -222,17 +225,14 @@ function Profile() {
   const [searchWords, setSearchWords] = useState('');
   const [editing, setEditing] = useState(false);
   const [updatedUserName, setUpdatedUserName] = useState(userName);
-  const dramasCollectionRef = collection(db, 'dramas');
-  const [userDramaList, setUserDramaList] = useState<any[]>([]);
   const [articleCount, setArticleCount] = useState<number>(0);
-
   const recordData = [
     { title: '使用天數', data: daysSinceRegistration },
-    { title: '已收藏的劇', data: userDramaList.length },
+    { title: '已收藏的劇', data: userDramasList.length },
     { title: '發文數', data: articleCount },
   ];
 
-  const displayedDramaList = userDramaList.filter(
+  const displayedDramaList = userDramasList.filter(
     (drama) =>
       drama.eng?.toLowerCase().includes(searchWords.toLowerCase()) ||
       drama.title?.includes(searchWords)
@@ -265,6 +265,10 @@ function Profile() {
   };
 
   useEffect(() => {
+    dispatch(GET_ALL_DRAMAS());
+  }, []);
+
+  useEffect(() => {
     const promises = [
       'TaiwanDrama',
       'KoreanDrama',
@@ -288,13 +292,10 @@ function Profile() {
       const userRef = doc(db, 'users', id);
       updateDoc(userRef, { dramaList: dramaList });
       const dramaIDList = dramaList || [];
-      dispatch(GET_USER_DRAMALIST(dramaIDList)).then((res) => {
-        setTimeout(() => {
-          setIsLoading(true);
-        }, 100);
-        const dramas = res.payload;
-        setUserDramaList(dramas as IDrama[]);
-      });
+      dispatch(GET_USER_DRAMASLIST(dramaIDList));
+      setTimeout(() => {
+        setIsLoading(true);
+      }, 100);
     }
   }, [dramaList]);
 
