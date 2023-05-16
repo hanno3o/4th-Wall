@@ -122,6 +122,35 @@ function Login() {
   const [isShowOrHidePassword, setIsShowOrHidePassword] = useState(true);
   const [isSignInState, setIsSignInState] = useState(true);
   const id = useAppSelector((state) => state.user.id);
+
+  const nativeAuthErrorHandlingMessages: {
+    [key: string]: string;
+  } = {
+    'auth/invalid-email': '輸入的電子郵件地址無效，請檢查後重新輸入',
+    'auth/missing-email': '尚未輸入電子郵件',
+    'auth/missing-password': '尚未輸入密碼',
+    'auth/email-already-in-use':
+      '該電子郵件地址已被使用，請使用其他電子郵件地址',
+    'auth/weak-password': '密碼強度太弱，請輸入至少7位數密碼',
+    'auth/wrong-password': '密碼錯誤，請確認後重新輸入',
+    'auth/user-not-found': '找不到使用者，請檢查您輸入的資訊是否正確',
+  };
+
+  const showNativeAuthErrorMessage = (errorCode: string) => {
+    if (nativeAuthErrorHandlingMessages.hasOwnProperty(errorCode)) {
+      const errorMessage = nativeAuthErrorHandlingMessages[errorCode];
+      Swal.fire({
+        text: errorMessage,
+        width: 350,
+        icon: 'warning',
+        iconColor: '#bbb',
+        confirmButtonColor: '#555',
+      });
+    } else {
+      console.log('Unknown error');
+    }
+  };
+
   const signInWithGoogle = async () => {
     setAuthing(true);
     signInWithPopup(auth, new GoogleAuthProvider())
@@ -147,8 +176,8 @@ function Login() {
           confirmButtonColor: '#555',
         });
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        console.log(error);
         setAuthing(false);
       });
   };
@@ -177,8 +206,10 @@ function Login() {
           confirmButtonColor: '#555',
         });
       })
-      .catch((err) => {
-        console.log('native login error:', err);
+      .catch((error) => {
+        console.log('native login error:', error);
+        const errorCode = error.code;
+        showNativeAuthErrorMessage(errorCode);
       });
   };
 
@@ -205,8 +236,10 @@ function Login() {
           confirmButtonColor: '#555',
         });
       })
-      .catch((err) => {
-        console.log('native signup error:', err);
+      .catch((error) => {
+        console.log('native signup error:', error);
+        const errorCode = error.code;
+        showNativeAuthErrorMessage(errorCode);
       });
   };
 
