@@ -1,6 +1,4 @@
 import styled, { keyframes } from 'styled-components';
-import { db } from '../../config/firebase.config';
-import { doc, updateDoc } from 'firebase/firestore';
 import { useState, useEffect, useRef } from 'react';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import {

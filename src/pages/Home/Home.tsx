@@ -105,25 +105,6 @@ interface MultiFilterOptionProps {
   order?: string;
   platform?: string[];
 }
-interface IDrama {
-  id?: string | undefined;
-  title?: string;
-  year?: number;
-  rating?: string;
-  image?: string;
-  eng?: string;
-  genre?: string;
-  platform?: string[];
-  type?: string;
-  story?: string;
-  director?: string;
-  screenwriter?: string;
-  spotify?: string;
-  episodes?: number;
-  engType?: string;
-  relatedVideos?: string[];
-  releaseDate?: string;
-}
 
 function Home() {
   const filterData = {
