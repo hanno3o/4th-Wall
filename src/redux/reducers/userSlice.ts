@@ -11,7 +11,7 @@ export interface userState {
   dramaList: string[] | null;
 }
 
-const initialState: userState = {
+export const initialState: userState = {
   status: 'idle',
   id: '',
   email: '',
@@ -25,7 +25,7 @@ export const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUserInfo: (
+    SET_USERINFO: (
       state,
       action: PayloadAction<{
         id: string | null;
@@ -43,19 +43,19 @@ export const userSlice = createSlice({
       state.registrationDate = action.payload.registrationDate;
       state.dramaList = action.payload.dramaList;
     },
-    updateAvatar: (state, action: PayloadAction<string>) => {
+    UPDATE_AVATAR: (state, action: PayloadAction<string>) => {
       state.avatar = action.payload;
     },
-    updateUserName: (state, action: PayloadAction<string>) => {
+    UPDATE_USERNAME: (state, action: PayloadAction<string>) => {
       state.userName = action.payload;
     },
-    addToDramaList: (state, action: PayloadAction<string>) => {
+    ADD_TO_DRAMALIST: (state, action: PayloadAction<string>) => {
       if (state.dramaList === null) {
         state.dramaList = [];
       }
       state.dramaList.push(action.payload);
     },
-    removeFromDramaList: (state, action: PayloadAction<string>) => {
+    REMOVE_FROM_DRAMALIST: (state, action: PayloadAction<string>) => {
       if (state.dramaList === null) {
         state.dramaList = [];
       } else {
@@ -68,11 +68,11 @@ export const userSlice = createSlice({
 });
 
 export const {
-  setUserInfo,
-  updateAvatar,
-  updateUserName,
-  addToDramaList,
-  removeFromDramaList,
+  SET_USERINFO,
+  UPDATE_AVATAR,
+  UPDATE_USERNAME,
+  ADD_TO_DRAMALIST,
+  REMOVE_FROM_DRAMALIST,
 } = userSlice.actions;
 export const selectUser = (state: RootState) => state.user;
 export default userSlice.reducer;

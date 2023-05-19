@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signOut } from 'firebase/auth';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
-import { setUserInfo } from '../../redux/reducers/userSlice';
+import { SET_USERINFO } from '../../redux/reducers/userSlice';
 import { FaUser } from 'react-icons/fa';
 import { HiOutlineCog8Tooth } from 'react-icons/hi2';
 import { VscSignOut } from 'react-icons/vsc';
@@ -45,7 +45,7 @@ const LogoImage = styled.img`
   }
 `;
 
-const NavIconButton = styled.button`
+const NavIconButton = styled(Link)`
   font-size: 32px;
   filter: brightness(0.9);
   &:hover {
@@ -141,11 +141,9 @@ function Header() {
         />
       </Link>
       <NavBar>
-        <Link to="/forum/TaiwanDrama">
-          <NavIconButton>
-            <BsWechat />
-          </NavIconButton>
-        </Link>
+        <NavIconButton to="/forum/TaiwanDrama">
+          <BsWechat />
+        </NavIconButton>
         {avatar && (
           <Link to="/profile">
             <Avatar src={avatar} alt="" />
@@ -188,7 +186,7 @@ function Header() {
                       navigate('/login');
                       signOut(auth);
                       dispatch(
-                        setUserInfo({
+                        SET_USERINFO({
                           id: null,
                           avatar: null,
                           email: null,
@@ -219,7 +217,7 @@ function Header() {
             </SettingOptions>
           </>
         ) : (
-          <NavIconButton onClick={() => navigate('/login')}>
+          <NavIconButton to="/login">
             <FaUser style={{ fontSize: '24px' }} />
           </NavIconButton>
         )}

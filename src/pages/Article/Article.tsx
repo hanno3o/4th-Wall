@@ -28,6 +28,8 @@ import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
 import { IoChevronBackCircle } from 'react-icons/io5';
 import Swal from 'sweetalert2';
+import { boardNames } from '../../utils/constants';
+import { debounce } from '../../utils/debounce';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -220,7 +222,7 @@ interface IArticle {
   date?: Date;
 }
 
-interface IComments {
+interface IComment {
   id?: string;
   userName?: string;
   userId?: string;
@@ -237,7 +239,7 @@ function Article() {
   const [floor, setFloor] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [article, setArticle] = useState<IArticle>();
-  const [comments, setComments] = useState<IComments[]>([]);
+  const [comments, setComments] = useState<IComment[]>([]);
   const [writtenComment, setWrittenComment] = useState<string>('');
   const [commentOptionWindow, setCommentOptionWindow] = useState<
     string | undefined | null
@@ -330,11 +332,33 @@ function Article() {
     }
   };
 
-  const handleReply = (commentId: string | undefined, index: number) => {
-    if (commentId) {
-      setWrittenComment(`B${index + 1} `);
-    }
+  const handleReply = (commentID: string | undefined, index: number) => {
+    commentID && setWrittenComment(`B${index + 1} `);
   };
+
+  function checkValidComment(writtenComment: string, comments: IComment[]) {
+    const matchBNumberWrittenComment = writtenComment.match(regex);
+    let hasValidComment = false;
+
+    matchBNumberWrittenComment &&
+      matchBNumberWrittenComment.forEach((match) => {
+        const number = parseInt(match.substring(1));
+        if (number > comments.length) {
+          Swal.fire({
+            text: '您的留言中包含不存在的樓層，因此無法進行回覆',
+            width: 350,
+            icon: 'warning',
+            iconColor: '#bbb',
+            confirmButtonColor: '#555',
+          });
+          hasValidComment = true;
+        }
+      });
+
+    !hasValidComment && handleUploadComment();
+  }
+
+  const debouncedCheckValidComment = debounce(checkValidComment, 1000);
 
   return (
     <ArticleWrapper
@@ -364,22 +388,8 @@ function Article() {
                     <FaColumns />
                   </MDText>
                   <MDText>
-                    {(() => {
-                      switch (boardName) {
-                        case 'TaiwanDrama':
-                          return '台劇版';
-                        case 'KoreanDrama':
-                          return '韓劇版';
-                        case 'AmericanDrama':
-                          return '美劇版';
-                        case 'JapaneseDrama':
-                          return '日劇版';
-                        case 'ChinaDrama':
-                          return '陸劇版';
-                        default:
-                          return boardName;
-                      }
-                    })()}
+                    {boardNames[boardName as keyof typeof boardNames] ||
+                      boardName}
                   </MDText>
                 </RowFlexbox>
                 <RowFlexbox gap="8px">
@@ -411,7 +421,7 @@ function Article() {
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
             <RowFlexbox alignItems="flex-end" margin="60px 0 0 0">
-              <LGText id="B1">留言區</LGText>
+              <LGText>留言區</LGText>
               <SMGreyText>（共有 {comments.length} 則留言）</SMGreyText>
             </RowFlexbox>
             <ColumnFlexbox gap="8px" margin="20px 0 0 0 ">
@@ -431,8 +441,9 @@ function Article() {
                       <>
                         <Comment
                           key={index}
-                          id={`B${index + 2}`}
+                          id={`B${index + 1}`}
                           style={{
+                            scrollMarginTop: '80px',
                             background:
                               floor === index + 1
                                 ? 'linear-gradient(to left, rgba(252,51,68,0.3), rgba(78,94,235,0.3))'
@@ -615,24 +626,7 @@ function Article() {
                 onChange={(e) => setWrittenComment(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    const matchBNumberWrittenComment =
-                      writtenComment.match(regex);
-                    matchBNumberWrittenComment &&
-                      matchBNumberWrittenComment.forEach((match) => {
-                        const number = parseInt(match.substring(1));
-                        if (number > comments.length) {
-                          Swal.fire({
-                            text: '此樓層不存在，無法進行回覆',
-                            width: 350,
-                            icon: 'warning',
-                            iconColor: '#bbb',
-                            confirmButtonColor: '#555',
-                          });
-                          return;
-                        } else {
-                          handleUploadComment();
-                        }
-                      });
+                    debouncedCheckValidComment(writtenComment, comments);
                   }
                 }}
                 disabled={!email}
@@ -649,24 +643,7 @@ function Article() {
                 <ConfirmButton
                   disabled={!email || !writtenComment}
                   onClick={() => {
-                    const matchBNumberWrittenComment =
-                      writtenComment.match(regex);
-                    matchBNumberWrittenComment &&
-                      matchBNumberWrittenComment.forEach((match) => {
-                        const number = parseInt(match.substring(1));
-                        if (number > comments.length) {
-                          Swal.fire({
-                            text: '此樓層不存在，無法進行回覆',
-                            width: 350,
-                            icon: 'warning',
-                            iconColor: '#bbb',
-                            confirmButtonColor: '#555',
-                          });
-                          return;
-                        } else {
-                          handleUploadComment();
-                        }
-                      });
+                    debouncedCheckValidComment(writtenComment, comments);
                   }}
                 >
                   送出

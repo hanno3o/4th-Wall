@@ -6,12 +6,11 @@ import {
   doc,
   updateDoc,
   collection,
-  getDoc,
   getDocs,
   query,
   where,
 } from 'firebase/firestore';
-import { updateAvatar, updateUserName } from '../../redux/reducers/userSlice';
+import { UPDATE_AVATAR, UPDATE_USERNAME } from '../../redux/reducers/userSlice';
 import { useState, useEffect } from 'react';
 import { FiUploadCloud } from 'react-icons/fi';
 import { HiOutlineArrowLongRight } from 'react-icons/hi2';
@@ -21,6 +20,11 @@ import { XLText, SMText, LGDarkGreyText } from '../../style/Text';
 import Dramas from '../../components/Dramas';
 import { Link } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
+import {
+  GET_USER_DRAMASLIST,
+  GET_ALL_DRAMAS,
+} from '../../redux/reducers/dramasSlice';
+import { debounce } from '../../utils/debounce';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -206,6 +210,8 @@ function Profile() {
   const id = useAppSelector((state) => state.user.id);
   const userName = useAppSelector((state) => state.user.userName);
   const avatar = useAppSelector((state) => state.user.avatar);
+  const dramaList = useAppSelector((state) => state.user.dramaList);
+  const userDramasList = useAppSelector((state) => state.dramas.userDramasList);
   const dispatch = useAppDispatch();
   const registrationDate = useAppSelector(
     (state) => state.user.registrationDate
@@ -220,17 +226,14 @@ function Profile() {
   const [searchWords, setSearchWords] = useState('');
   const [editing, setEditing] = useState(false);
   const [updatedUserName, setUpdatedUserName] = useState(userName);
-  const dramaList = useAppSelector((state) => state.user.dramaList);
-  const dramasCollectionRef = collection(db, 'dramas');
-  const [userDramaList, setUserDramaList] = useState<any[]>([]);
   const [articleCount, setArticleCount] = useState<number>(0);
-
   const recordData = [
     { title: '使用天數', data: daysSinceRegistration },
-    { title: '已收藏的劇', data: userDramaList.length },
+    { title: '已收藏的劇', data: userDramasList.length },
     { title: '發文數', data: articleCount },
   ];
-  const displayedDramaList = userDramaList.filter(
+
+  const displayedDramaList = userDramasList.filter(
     (drama) =>
       drama.eng?.toLowerCase().includes(searchWords.toLowerCase()) ||
       drama.title?.includes(searchWords)
@@ -240,16 +243,7 @@ function Profile() {
       ? displayedDramaList.filter((drama) => drama.type === selectedTypeFilter)
       : displayedDramaList;
 
-  const getDramaList = async () => {
-    if (dramaList) {
-      const dramaListRef = await Promise.all(
-        dramaList.map((dramaId) => getDoc(doc(dramasCollectionRef, dramaId)))
-      );
-      const dramaListData = dramaListRef.map((doc) => doc.data());
-      setUserDramaList(dramaListData);
-    }
-  };
-  const getArticlesByAuthorId = async (
+  const getUserArticlesByAuthorId = async (
     boardName: string,
     id: string | null
   ) => {
@@ -272,13 +266,17 @@ function Profile() {
   };
 
   useEffect(() => {
+    dispatch(GET_ALL_DRAMAS());
+  }, []);
+
+  useEffect(() => {
     const promises = [
       'TaiwanDrama',
       'KoreanDrama',
       'JapaneseDrama',
       'AmericanDrama',
       'ChinaDrama',
-    ].map((boardName) => getArticlesByAuthorId(boardName, id));
+    ].map((boardName) => getUserArticlesByAuthorId(boardName, id));
 
     Promise.all(promises).then((res) => {
       const totalArticleCount = res.reduce((acc: number, currentValue) => {
@@ -294,7 +292,8 @@ function Profile() {
     if (id) {
       const userRef = doc(db, 'users', id);
       updateDoc(userRef, { dramaList: dramaList });
-      getDramaList();
+      const dramaIDList = dramaList || [];
+      dispatch(GET_USER_DRAMASLIST(dramaIDList));
       setTimeout(() => {
         setIsLoading(true);
       }, 100);
@@ -307,7 +306,7 @@ function Profile() {
     if (id) {
       const userRef = doc(db, 'users', id);
       await updateDoc(userRef, { avatar: imageUrl });
-      dispatch(updateAvatar(imageUrl));
+      dispatch(UPDATE_AVATAR(imageUrl));
     }
   };
 
@@ -331,13 +330,15 @@ function Profile() {
     if (id && updatedUserName) {
       const userRef = doc(db, 'users', id);
       await updateDoc(userRef, { userName: updatedUserName });
-      dispatch(updateUserName(updatedUserName));
+      dispatch(UPDATE_USERNAME(updatedUserName));
     }
   };
 
   const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchWords(e.target.value);
   };
+
+  const delayedSearch = debounce(handleSearchInput, 500);
 
   const handleTypeFilter = (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -435,7 +436,7 @@ function Profile() {
             <SearchbarInput
               type="text"
               placeholder="在片單中搜尋"
-              onChange={handleSearchInput}
+              onChange={delayedSearch}
             />
           </SearchbarWrapper>
         </RowFlexbox>

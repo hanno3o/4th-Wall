@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, BrowserRouter } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import firebaseConfig from './config/firebase.config';
 import { Provider } from 'react-redux';
