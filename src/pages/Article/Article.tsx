@@ -29,6 +29,7 @@ import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
 import { IoChevronBackCircle } from 'react-icons/io5';
 import Swal from 'sweetalert2';
 import { boardNames } from '../../utils/constants';
+import { debounce } from '../../utils/debounce';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -357,6 +358,8 @@ function Article() {
     !hasValidComment && handleUploadComment();
   }
 
+  const debouncedCheckValidComment = debounce(checkValidComment, 1000);
+
   return (
     <ArticleWrapper
       onClick={(e) => {
@@ -623,7 +626,7 @@ function Article() {
                 onChange={(e) => setWrittenComment(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    checkValidComment(writtenComment, comments);
+                    debouncedCheckValidComment(writtenComment, comments);
                   }
                 }}
                 disabled={!email}
@@ -640,7 +643,7 @@ function Article() {
                 <ConfirmButton
                   disabled={!email || !writtenComment}
                   onClick={() => {
-                    checkValidComment(writtenComment, comments);
+                    debouncedCheckValidComment(writtenComment, comments);
                   }}
                 >
                   送出

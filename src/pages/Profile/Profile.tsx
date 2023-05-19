@@ -24,6 +24,7 @@ import {
   GET_USER_DRAMASLIST,
   GET_ALL_DRAMAS,
 } from '../../redux/reducers/dramasSlice';
+import { debounce } from '../../utils/debounce';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -337,6 +338,8 @@ function Profile() {
     setSearchWords(e.target.value);
   };
 
+  const delayedSearch = debounce(handleSearchInput, 500);
+
   const handleTypeFilter = (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
@@ -433,7 +436,7 @@ function Profile() {
             <SearchbarInput
               type="text"
               placeholder="在片單中搜尋"
-              onChange={handleSearchInput}
+              onChange={delayedSearch}
             />
           </SearchbarWrapper>
         </RowFlexbox>

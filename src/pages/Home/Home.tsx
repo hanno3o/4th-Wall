@@ -7,6 +7,7 @@ import FilterNavBar from '../../components/FilterNavBar';
 import Dramas from '../../components/Dramas';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { GET_ALL_DRAMAS } from '../../redux/reducers/dramasSlice';
+import { debounce } from '../../utils/debounce';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -176,6 +177,8 @@ function Home() {
     setSearchWords(e.target.value);
   };
 
+  const delayedSearch = debounce(handleSearchInput, 500);
+
   const handleTypeFilter = (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
@@ -281,7 +284,7 @@ function Home() {
         <XXLText margin="-20px auto 30px">評劇、聊劇、收藏你的愛劇</XXLText>
         <SearchBar
           placeHolder="請輸入想要查找的戲劇名稱"
-          onChange={handleSearchInput}
+          onChange={delayedSearch}
         />
         <FilterNavBar
           selectedTypeFilter={selectedTypeFilter}
