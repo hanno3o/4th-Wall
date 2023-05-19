@@ -1,57 +1,120 @@
 import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import { Outlet } from 'react-router-dom';
+import { createGlobalStyle, ThemeProvider } from 'styled-components';
+import { Reset } from 'styled-reset';
+import AuthRoute from './components/AuthRoute';
+import Header from './components/Header';
+import Footer from './components/Footer';
+
+const theme = {
+  primaryColor: '#fc3344',
+  secondaryColor: '#4538e6',
+  darkBlack: '#080808',
+  black: '#181818',
+  white: '#fff',
+  lightGrey: '#bbb',
+  grey: '#555',
+  darkGrey: '#2a2a2a',
+};
+
+const GlobalStyle = createGlobalStyle`
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  a {
+  text-decoration: none;
+  color: inherit;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  strong {
+    font-weight: 900;
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    outline: none;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+  }
+
+  input[type="text"],
+  [type="email"],
+  [type="password"]
+  {
+    border: none;
+    outline: none;
+    text-align: left;
+    text-decoration: none;
+    vertical-align: middle;
+  }
+
+  textarea {
+    resize: none;
+    text-align: left;
+    text-decoration: none;
+    vertical-align: middle;
+    overflow: auto;
+  }
+
+  select {
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    outline: none;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
+    font-weight: 400;
+    background-color:#181818;
+    color: #fff;
+  }
+
+  #root {
+    min-height: 100vh;
+    position: relative;
+    @media screen and (max-width: 768px) {
+    }
+  }
+`;
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
+    <>
+      <Reset />
+      <GlobalStyle />
+      <AuthRoute>
+        <ThemeProvider theme={theme}>
+          <Header />
+          <Outlet />
+          <Footer />
+        </ThemeProvider>
+      </AuthRoute>
+    </>
   );
 }
 

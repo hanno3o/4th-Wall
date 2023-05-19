@@ -1,15 +1,12 @@
-import React from 'react';
-import { render } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { store } from './app/store';
-import App from './App';
+import { configureStore } from '@reduxjs/toolkit';
+import userReducer, { initialState } from './redux/reducers/userSlice';
 
-test('renders learn react link', () => {
-  const { getByText } = render(
-    <Provider store={store}>
-      <App />
-    </Provider>
-  );
+test('initial state', () => {
+  const store = configureStore({
+    reducer: { user: userReducer },
+  });
 
-  expect(getByText(/learn/i)).toBeInTheDocument();
+  const state = store.getState().user;
+
+  expect(state).toEqual(initialState);
 });
