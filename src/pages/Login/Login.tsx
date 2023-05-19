@@ -117,8 +117,8 @@ function Login() {
   const auth = getAuth();
   const navigate = useNavigate();
   const [authing, setAuthing] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('user@gmail.com');
+  const [password, setPassword] = useState('1234567');
   const [isShowOrHidePassword, setIsShowOrHidePassword] = useState(true);
   const [isSignInState, setIsSignInState] = useState(true);
   const id = useAppSelector((state) => state.user.id);
@@ -311,6 +311,7 @@ function Login() {
               <SMText>Email</SMText>
               <InputField
                 type="text"
+                defaultValue="user@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="請輸入電子郵件"
@@ -326,6 +327,7 @@ function Login() {
               <SMText>密碼</SMText>
               <InputField
                 type={isShowOrHidePassword ? 'password' : 'text'}
+                defaultValue="1234567"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="請輸入密碼"
