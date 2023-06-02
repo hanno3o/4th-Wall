@@ -9,7 +9,6 @@ export const DramaCardsWrapper = styled.div`
   display: flex;
   gap: 26px;
   flex-wrap: wrap;
-  margin: 0 auto;
   ${MEDIA_QUERY_TABLET} {
     gap: 16px;
   }

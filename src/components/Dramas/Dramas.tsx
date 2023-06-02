@@ -488,11 +488,17 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   useEffect(() => {
     getAllReviews();
     getActors();
-  }, [dramaPopup]);
+    if (dramaPopup || actorPopup) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }, [dramaPopup, actorPopup]);
 
   const handleDramaPopup = (drama: IDrama) => {
     prevDramaCardRef.current = drama;
     setDramaPopup(drama);
+    document.body.style.overflow = 'hidden';
   };
 
   const handleAddToDramaList = async () => {
