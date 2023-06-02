@@ -33,7 +33,7 @@ export const XLText = styled.div<TextProps>`
     font-size: 20px;
   }
   ${MEDIA_QUERY_MOBILE} {
-    font-size: 14px;
+    font-size: 18px;
   }
 `;
 
@@ -55,9 +55,12 @@ export const MDText = styled.div<TextProps>`
   font-weight: 700;
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};
-  ${MEDIA_QUERY_TABLET},${MEDIA_QUERY_MOBILE} {
+  ${MEDIA_QUERY_TABLET} {
     font-size: 14px;
     font-weight: 600;
+  }
+  ${MEDIA_QUERY_MOBILE} {
+    font-size: 14px;
   }
 `;
 
@@ -87,6 +90,9 @@ export const XSText = styled.div<TextProps>`
   ${MEDIA_QUERY_TABLET} {
     font-weight: 400;
   }
+  ${MEDIA_QUERY_MOBILE} {
+    line-height: ${(props) => props.LineHeight || '12px'};
+  }
 `;
 
 export const LGGreyText = styled.div<TextProps>`
@@ -115,9 +121,11 @@ export const SMGreyText = styled.div<TextProps>`
   color: ${(props) => props.theme.lightGrey};
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};
-  ${MEDIA_QUERY_TABLET}, ${MEDIA_QUERY_MOBILE} {
-    font-size: 15.5px;
+  ${MEDIA_QUERY_TABLET} {
     font-weight: 400;
+  }
+  ${MEDIA_QUERY_MOBILE} {
+    font-size: 14px;
   }
 `;
 
@@ -127,7 +135,7 @@ export const XSGreyText = styled.div<TextProps>`
   color: ${(props) => props.theme.lightGrey};
   line-height: 18px;
   margin: ${(props) => props.margin || ''};
-  ${MEDIA_QUERY_TABLET}, ${MEDIA_QUERY_MOBILE} {
-    font-size: 13px;
+  ${MEDIA_QUERY_MOBILE} {
+    line-height: 18px;
   }
 `;

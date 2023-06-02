@@ -45,7 +45,7 @@ import { RiPushpinLine } from 'react-icons/ri';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
-
+const MEDIA_QUERY_MOBILE = '@media screen and (max-width: 1280px)';
 const Avatar = styled.img`
   width: 50px;
   height: 50px;
@@ -55,6 +55,11 @@ const Avatar = styled.img`
   ${MEDIA_QUERY_TABLET} {
     width: 45px;
     height: 45px;
+  }
+
+  ${MEDIA_QUERY_MOBILE} {
+    width: 40px;
+    height: 40px;
   }
 `;
 const DividerLine = styled.div`
@@ -135,8 +140,6 @@ const ReviewTextEditArea = styled.textarea`
   }
 `;
 
-const MEDIA_QUERY_MOBILE = '@media screen and (max-width: 1280px)';
-
 const Overlay = styled.div`
   position: fixed;
   top: 0;
@@ -186,8 +189,24 @@ const Popup = styled.div`
   }
 
   ${MEDIA_QUERY_MOBILE} {
+    padding: 30px 20px;
+    height: 90vh;
     width: 100vw;
-    height: 720px;
+    overflow-y: scroll;
+    top: 55vh;
+    border-radius: 0;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+  }
+`;
+
+const PopupContent = styled.div`
+  display: flex;
+  gap: 20px;
+  height: 100%;
+  width: 100%;
+  ${MEDIA_QUERY_MOBILE} {
+    flex-direction: column;
   }
 `;
 
@@ -201,6 +220,11 @@ const DramaImage = styled.img`
   ${MEDIA_QUERY_TABLET} {
     width: 224px;
     height: 320px;
+  }
+
+  ${MEDIA_QUERY_MOBILE} {
+    width: 164px;
+    height: 240px;
   }
 `;
 
@@ -216,6 +240,18 @@ const AvatarSkeleton = styled.div`
   }
 `;
 
+const MoreInfo = styled.div`
+  display: flex;
+  gap: 20px;
+  ${MEDIA_QUERY_MOBILE} {
+    flex-direction: column;
+  }
+`;
+
+const SoundTrack = styled.div`
+  justify-content: space-between;
+`;
+
 const SpotifyIframe = styled.iframe`
   border-radius: 20px;
   margin-top: 8px;
@@ -226,6 +262,10 @@ const SpotifyIframe = styled.iframe`
     width: ${280 * 0.8}px;
     margin-top: 4px;
   }
+  ${MEDIA_QUERY_MOBILE} {
+    height: 352px;
+    width: 100%;
+  }
 `;
 
 const ActionButton = styled.button`
@@ -233,7 +273,6 @@ const ActionButton = styled.button`
   color: ${(props) => props.theme.white};
   border: solid 1px ${(props) => props.theme.grey};
   padding: 6px 20px;
-  margin-top: -16px;
   font-weight: 700;
   border-radius: 20px;
   align-items: center;
@@ -242,6 +281,11 @@ const ActionButton = styled.button`
     margin-top: -6px;
     font-size: 13.5px;
     padding: 4px 18px;
+  }
+  ${MEDIA_QUERY_MOBILE} {
+    font-size: 12px;
+    flex-shrink: 0;
+    padding: 4px 12px;
   }
   &:hover {
     scale: 1.05;
@@ -309,6 +353,9 @@ const ActorLink = styled.div`
   ${MEDIA_QUERY_TABLET} {
     gap: 10px;
   }
+  ${MEDIA_QUERY_MOBILE} {
+    gap: 10px;
+  }
 `;
 
 const ActorsButton = styled.button`
@@ -358,9 +405,6 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   const [page, setPage] = useState(1);
   const start = (page - 1) * PAGE_SIZE;
   const end = start + PAGE_SIZE;
-  const isTablet = useMediaQuery({
-    query: '(min-width: 1281px) and (max-width: 1440px)',
-  });
   const currentDate = new Date();
   const [writtenReview, setWrittenReview] = useState<string | undefined>(
     undefined
@@ -368,6 +412,12 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
   const [userRating, setUserRating] = useState(0);
   const [editing, setEditing] = useState(false);
   const [updatedUserReview, setUpdatedUserReview] = useState('');
+  const isTablet = useMediaQuery({
+    query: '(min-width: 1281px) and (max-width: 1440px)',
+  });
+  const isMobile = useMediaQuery({
+    query: '(max-width: 1280px)',
+  });
 
   const getAllReviews = () => {
     dramaID &&
@@ -556,10 +606,15 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
       )}
       <Popup style={{ display: dramaPopup ? 'block' : 'none' }}>
         {isLoading && (
-          <RowFlexbox gap="20px" height="100%" width="100%">
-            <ColumnFlexbox height="100%">
+          <PopupContent>
+            <ColumnFlexbox mobileOrder={2}>
               {userReview ? null : (
-                <ColumnFlexbox height="20%" gap="10px" padding="10px 0 0 0">
+                <ColumnFlexbox
+                  height="20%"
+                  gap="10px"
+                  padding="10px 0 0 0"
+                  mobileHeight="80%"
+                >
                   <RowFlexbox justifyContent="center">
                     {[...Array(5)].map((_, index) => {
                       index += 1;
@@ -644,6 +699,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
               <ColumnFlexbox
                 width="300px"
                 tabletWidth="280px"
+                mobileWidth="100%"
                 height={userReview ? '100%' : '80%'}
               >
                 <MDText margin="4px 10px" tabletMargin="2px 6px">
@@ -887,7 +943,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
               gap="20px"
               tabletGap="14px"
               width="100%"
-              height="100%"
+              mobileOrder={1}
             >
               <RowFlexbox gap="20px">
                 <DramaImage src={dramaPopup?.image} alt="" />
@@ -928,14 +984,18 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     </ColumnFlexbox>
                   )}
                   <ColumnFlexbox gap="10px" textAlign="left" tabletGap="8px">
-                    <ColumnFlexbox gap="6px" tabletGap="2px">
-                      <XSText>編劇</XSText>
-                      <MDText>{dramaPopup?.screenwriter}</MDText>
-                    </ColumnFlexbox>
-                    <ColumnFlexbox gap="6px" tabletGap="2px">
-                      <XSText>導演</XSText>
-                      <MDText>{dramaPopup?.director}</MDText>
-                    </ColumnFlexbox>
+                    {!isMobile && (
+                      <>
+                        <ColumnFlexbox gap="6px" tabletGap="2px">
+                          <XSText>編劇</XSText>
+                          <MDText>{dramaPopup?.screenwriter}</MDText>
+                        </ColumnFlexbox>
+                        <ColumnFlexbox gap="6px" tabletGap="2px">
+                          <XSText>導演</XSText>
+                          <MDText>{dramaPopup?.director}</MDText>
+                        </ColumnFlexbox>
+                      </>
+                    )}
                     <ColumnFlexbox gap="6px" tabletGap="2px" width="100%">
                       <XSText>演員</XSText>
                       <ActorLink>
@@ -984,7 +1044,6 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                         }
                       }}
                       style={{
-                        width: '130px',
                         color:
                           dramaList && dramaID && dramaList.includes(dramaID)
                             ? '#181818'
@@ -1013,18 +1072,10 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                       </Link>
                     </ActionButton>
                   </RowFlexbox>
-                  <CloseButton
-                    onClick={() => {
-                      setEditing(false);
-                      setDramaPopup(undefined);
-                    }}
-                  >
-                    ✕
-                  </CloseButton>
                 </ColumnFlexbox>
               </RowFlexbox>
-              <RowFlexbox gap="20px">
-                <ColumnFlexbox justifyContent="space-between">
+              <MoreInfo>
+                <SoundTrack>
                   <XSText>原聲帶</XSText>
                   <SpotifyIframe
                     title="Spotify"
@@ -1033,17 +1084,17 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy"
                   />
-                </ColumnFlexbox>
-                <ColumnFlexbox justifyContent="space-between">
-                  <ColumnFlexbox gap="6px" tabletGap="4px">
+                </SoundTrack>
+                <ColumnFlexbox justifyContent="space-between" mobileGap="12px">
+                  <ColumnFlexbox>
                     <XSText>劇情大綱</XSText>
                     <XSGreyText>{dramaPopup?.story}</XSGreyText>
                   </ColumnFlexbox>
-                  <ColumnFlexbox gap="6px" tabletGap="4px">
+                  <ColumnFlexbox>
                     <XSText>上架日期</XSText>
                     <SMText>{dramaPopup?.releaseDate}</SMText>
                   </ColumnFlexbox>
-                  <RowFlexbox gap="6px" tabletGap="4px">
+                  <RowFlexbox gap="6px">
                     {dramaPopup?.platform &&
                       dramaPopup.platform.map((platform) => {
                         if (platform.includes('Netflix')) {
@@ -1118,9 +1169,19 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     </RowFlexbox>
                   </ColumnFlexbox>
                 </ColumnFlexbox>
-              </RowFlexbox>
+              </MoreInfo>
             </ColumnFlexbox>
-          </RowFlexbox>
+            <CloseButton
+              onClick={() => {
+                setEditing(false);
+                setDramaPopup(undefined);
+                setWrittenReview('');
+                setUserRating(0);
+              }}
+            >
+              ✕
+            </CloseButton>
+          </PopupContent>
         )}
       </Popup>
       <Popup style={{ display: actorPopup ? 'block' : 'none' }}>
@@ -1154,7 +1215,7 @@ function Dramas({ dramasData, isRemoveButton }: IDramas) {
                     {drama.rating && Number(drama.rating) > 0 ? (
                       <RowFlexbox alignItems="flex-end">
                         <LGText>{drama?.rating}</LGText>
-                        <SMText margin="0 0 1px 0">/5</SMText>
+                        <SMText>/5</SMText>
                       </RowFlexbox>
                     ) : (
                       <SMText>目前尚無評價</SMText>

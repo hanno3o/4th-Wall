@@ -20,6 +20,7 @@ interface FlexboxProps {
   mobileHeight?: string;
   mobileJustifyContent?: string;
   mobileAlignItems?: string;
+  mobileOrder?: number;
   mobileGap?: string;
   tabletWidth?: string;
   tabletHeight?: string;
@@ -56,6 +57,7 @@ export const RowFlexbox = styled.div<FlexboxProps>`
     justify-content: ${(props) => props.mobileJustifyContent || ''};
     align-items: ${(props) => props.mobileAlignItems || ''};
     gap: ${(props) => props.mobileGap || ''};
+    order: ${(props) => props.mobileOrder || 0};
   }
 `;
 

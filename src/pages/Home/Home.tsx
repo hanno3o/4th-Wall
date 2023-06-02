@@ -23,7 +23,8 @@ const HomepageWrapper = styled.div`
     width: 1100px;
   }
   ${MEDIA_QUERY_MOBILE} {
-    width: 480px;
+    padding: 20px;
+    width: 100%;
     margin-top: -50px;
   }
 `;
@@ -94,10 +95,10 @@ const MultiFilterOption = styled.div<MultiFilterOptionProps>`
     transition: ease-in-out 0.25s;
   }
   ${MEDIA_QUERY_MOBILE} {
-    max-width: 100px;
     padding: 6px 14px;
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 700;
+    flex-shrink: 0;
   }
 `;
 interface MultiFilterOptionProps {
@@ -274,7 +275,7 @@ function Home() {
   );
 
   return (
-    <body>
+    <>
       <BannerImage
         style={{
           backgroundImage: `linear-gradient(to top, rgb(25, 25, 25), rgba(255, 255, 255, 0) 100%), url(${bannerImageURL})`,
@@ -291,11 +292,13 @@ function Home() {
           onClick={handleTypeFilter}
         />
         <DividerLine />
-        <ColumnFlexbox gap="18px" mobileGap="12px" margin="20px 0 0 0 ">
+        <ColumnFlexbox gap="18px" mobileGap="20px" margin="20px 0 0 0 ">
           {filterData.filters.map((filter, index) => {
             return (
               <RowFlexbox alignItems="center">
-                <XSGreyText margin="0 10px 0 0">{filter.title}</XSGreyText>
+                <XSGreyText margin="0 10px 0 0" style={{ flexShrink: '0' }}>
+                  {filter.title}
+                </XSGreyText>
                 <RowFlexbox
                   gap="4px"
                   key={index}
@@ -323,7 +326,7 @@ function Home() {
         </ColumnFlexbox>
         <Dramas dramasData={filteredAndQueriedDramas} isRemoveButton={false} />
       </HomepageWrapper>
-    </body>
+    </>
   );
 }
 
