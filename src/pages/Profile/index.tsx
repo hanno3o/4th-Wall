@@ -306,15 +306,17 @@ export default function Profile() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    const imageUrl = await uploadImage(file);
-    if (id) {
-      const userRef = doc(db, 'users', id);
-      await updateDoc(userRef, { avatar: imageUrl });
-      dispatch(UPDATE_AVATAR(imageUrl));
+    if (file) {
+      const imageUrl = await uploadImage(file);
+      if (id) {
+        const userRef = doc(db, 'users', id);
+        await updateDoc(userRef, { avatar: imageUrl });
+        dispatch(UPDATE_AVATAR(imageUrl));
+      }
     }
   };
 
-  const uploadImage = async (file: any): Promise<string> => {
+  const uploadImage = async (file: File): Promise<string> => {
     const storageRef = ref(storage, 'images/' + file.name);
     const snapshot = await uploadBytes(storageRef, file);
     const downloadURL = await getDownloadURL(snapshot.ref);
