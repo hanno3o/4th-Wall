@@ -4,7 +4,7 @@ import { createGlobalStyle, ThemeProvider } from 'styled-components';
 import { Reset } from 'styled-reset';
 import AuthRoute from './components/AuthRoute';
 import Header from './components/Header';
-import Footer from './components/Footer';
+import Footer from './components/Footer'
 
 const theme = {
   primaryColor: '#fc3344',
@@ -97,8 +97,6 @@ const GlobalStyle = createGlobalStyle`
   #root {
     min-height: 100vh;
     position: relative;
-    @media screen and (max-width: 768px) {
-    }
   }
 `;
 

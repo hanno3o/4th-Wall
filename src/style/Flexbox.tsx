@@ -6,6 +6,7 @@ const MEDIA_QUERY_MOBILE = '@media screen and (max-width: 1280px)';
 
 interface FlexboxProps {
   flexWrap?: string;
+  flexGrow?: string;
   width?: string;
   height?: string;
   gap?: string;
@@ -16,10 +17,15 @@ interface FlexboxProps {
   padding?: string;
   margin?: string;
   border?: string;
+  position?: string;
+  fontSize?: string;
+  overflowX?: string;
+  overflowY?: string;
   mobileWidth?: string;
   mobileHeight?: string;
   mobileJustifyContent?: string;
   mobileAlignItems?: string;
+  mobileOrder?: number;
   mobileGap?: string;
   tabletWidth?: string;
   tabletHeight?: string;
@@ -31,6 +37,7 @@ interface FlexboxProps {
 export const RowFlexbox = styled.div<FlexboxProps>`
   display: flex;
   flex-wrap: ${(props) => props.flexWrap || ''};
+  flex-grow: ${(props) => props.flexGrow || ''};
   width: ${(props) => props.width || ''};
   height: ${(props) => props.height || ''};
   gap: ${(props) => props.gap || ''};
@@ -41,6 +48,10 @@ export const RowFlexbox = styled.div<FlexboxProps>`
   padding: ${(props) => props.padding || ''};
   margin: ${(props) => props.margin || ''};
   border: ${(props) => props.border || ''};
+  position: ${(props) => props.position || ''};
+  font-size: ${(props) => props.fontSize || ''};
+  overflow-x: ${(props) => props.overflowX || ''};
+  overflow-y: ${(props) => props.overflowY || ''};
 
   ${MEDIA_QUERY_TABLET} {
     width: ${(props) => props.tabletWidth || ''};
@@ -56,6 +67,7 @@ export const RowFlexbox = styled.div<FlexboxProps>`
     justify-content: ${(props) => props.mobileJustifyContent || ''};
     align-items: ${(props) => props.mobileAlignItems || ''};
     gap: ${(props) => props.mobileGap || ''};
+    order: ${(props) => props.mobileOrder || 0};
   }
 `;
 

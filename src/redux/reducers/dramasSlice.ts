@@ -158,7 +158,6 @@ const dramasSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || null;
       })
-
       .addCase(UPLOAD_REVIEW.fulfilled, (state, action) => {
         state.loading = false;
       })
@@ -166,7 +165,6 @@ const dramasSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || null;
       })
-
       .addCase(UPDATE_REVIEW.fulfilled, (state, action) => {
         state.loading = false;
       })
