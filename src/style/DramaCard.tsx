@@ -4,19 +4,17 @@ const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
 const MEDIA_QUERY_MOBILE = '@media screen and (max-width: 1280px)';
 
-
-
 export const DramaCardsWrapper = styled.div`
   padding: 30px 0 100px 0;
   display: flex;
   gap: 26px;
   flex-wrap: wrap;
-
   ${MEDIA_QUERY_TABLET} {
     gap: 16px;
   }
   ${MEDIA_QUERY_MOBILE} {
     gap: 16px;
+    padding: 30px 0 100px 0;
   }
 `;
 
@@ -33,6 +31,7 @@ export const DramaCard = styled.div`
   align-items: flex-start;
   padding: 20px;
   background-size: cover;
+  background-position: center top;
   position: relative;
   filter: brightness(0.9);
   &:hover {
