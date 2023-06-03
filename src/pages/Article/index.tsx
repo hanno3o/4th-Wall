@@ -268,7 +268,7 @@ export default function Article() {
         setIsLoading(false);
       }, 300);
       const commentsSnapshot = await getDocs(commentsRef);
-      const commentsArr: any = [];
+      const commentsArr: IComment[] = [];
       for (const singleDoc of commentsSnapshot.docs) {
         const commentData = singleDoc.data();
         const commentUserId = commentData.userId;
