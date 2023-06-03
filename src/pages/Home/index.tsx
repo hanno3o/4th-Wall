@@ -250,14 +250,12 @@ export default function Home() {
           {filterData.filters.map((filter, index) => {
             return (
               <RowFlexbox alignItems="center">
-                <XSGreyText margin="0 10px 0 0" style={{ flexShrink: '0' }}>
-                  {filter.title}
-                </XSGreyText>
+                <XSGreyText margin="0 10px 0 0">{filter.title}</XSGreyText>
                 <RowFlexbox
                   gap="4px"
                   key={index}
                   alignItems="center"
-                  style={{ overflowX: 'auto' }}
+                  overflowX="auto"
                 >
                   {filter.filter.map((item, index) => {
                     return (

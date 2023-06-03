@@ -41,6 +41,7 @@ export const LGText = styled.div<TextProps>`
   font-size: 18px;
   font-weight: 700;
   line-height: ${(props) => props.LineHeight || ''};
+  margin: ${(props) => props.margin || ''};
   ${MEDIA_QUERY_TABLET} {
     font-size: 16px;
     font-weight: 600;
@@ -68,6 +69,7 @@ export const NMText = styled.div<TextProps>`
   font-size: 16px;
   line-height: ${(props) => props.LineHeight || ''};
   margin: ${(props) => props.margin || ''};
+  word-break: break-word;
 `;
 
 export const SMText = styled.div<TextProps>`
@@ -87,6 +89,7 @@ export const XSText = styled.div<TextProps>`
   font-weight: 500;
   line-height: ${(props) => props.LineHeight || '18px'};
   margin: ${(props) => props.margin || ''};
+  word-break: break-word;
   ${MEDIA_QUERY_TABLET} {
     font-weight: 400;
   }
@@ -130,6 +133,7 @@ export const SMGreyText = styled.div<TextProps>`
 `;
 
 export const XSGreyText = styled.div<TextProps>`
+  flex-shrink: 0;
   font-size: 14px;
   font-weight: 500;
   color: ${(props) => props.theme.lightGrey};
@@ -138,4 +142,9 @@ export const XSGreyText = styled.div<TextProps>`
   ${MEDIA_QUERY_MOBILE} {
     line-height: 18px;
   }
+`;
+
+export const XXSGreyText = styled.div<TextProps>`
+  color: ${(props) => props.theme.lightGrey};
+  font-size: 12px;
 `;

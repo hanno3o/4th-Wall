@@ -148,15 +148,13 @@ const DisabledPostButton = styled.button`
 `;
 
 const BackButton = styled.button`
+  font-size: 32px;
   color: ${(props) => props.theme.lightGrey};
   opacity: 0.5;
   position: fixed;
   left: 35px;
   top: 90px;
   font-weight: 900;
-  ${MEDIA_QUERY_TABLET} {
-    font-size: 14px;
-  }
   &:hover {
     opacity: 1;
     transition: ease-in-out 0.25s;
@@ -222,7 +220,7 @@ export default function Post() {
   return (
     <PostPageWrapper>
       <BackButton onClick={() => navigate(-1)}>
-        <IoChevronBackCircle style={{ fontSize: '32px' }} />
+        <IoChevronBackCircle />
       </BackButton>
       <RowFlexbox gap="10px">
         <Select
@@ -345,23 +343,25 @@ export default function Post() {
         </DisabledPostButton>
       )}
       <RowFlexbox>
-        <InfoCard style={{ display: infoCard ? 'block' : 'none' }}>
-          <ColumnFlexbox gap="4px">
-            <LGText style={{ marginBottom: '6px' }}>發文注意事項</LGText>
-            <XSText>※ 發文類別選擇後會呈現於標題，不需於標題重複輸入</XSText>
-            <XSText>
-              ※ 需選擇發文類別、輸入標題及至少50字內文才可發布文章
-            </XSText>
-            <XSText>
-              ※ 如有暴雷內容請盡量註明於標題，如：黑暗榮耀觀後心得（有雷）
-            </XSText>
-            <XSText>
-              ※ 標題或內文提及「雷」、「劇透」等關鍵字，則文章預覽區塊會
-              <br />
-              加上防雷灰底提醒其他使用者，敬請見諒
-            </XSText>
-          </ColumnFlexbox>
-        </InfoCard>
+        {infoCard && (
+          <InfoCard>
+            <ColumnFlexbox gap="4px">
+              <LGText margin="0 0 6px 0">發文注意事項</LGText>
+              <XSText>※ 發文類別選擇後會呈現於標題，不需於標題重複輸入</XSText>
+              <XSText>
+                ※ 需選擇發文類別、輸入標題及至少50字內文才可發布文章
+              </XSText>
+              <XSText>
+                ※ 如有暴雷內容請盡量註明於標題，如：黑暗榮耀觀後心得（有雷）
+              </XSText>
+              <XSText>
+                ※ 標題或內文提及「雷」、「劇透」等關鍵字，則文章預覽區塊會
+                <br />
+                加上防雷灰底提醒其他使用者，敬請見諒
+              </XSText>
+            </ColumnFlexbox>
+          </InfoCard>
+        )}
       </RowFlexbox>
     </PostPageWrapper>
   );

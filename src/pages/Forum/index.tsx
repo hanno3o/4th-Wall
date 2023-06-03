@@ -92,6 +92,10 @@ const Article = styled(Link)`
   }
 `;
 
+const CommentNumOfArticle = styled.div`
+  width: 50px;
+`;
+
 const Pagination = styled.div`
   display: flex;
   position: absolute;
@@ -378,10 +382,8 @@ export default function Forum() {
                   >
                     <RowFlexbox>
                       {!!article.commentsNum ? (
-                        <LGText
+                        <CommentNumOfArticle
                           style={{
-                            flexGrow: '1',
-                            width: '50px',
                             color:
                               article.commentsNum <= 10
                                 ? '#a2c548'
@@ -393,20 +395,12 @@ export default function Forum() {
                           {article.commentsNum >= 100
                             ? '爆'
                             : article.commentsNum}
-                        </LGText>
+                        </CommentNumOfArticle>
                       ) : (
-                        <LGText
-                          style={{
-                            fontWeight: '100',
-                            width: '50px',
-                          }}
-                        >
-                          {' '}
-                          -{' '}
-                        </LGText>
+                        <CommentNumOfArticle>-</CommentNumOfArticle>
                       )}
                     </RowFlexbox>
-                    <ColumnFlexbox gap="8px" style={{ flexGrow: '2' }}>
+                    <ColumnFlexbox gap="8px" flexGrow="2">
                       <MDText>
                         [{article.type}] {article.title}
                       </MDText>
@@ -455,16 +449,13 @@ export default function Forum() {
                       gap="10px"
                       margin="0 0 0 50px"
                       justifyContent="space-between"
-                      style={{ flexGrow: '2' }}
+                      flexGrow="2"
                     >
                       <MdTextSkeleton />
                       <SmGreyTextSkeleton />
                       <XsGreyTextSkeleton />
                     </ColumnFlexbox>
-                    <XsGreyTextSkeleton
-                      margin="40px 0 0 0"
-                      style={{ width: '40px' }}
-                    />
+                    <XsGreyTextSkeleton margin="40px 0 0 0" />
                   </Article>
                   <DividerLine />
                 </>

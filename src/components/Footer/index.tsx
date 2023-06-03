@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { RowFlexbox } from '../../style/Flexbox';
 import { BsGithub, BsDiscord } from 'react-icons/bs';
+import { XXSGreyText } from '../../style/Text';
 
 const FooterWrapper = styled.footer`
   width: 100%;
@@ -42,7 +43,7 @@ export default function Footer() {
           <BsDiscord />
         </FooterIconButtons>
       </RowFlexbox>
-      <div style={{ fontSize: '12px' }}>Copyright © 4thWall, Inc.</div>
+      <XXSGreyText>Copyright © 4thWall, Inc.</XXSGreyText>
     </FooterWrapper>
   );
 }

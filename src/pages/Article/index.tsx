@@ -57,15 +57,13 @@ const ArticleHeader = styled.div`
 `;
 
 const BackButton = styled.button`
+  font-size: 32px;
   color: ${(props) => props.theme.lightGrey};
   opacity: 0.5;
   position: fixed;
   left: 35px;
   top: 90px;
   font-weight: 900;
-  ${MEDIA_QUERY_TABLET} {
-    font-size: 14px;
-  }
   &:hover {
     opacity: 1;
     transition: ease-in-out 0.25s;
@@ -108,6 +106,7 @@ const Comment = styled.div`
   border: 0.5px solid ${(props) => props.theme.grey};
   border-radius: 20px;
   position: relative;
+  scroll-margin-top: 80px;
 
   &:hover {
     ${MoreButton} {
@@ -117,6 +116,7 @@ const Comment = styled.div`
 `;
 
 const CommentOptions = styled.div`
+  display: flex;
   cursor: pointer;
   width: 80px;
   flex-direction: column;
@@ -143,6 +143,11 @@ const CommentOption = styled.div`
   }
 `;
 
+const CommentOptionIcon = styled.span`
+  font-size: 18px;
+  color: ${(props) => props.theme.lightGrey};
+`;
+
 const ReplyTo = styled.div`
   font-size: 14px;
   color: ${(props) => props.theme.lightGrey};
@@ -160,6 +165,7 @@ const CancelButton = styled.button`
     font-size: 14px;
   }
 `;
+
 const ConfirmButton = styled(CancelButton)`
   background-color: ${(props) => props.theme.lightGrey};
   color: ${(props) => props.theme.darkGrey};
@@ -373,7 +379,7 @@ export default function Article() {
         <ColumnFlexbox>
           <ArticleHeader>
             <BackButton onClick={() => navigate(`/forum/${boardName}`)}>
-              <IoChevronBackCircle style={{ fontSize: '32px' }} />
+              <IoChevronBackCircle />
             </BackButton>
             <RowFlexbox
               width="1100px"
@@ -443,7 +449,6 @@ export default function Article() {
                           key={index}
                           id={`B${index + 1}`}
                           style={{
-                            scrollMarginTop: '80px',
                             background:
                               floor === index + 1
                                 ? 'linear-gradient(to left, rgba(252,51,68,0.3), rgba(78,94,235,0.3))'
@@ -472,10 +477,7 @@ export default function Article() {
                                   }}
                                 />
                               ) : (
-                                <NMText
-                                  LineHeight="20px"
-                                  style={{ wordBreak: 'break-word' }}
-                                >
+                                <NMText LineHeight="20px">
                                   <div
                                     dangerouslySetInnerHTML={{
                                       __html:
@@ -547,65 +549,54 @@ export default function Article() {
                               >
                                 ...
                               </MoreButton>
-                              <CommentOptions
-                                style={{
-                                  display:
-                                    commentOptionWindow === comment.id
-                                      ? 'flex'
-                                      : 'none',
-                                }}
-                              >
-                                <CommentOption
-                                  onClick={() => {
-                                    handleEditComment(comment.id);
-                                    setCommentOptionWindow(null);
-                                  }}
-                                >
-                                  <AiOutlineEdit
-                                    style={{
-                                      fontSize: '18px',
-                                      color: '#bbb',
+                              {commentOptionWindow === comment.id && (
+                                <CommentOptions>
+                                  <CommentOption
+                                    onClick={() => {
+                                      handleEditComment(comment.id);
+                                      setCommentOptionWindow(null);
                                     }}
-                                  />
-                                  <SMText>編輯</SMText>
-                                </CommentOption>
-                                <CommentOption
-                                  onClick={() => {
-                                    Swal.fire({
-                                      text: '確定要刪除這則留言嗎？',
-                                      icon: 'warning',
-                                      width: 300,
-                                      reverseButtons: true,
-                                      showCancelButton: true,
-                                      cancelButtonText: '取消',
-                                      confirmButtonText: '刪除',
-                                      iconColor: '#bbb',
-                                      confirmButtonColor: '#555',
-                                      cancelButtonColor: '#b0b0b0',
-                                    }).then((res) => {
-                                      if (res.isConfirmed) {
-                                        handleRemoveComment(comment.id);
-                                        setCommentOptionWindow(null);
-                                        Swal.fire({
-                                          title: '已刪除留言',
-                                          width: 300,
-                                          icon: 'success',
-                                          iconColor: '#bbb',
-                                          confirmButtonColor: '#555',
-                                        });
-                                      }
-                                    });
-                                  }}
-                                >
-                                  <AiOutlineDelete
-                                    style={{
-                                      fontSize: '18px',
-                                      color: '#bbb',
+                                  >
+                                    <CommentOptionIcon>
+                                      <AiOutlineEdit />
+                                    </CommentOptionIcon>
+                                    <SMText>編輯</SMText>
+                                  </CommentOption>
+                                  <CommentOption
+                                    onClick={() => {
+                                      Swal.fire({
+                                        text: '確定要刪除這則留言嗎？',
+                                        icon: 'warning',
+                                        width: 300,
+                                        reverseButtons: true,
+                                        showCancelButton: true,
+                                        cancelButtonText: '取消',
+                                        confirmButtonText: '刪除',
+                                        iconColor: '#bbb',
+                                        confirmButtonColor: '#555',
+                                        cancelButtonColor: '#b0b0b0',
+                                      }).then((res) => {
+                                        if (res.isConfirmed) {
+                                          handleRemoveComment(comment.id);
+                                          setCommentOptionWindow(null);
+                                          Swal.fire({
+                                            title: '已刪除留言',
+                                            width: 300,
+                                            icon: 'success',
+                                            iconColor: '#bbb',
+                                            confirmButtonColor: '#555',
+                                          });
+                                        }
+                                      });
                                     }}
-                                  />
-                                  <SMText>刪除</SMText>
-                                </CommentOption>
-                              </CommentOptions>
+                                  >
+                                    <CommentOptionIcon>
+                                      <AiOutlineDelete />
+                                    </CommentOptionIcon>
+                                    <SMText>刪除</SMText>
+                                  </CommentOption>
+                                </CommentOptions>
+                              )}
                             </RowFlexbox>
                           )}
                         </Comment>

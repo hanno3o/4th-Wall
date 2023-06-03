@@ -109,6 +109,10 @@ const UploadButton = styled.button`
   }
 `;
 
+const UploadButtonIcon = styled.span`
+  cursor: pointer;
+`;
+
 const UserName = styled.div`
   cursor: pointer;
   font-size: 32px;
@@ -353,7 +357,9 @@ export default function Profile() {
           {avatar && <UserImage src={avatar} alt="" />}
           <UploadButton>
             <label htmlFor="upload-file">
-              <FiUploadCloud style={{ cursor: 'pointer' }} />
+              <UploadButtonIcon>
+                <FiUploadCloud />
+              </UploadButtonIcon>
             </label>
           </UploadButton>
           <input

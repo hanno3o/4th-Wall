@@ -46,7 +46,7 @@ const LogoImage = styled.img`
 `;
 
 const NavIconButton = styled(Link)`
-  font-size: 32px;
+  font-size: 26px;
   filter: brightness(0.9);
   &:hover {
     filter: brightness(1.05);
@@ -93,6 +93,7 @@ const MoreButton = styled.div`
 `;
 
 const SettingOptions = styled.div`
+  display: flex;
   cursor: pointer;
   width: 80px;
   flex-direction: column;
@@ -118,6 +119,11 @@ const SettingOption = styled.button`
   &:hover {
     background-color: #e8e8e8;
   }
+`;
+
+const SettingOptionIcon = styled.span`
+  font-size: 18px;
+  color: ${(props) => props.theme.lightGrey};
 `;
 
 export default function Header() {
@@ -154,71 +160,63 @@ export default function Header() {
             <MoreButton onClick={() => setSettingsMenu((prev) => !prev)}>
               ...
             </MoreButton>
-            <SettingOptions
-              style={{
-                display: settingsMenu ? 'flex' : 'none',
-              }}
-            >
-              <SettingOption>
-                <HiOutlineCog8Tooth
-                  style={{
-                    fontSize: '18px',
-                    color: '#bbb',
+            {settingsMenu && (
+              <SettingOptions>
+                <SettingOption>
+                  <SettingOptionIcon>
+                    <HiOutlineCog8Tooth />
+                  </SettingOptionIcon>
+                  設定
+                </SettingOption>
+                <SettingOption
+                  onClick={() => {
+                    Swal.fire({
+                      text: '確定要登出嗎？',
+                      icon: 'warning',
+                      width: 300,
+                      reverseButtons: true,
+                      showCancelButton: true,
+                      cancelButtonText: '取消',
+                      confirmButtonText: '確定',
+                      iconColor: '#bbb',
+                      confirmButtonColor: '#555',
+                      cancelButtonColor: '#b0b0b0',
+                    }).then((res) => {
+                      if (res.isConfirmed) {
+                        navigate('/login');
+                        signOut(auth);
+                        dispatch(
+                          SET_USERINFO({
+                            id: null,
+                            avatar: null,
+                            email: null,
+                            userName: null,
+                            registrationDate: null,
+                            dramaList: null,
+                          })
+                        );
+                        Swal.fire({
+                          title: '已登出',
+                          width: 300,
+                          icon: 'success',
+                          iconColor: '#bbb',
+                          confirmButtonColor: '#555',
+                        });
+                      }
+                    });
                   }}
-                />
-                設定
-              </SettingOption>
-              <SettingOption
-                onClick={() => {
-                  Swal.fire({
-                    text: '確定要登出嗎？',
-                    icon: 'warning',
-                    width: 300,
-                    reverseButtons: true,
-                    showCancelButton: true,
-                    cancelButtonText: '取消',
-                    confirmButtonText: '確定',
-                    iconColor: '#bbb',
-                    confirmButtonColor: '#555',
-                    cancelButtonColor: '#b0b0b0',
-                  }).then((res) => {
-                    if (res.isConfirmed) {
-                      navigate('/login');
-                      signOut(auth);
-                      dispatch(
-                        SET_USERINFO({
-                          id: null,
-                          avatar: null,
-                          email: null,
-                          userName: null,
-                          registrationDate: null,
-                          dramaList: null,
-                        })
-                      );
-                      Swal.fire({
-                        title: '已登出',
-                        width: 300,
-                        icon: 'success',
-                        iconColor: '#bbb',
-                        confirmButtonColor: '#555',
-                      });
-                    }
-                  });
-                }}
-              >
-                <VscSignOut
-                  style={{
-                    fontSize: '18px',
-                    color: '#bbb',
-                  }}
-                />
-                登出
-              </SettingOption>
-            </SettingOptions>
+                >
+                  <SettingOptionIcon>
+                    <VscSignOut />
+                  </SettingOptionIcon>
+                  登出
+                </SettingOption>
+              </SettingOptions>
+            )}
           </>
         ) : (
           <NavIconButton to="/login">
-            <FaUser style={{ fontSize: '24px' }} />
+            <FaUser />
           </NavIconButton>
         )}
       </NavBar>

@@ -31,6 +31,7 @@ export const DramaCard = styled.div`
   align-items: flex-start;
   padding: 20px;
   background-size: cover;
+  background-position: center top;
   position: relative;
   filter: brightness(0.9);
   &:hover {

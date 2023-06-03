@@ -11,11 +11,14 @@ interface SearchBarProps {
   margin?: string;
 }
 
-const SearchBarWrapper = styled.div`
+const SearchBarWrapper = styled.div<SearchBarProps>`
   position: relative;
+  width: ${(props) => props.width};
+  margin: ${(props) => props.margin};
 `;
 
 const SearchBarIcon = styled.div`
+  font-size: 20px;
   position: absolute;
   top: 50%;
   transform: translate(0, -50%);
@@ -39,7 +42,7 @@ const SearchBarInput = styled.input<SearchBarProps>`
   padding-left: 50px;
   font-weight: 500;
   background-color: rgba(255, 255, 255, 0.1);
-  &::placeholder{
+  &::placeholder {
     font-weight: 500;
   }
   &:focus {
@@ -54,9 +57,9 @@ const SearchBarInput = styled.input<SearchBarProps>`
 export default function SearchBar(props: SearchBarProps) {
   const { onChange, placeHolder, value, width, margin } = props;
   return (
-    <SearchBarWrapper style={{ width: width, margin: margin }}>
+    <SearchBarWrapper width={width} margin={margin}>
       <SearchBarIcon>
-        <FaSearch style={{ fontSize: '20px' }} />
+        <FaSearch />
       </SearchBarIcon>
       <SearchBarInput
         type="text"

@@ -31,6 +31,7 @@ const LoginPageWrapper = styled.div`
 `;
 
 const DividerLine = styled.div`
+  width: 45%;
   border-bottom: solid 0.5px ${(props) => props.theme.white};
   margin: 10px 4px;
 `;
@@ -262,15 +263,15 @@ export default function Login() {
       >
         {isSignInState ? (
           <LoginAndSignUpCard>
-            <XXLText style={{ marginBottom: '10px' }}>Login</XXLText>
+            <XXLText margin="0 0 10px 0">Login</XXLText>
             <GoogleButton onClick={() => signInWithGoogle()} disabled={authing}>
               <BsGoogle />
               <LGText>Google註冊/登入</LGText>
             </GoogleButton>
             <RowFlexbox alignItems="center" justifyContent="space-between">
-              <DividerLine style={{ width: '45%' }} />
+              <DividerLine />
               <SMText>or</SMText>
-              <DividerLine style={{ width: '45%' }} />
+              <DividerLine />
             </RowFlexbox>
             <ColumnFlexbox gap="8px" tabletGap="6px">
               <SMText>Email</SMText>
@@ -283,11 +284,7 @@ export default function Login() {
                 name="email"
               />
             </ColumnFlexbox>
-            <ColumnFlexbox
-              gap="8px"
-              tabletGap="6px"
-              style={{ position: 'relative' }}
-            >
+            <ColumnFlexbox gap="8px" tabletGap="6px" position="relative">
               <SMText>密碼</SMText>
               <InputField
                 type={isShowOrHidePassword ? 'password' : 'text'}
@@ -316,7 +313,7 @@ export default function Login() {
           </LoginAndSignUpCard>
         ) : (
           <LoginAndSignUpCard>
-            <XXLText style={{ marginBottom: '10px' }}>SignUp</XXLText>
+            <XXLText margin="0 0 10px 0">SignUp</XXLText>
             <ColumnFlexbox gap="8px" tabletGap="6px">
               <SMText>Email</SMText>
               <InputField
@@ -329,11 +326,7 @@ export default function Login() {
                 name="email"
               />
             </ColumnFlexbox>
-            <ColumnFlexbox
-              gap="8px"
-              tabletGap="6px"
-              style={{ position: 'relative' }}
-            >
+            <ColumnFlexbox gap="8px" tabletGap="6px" position="relative">
               <SMText>密碼</SMText>
               <InputField
                 type={isShowOrHidePassword ? 'password' : 'text'}
