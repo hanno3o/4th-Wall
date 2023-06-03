@@ -16,6 +16,7 @@ import { IoEye } from 'react-icons/io5';
 import { RowFlexbox, ColumnFlexbox } from '../../style/Flexbox';
 import { XXLText, SMText, SMGreyText, LGText } from '../../style/Text';
 import Swal from 'sweetalert2';
+import { FirebaseError } from 'firebase/app';
 
 const MEDIA_QUERY_TABLET =
   '@media screen and (min-width: 1281px) and (max-width: 1440px)';
@@ -153,94 +154,103 @@ function Login() {
 
   const signInWithGoogle = async () => {
     setAuthing(true);
-    signInWithPopup(auth, new GoogleAuthProvider())
-      .then((res) => {
-        console.log(res.user.uid);
-        navigate('/');
-        const Toast = Swal.mixin({
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 2500,
-          timerProgressBar: true,
-          didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer);
-            toast.addEventListener('mouseleave', Swal.resumeTimer);
-          },
-        });
-        Toast.fire({
-          icon: 'success',
-          title: '登入成功！🥳',
-          width: '260',
-          iconColor: '#bbb',
-          confirmButtonColor: '#555',
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-        setAuthing(false);
+    try {
+      const res = await signInWithPopup(auth, new GoogleAuthProvider());
+      console.log(res.user.uid);
+      navigate('/');
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer);
+          toast.addEventListener('mouseleave', Swal.resumeTimer);
+        },
       });
+      Toast.fire({
+        icon: 'success',
+        title: '登入成功！🥳',
+        width: '260',
+        iconColor: '#bbb',
+        confirmButtonColor: '#555',
+      });
+    } catch (error) {
+      console.log(error);
+      setAuthing(false);
+    }
   };
 
-  const nativeSignIn = () => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        console.log(userCredential);
-        navigate('/');
-        const Toast = Swal.mixin({
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-          didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer);
-            toast.addEventListener('mouseleave', Swal.resumeTimer);
-          },
-        });
-        Toast.fire({
-          icon: 'success',
-          title: '登入成功！🥳',
-          width: '260',
-          iconColor: '#bbb',
-          confirmButtonColor: '#555',
-        });
-      })
-      .catch((error) => {
+  const nativeSignIn = async () => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log(userCredential);
+      navigate('/');
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer);
+          toast.addEventListener('mouseleave', Swal.resumeTimer);
+        },
+      });
+      Toast.fire({
+        icon: 'success',
+        title: '登入成功！🥳',
+        width: '260',
+        iconColor: '#bbb',
+        confirmButtonColor: '#555',
+      });
+    } catch (error) {
+      if (error instanceof FirebaseError) {
         console.log('native login error:', error);
         const errorCode = error.code;
         showNativeAuthErrorMessage(errorCode);
-      });
+      }
+    }
   };
 
-  const SignUp = () => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        console.log(userCredential);
-        navigate('/');
-        const Toast = Swal.mixin({
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 2500,
-          timerProgressBar: true,
-          didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer);
-            toast.addEventListener('mouseleave', Swal.resumeTimer);
-          },
-        });
-        Toast.fire({
-          icon: 'success',
-          title: '註冊成功，期待與您一起探索更多有趣的內容！🥳',
-          iconColor: '#bbb',
-          confirmButtonColor: '#555',
-        });
-      })
-      .catch((error) => {
+  const SignUp = async () => {
+    try {
+      const userCredential = createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log(userCredential);
+      navigate('/');
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer);
+          toast.addEventListener('mouseleave', Swal.resumeTimer);
+        },
+      });
+      Toast.fire({
+        icon: 'success',
+        title: '註冊成功，期待與您一起探索更多有趣的內容！🥳',
+        iconColor: '#bbb',
+        confirmButtonColor: '#555',
+      });
+    } catch (error) {
+      if (error instanceof FirebaseError) {
         console.log('native signup error:', error);
         const errorCode = error.code;
         showNativeAuthErrorMessage(errorCode);
-      });
+      }
+    }
   };
 
   if (!id) {
