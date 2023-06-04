@@ -461,26 +461,28 @@ export default function Forum() {
                 </>
               );
             })}
-        <Pagination>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <PaginationButton
-              key={page}
-              onClick={() => handlePageChange(page)}
-              disabled={page === currentPage}
-              style={
-                page === currentPage
-                  ? {
-                      backgroundColor: '#bbb',
-                      color: '#181818',
-                      fontWeight: 500,
-                    }
-                  : {}
-              }
-            >
-              {page}
-            </PaginationButton>
-          ))}
-        </Pagination>
+        {currentPageArticles.length !== 0 && (
+          <Pagination>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationButton
+                key={page}
+                onClick={() => handlePageChange(page)}
+                disabled={page === currentPage}
+                style={
+                  page === currentPage
+                    ? {
+                        backgroundColor: '#bbb',
+                        color: '#181818',
+                        fontWeight: 500,
+                      }
+                    : {}
+                }
+              >
+                {page}
+              </PaginationButton>
+            ))}
+          </Pagination>
+        )}
       </ColumnFlexbox>
     </ForumPageWrapper>
   );
