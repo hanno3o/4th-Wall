@@ -502,6 +502,9 @@ export default function Dramas({ dramasData, isRemoveButton }: IDramas) {
     } else {
       document.body.style.overflow = 'auto';
     }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
   }, [dramaPopup, actorPopup]);
 
   const handleDramaPopup = (drama: IDrama) => {
