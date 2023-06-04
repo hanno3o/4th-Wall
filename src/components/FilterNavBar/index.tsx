@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { RowFlexbox } from '../../style/Flexbox';
+import { filterData } from '../../utils/constants';
 
 interface FilterNavBarProps {
   selectedTypeFilter?: string | null;
@@ -57,9 +58,6 @@ const FilterNavBarStyle = styled.div<FilterNavBarProps>`
 
 export default function FilterNavBar(props: FilterNavBarProps) {
   const { onClick, selectedTypeFilter } = props;
-  const filterData = {
-    type: ['所有影集', '台劇', '韓劇', '日劇', '美劇', '陸劇'],
-  };
 
   return (
     <FilterWrapper>
